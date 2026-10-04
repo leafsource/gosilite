@@ -10,15 +10,15 @@ commits: 4a58e75..6ac32b1
 
 ## Report
 
-**What was built** — 落地了 gosilite 闭环 MVP：`httpx` 统一错误/JSON envelope/中间件，`dbx` 多库 DSN（sqlite/mysql/postgres）+ 方言占位符 + 可移植多语句迁移，`mcpx` 最小 MCP stdio server（仅业务 tools），`app` 环境配置。`examples/tasks` 以 Handler→Service→Repository 分层实现 CRUD，同一 Service 同时暴露 HTTP REST 与 `tasks_*` MCP 工具；配套 design/coding/testing 模式文档、Compose 对齐的需求流程、`gosilite-dev` skill 与 README。
+**What was built** — 落地了 gosilite 闭环 MVP：`httpx` 统一错误/JSON envelope/中间件；`dbx` **启动时按 DSN 连接一种数据库**（sqlite/mysql/postgres，换库只换连接配置）+ 方言占位符 + 在所选库上幂等应用 schema 版本文件；`mcpx` 最小 MCP stdio server（仅业务 tools）；`app` 环境配置。`examples/tasks` 以 Handler→Service→Repository 分层实现 CRUD，同一 Service 同时暴露 HTTP REST 与 `tasks_*` MCP 工具；配套 design/coding/testing 模式文档、Compose 对齐的需求流程、`gosilite-dev` skill 与 README。
 
-**Verification** — `go test ./...` PASS；`go vet ./...` PASS；`go build ./...` PASS；HTTP 冒烟（POST/GET `/api/tasks`）PASS；MCP 冒烟（initialize/tools/list/tools/call `tasks_create`）PASS。复审确认 3 个 critical（迁移占位符、内存 SQLite 连接池、MySQL 迁移可移植性）与 MCP tools/call 测试缺口已修复，无新增 critical。
+**Verification** — `go test ./...` PASS；`go vet ./...` PASS；`go build ./...` PASS；HTTP 冒烟（POST/GET `/api/tasks`）PASS；MCP 冒烟（initialize/tools/list/tools/call `tasks_create`）PASS。复审确认 3 个 critical（schema 记账占位符、内存 SQLite 连接池、MySQL DDL 可移植性）与 MCP tools/call 测试缺口已修复，无新增 critical。
 
 **Journey log** —
 1. MCP 定位纠偏：不是脚手架/系统工具，而是业务接口能力（与 HTTP 同一 Service）。
-2. 多库不能只做 Repository 占位符，迁移记账与 DDL 可移植性同样属于方言面。
+2. 支持多数据库 = **启动连一种库**；SQL 占位符与 schema 版本 DDL 都要按当前驱动方言生成，不能只改 Repository。
 3. `sqlite://:memory:` + 连接池会各见各的库；内存 DSN 必须单连接。
-4. 迁移多语句需切分执行，避免依赖 MySQL `multiStatements`。
+4. schema 版本文件可多语句（`;` 分隔）；这是应用建表，不是 MySQL↔Postgres 迁库。
 5. JSON 内嵌 envelope 的断言要先解一层，避免转义引号误判。
 
 ## [S1] Problem
@@ -101,13 +101,14 @@ MCP Tool   ↗ 同一 Service
 
 ### [S2.4] Data layer（`dbx`）
 
-- `dbx.Open(ctx, dsn)`：按 DSN scheme 选择驱动：
+- **启动时按 DSN 连接一种数据库**（不是数据库之间的迁移）：
   - `sqlite://` / `file:` / `:memory:` → `modernc.org/sqlite`（纯 Go，无 CGO）
   - `mysql://` → `go-sql-driver/mysql`
   - `postgres://` / `postgresql://` → `jackc/pgx/v5/stdlib`
-- `Dialect`：`Placeholder(n)`（`?` vs `$n`）、`QuoteIdent`、`Name`。
-- 迁移：有序 `.sql` 文件（`-- +up` / `-- +down` 可选，MVP 仅 up），记录于 `schema_migrations(version)`。
-- Repository 测试默认 SQLite 内存库；方言差异用同一接口覆盖 MySQL/PostgreSQL。
+- 进程启动读 `GOSILITE_DB_DSN`（或等价配置）选定连接；换库 = 换 DSN，不改业务代码。
+- `Dialect`：按当前驱动生成 `Placeholder(n)`（`?` vs `$n`）、`QuoteIdent`、`Name`。
+- **Schema 版本文件**（应用建表，不是迁库）：有序 `.sql` 文件，启动时在**所选库**上幂等应用，记录于 `schema_migrations(version)`。
+- Repository 测试默认 SQLite 内存库；同一代码可在 mysql/postgres 上运行，SQL 占位符由方言生成。
 
 ### [S2.5] Business MCP（`mcpx`）— 非系统能力
 

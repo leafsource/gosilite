@@ -11,7 +11,7 @@ docs/compose/spec/<feature>.md   ← Problem / Design / Tasks
     ↓
 设计契约：DTO · 错误码 · 路由 · 表 · 测试边界
     ↓
-实现顺序：dbx 迁移 → repo → service → http / mcp
+实现顺序：schema 版本 → repo → service → http / mcp
     ↓
 测试：service → repo → http → mcp → 双通道
     ↓
@@ -56,7 +56,7 @@ docs/compose/spec/<feature>.md   ← Problem / Design / Tasks
 
 ## 4. 实现顺序
 
-1. `migrations/NNNN_*.sql`
+1. schema 版本文件（建表/索引）
 2. Repository + 单测
 3. Service + 单测（固定时钟）
 4. HTTP handler + httptest

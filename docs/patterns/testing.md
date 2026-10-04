@@ -25,12 +25,14 @@
 - `TestServiceCRUD`、`TestHTTPCRUD`、`TestMCPBusinessToolsEndToEnd`
 - 失败分支显式命名意图：`TestServiceInvalidStatus`
 
-## 多库与迁移注意
+## 启动连库与 schema 版本注意
 
-- 迁移文件可多语句（`;` 分隔）；`dbx.Migrate` 会切开后逐条执行。
-- 业务 SQL 占位符必须经 `Dialect.Placeholder`，迁移记账表同样如此。
-- `sqlite://:memory:` 会强制单连接池，避免多连接各见各的内存库；并发场景用文件型 DSN。
+- 启动时只连**一种**库（读 DSN）；测试用 `sqlite://:memory:` 即可。
+- schema 版本文件可多语句（`;` 分隔）；`dbx.Migrate` 切开后在所选库上逐条执行。
+- 业务 SQL 与 schema 记账表的占位符都必须经当前 `Dialect.Placeholder`。
+- `sqlite://:memory:` 强制单连接池，避免多连接各见各的内存库；并发场景用文件型 DSN。
 - DDL 尽量可移植（`VARCHAR` + 默认值），避免 MySQL 禁止的 `TEXT DEFAULT`。
+- 换数据库 = 换 DSN 重启；不提供、也不需要“把 MySQL 数据迁到 PostgreSQL”的工具。
 
 ## 验收命令
 

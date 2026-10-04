@@ -33,7 +33,7 @@ GOSILITE_MCP_STDIO=1 go run ./cmd/tasks
 | 变量 | 默认 | 说明 |
 |------|------|------|
 | `GOSILITE_HTTP_ADDR` | `:8080` | HTTP 监听地址 |
-| `GOSILITE_DB_DSN` | `sqlite://:memory:` | 也可用 `mysql://user:pass@host/db`、`postgres://...` |
+| `GOSILITE_DB_DSN` | `sqlite://:memory:` | 启动时连接**一种**库：`sqlite://` / `mysql://user:pass@host/db` / `postgres://...` |
 | `GOSILITE_MCP_STDIO` | 关 | 置 1 时以 MCP stdio 模式启动 |
 
 ## 架构
@@ -47,7 +47,7 @@ HTTP Handler / MCP Tool → Service → Repository → database/sql (sqlite/mysq
 | 包 | 职责 |
 |----|------|
 | `httpx` | 统一错误模型、JSON envelope、中间件 |
-| `dbx` | DSN 路由、方言占位符、迁移 |
+| `dbx` | 按 DSN 启动连一种库、方言占位符、schema 版本文件 |
 | `mcpx` | 业务能力 → MCP tools（stdio JSON-RPC） |
 | `app` | 环境变量配置 |
 | `examples/tasks` | 端到端参考（CRUD 双通道） |

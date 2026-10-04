@@ -27,11 +27,12 @@ HTTP Handler / MCP Tool  →  Service  →  Repository 接口  →  SQL 实现
 - HTTP 与 MCP 共用同一 code 词表，agent 客户端只学一套语义。
 - 成功 envelope：`{"ok":true,"data":...}`；失败：`{"ok":false,"error":{code,message,detail}}`。
 
-## 4. Repository + Dialect
+## 4. Repository + Dialect（启动连库，非迁库）
 
-- Repository 只写可移植 SQL；占位符由 `dbx.Dialect` 生成（`?` / `$n`）。
+- 项目启动时通过 `GOSILITE_DB_DSN`（或等价配置）**连接一种数据库**；换库 = 换 DSN。
+- Repository 只写可移植 SQL；占位符由 `dbx.Dialect` 按**当前驱动**生成（`?` / `$n`）。
 - DSN scheme 决定驱动：`sqlite://` / `mysql://` / `postgres://`。
-- 迁移文件 `NNNN_name.sql`，嵌入二进制，启动时按版本幂等应用。
+- `migrations/NNNN_name.sql` 是**应用 schema 版本**（建表/索引），在所选库上启动时幂等应用；不是 MySQL↔PostgreSQL 之间的数据迁移工具。
 
 ## 5. 双通道业务能力（HTTP + MCP）
 
