@@ -1,14 +1,25 @@
 ---
 feature: agent-dev-loop-mvp
-status: in-progress
+status: delivered
 updated: 2026-10-04
 branch: feat/agent-dev-loop-mvp
-commits: # leave empty while in progress; fill at delivery
+commits: 4a58e75..6ac32b1
 ---
 
 # Agent-Driven Web Framework MVP
 
 ## Report
+
+**What was built** — 落地了 gosilite 闭环 MVP：`httpx` 统一错误/JSON envelope/中间件，`dbx` 多库 DSN（sqlite/mysql/postgres）+ 方言占位符 + 可移植多语句迁移，`mcpx` 最小 MCP stdio server（仅业务 tools），`app` 环境配置。`examples/tasks` 以 Handler→Service→Repository 分层实现 CRUD，同一 Service 同时暴露 HTTP REST 与 `tasks_*` MCP 工具；配套 design/coding/testing 模式文档、Compose 对齐的需求流程、`gosilite-dev` skill 与 README。
+
+**Verification** — `go test ./...` PASS；`go vet ./...` PASS；`go build ./...` PASS；HTTP 冒烟（POST/GET `/api/tasks`）PASS；MCP 冒烟（initialize/tools/list/tools/call `tasks_create`）PASS。复审确认 3 个 critical（迁移占位符、内存 SQLite 连接池、MySQL 迁移可移植性）与 MCP tools/call 测试缺口已修复，无新增 critical。
+
+**Journey log** —
+1. MCP 定位纠偏：不是脚手架/系统工具，而是业务接口能力（与 HTTP 同一 Service）。
+2. 多库不能只做 Repository 占位符，迁移记账与 DDL 可移植性同样属于方言面。
+3. `sqlite://:memory:` + 连接池会各见各的库；内存 DSN 必须单连接。
+4. 迁移多语句需切分执行，避免依赖 MySQL `multiStatements`。
+5. JSON 内嵌 envelope 的断言要先解一层，避免转义引号误判。
 
 ## [S1] Problem
 
@@ -145,12 +156,12 @@ Domain 字段：`id, title, description, status(todo|doing|done), created_at, up
 
 ## Tasks
 
-- [ ] T1: 搭建 httpx（错误模型/响应/中间件） — acceptance: 包测试通过，错误码映射与 JSON envelope 正确 (covers: S2.2, S2.3)
-- [ ] T2: 搭建 dbx（Open/方言/迁移） — acceptance: SQLite 内存迁移成功，DSN scheme 分发正确，方言占位符测试通过 (covers: S2.4)
-- [ ] T3: 搭建 mcpx（stdio MCP tools） — acceptance: initialize/tools/list/tools/call 报文测试通过 (covers: S2.5)
-- [ ] T4: 搭建 app 配置与组装 — acceptance: 可从 env 组装 HTTP handler 与 MCP tools (covers: S2.1, S2.6)
-- [ ] T5: 实现 examples/tasks 分层与 HTTP 路由 — acceptance: CRUD  httptest 断言通过，错误 envelope 符合约定 (covers: S2.1, S2.2, S2.6)
-- [ ] T6: 实现 tasks 的 MCP 工具双暴露 — acceptance: tools/call 可创建/查询/更新/删除并与 HTTP 同数据 (covers: S2.5, S2.6)
-- [ ] T7: 编写 design/coding/testing/process 文档 — acceptance: 文档覆盖 [S2.7]/[S2.8] 且无 TBD (covers: S2.7, S2.8)
-- [ ] T8: 编写 gosilite-dev skill — acceptance: skill 可引导需求到验收，引用文档路径有效 (covers: S2.7)
-- [ ] T9: 全量验证与 README — acceptance: go test/vet/build 全绿，README 说明闭环用法 (covers: S2.7)
+- [x] T1: 搭建 httpx（错误模型/响应/中间件） — acceptance: 包测试通过，错误码映射与 JSON envelope 正确 (covers: S2.2, S2.3)
+- [x] T2: 搭建 dbx（Open/方言/迁移） — acceptance: SQLite 内存迁移成功，DSN scheme 分发正确，方言占位符测试通过 (covers: S2.4)
+- [x] T3: 搭建 mcpx（stdio MCP tools） — acceptance: initialize/tools/list/tools/call 报文测试通过 (covers: S2.5)
+- [x] T4: 搭建 app 配置与组装 — acceptance: 可从 env 组装 HTTP handler 与 MCP tools (covers: S2.1, S2.6)
+- [x] T5: 实现 examples/tasks 分层与 HTTP 路由 — acceptance: CRUD  httptest 断言通过，错误 envelope 符合约定 (covers: S2.1, S2.2, S2.6)
+- [x] T6: 实现 tasks 的 MCP 工具双暴露 — acceptance: tools/call 可创建/查询/更新/删除并与 HTTP 同数据 (covers: S2.5, S2.6)
+- [x] T7: 编写 design/coding/testing/process 文档 — acceptance: 文档覆盖 [S2.7]/[S2.8] 且无 TBD (covers: S2.7, S2.8)
+- [x] T8: 编写 gosilite-dev skill — acceptance: skill 可引导需求到验收，引用文档路径有效 (covers: S2.7)
+- [x] T9: 全量验证与 README — acceptance: go test/vet/build 全绿，README 说明闭环用法 (covers: S2.7)
