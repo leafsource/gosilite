@@ -50,7 +50,15 @@ HTTP Handler / MCP Tool  →  Service  →  Repository 接口  →  SQL 实现
 - RequestID：传播/生成 `X-Request-ID`。
 - Logging：一行结构化访问日志。
 
-## 7. 构造器注入
+## 7. 前端（Vue3 + TDesign）
+
+- 目录：`web/`，栈固定为 **TypeScript + Vite + Vue3 + TDesign（`tdesign-vue-next`）**。
+- 入口：`web/index.html` → `src/main.ts`；页面用 TDesign 组件，不引入额外 UI 体系。
+- `src/types` 与后端 DTO JSON 字段同名（snake_case 保持一致）。
+- `src/api` 只做 fetch + envelope 解包（`ok/data/error`）；业务规则仍在 Go Service。
+- 开发代理：`/api` → 后端；生产可将 `web/dist` 交给任意静态服务或反代。
+
+## 8. 构造器注入
 
 - `NewService(repo)`、`NewHandler(svc)`、`NewSQLRepository(db)`。
 - 时钟等环境因素用 `WithClock` 在测试中注入，生产不传。

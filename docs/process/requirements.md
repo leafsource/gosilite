@@ -9,13 +9,13 @@
     ↓
 docs/compose/spec/<feature>.md   ← Problem / Design / Tasks
     ↓
-设计契约：DTO · 错误码 · 路由 · 表 · 测试边界
+设计契约：DTO · 错误码 · 路由 · 表 · 页面字段 · 测试边界
     ↓
-实现顺序：schema 版本 → repo → service → http / mcp
+实现顺序：schema 版本 → repo → service → http / mcp → web
     ↓
-测试：service → repo → http → mcp → 双通道
+测试：service → repo → http → mcp → 双通道 → web build
     ↓
-验收：go test ./... && go vet ./... && go build ./...
+验收：go test/vet/build + cd web && npm run build
     ↓
 评审 → spec status: delivered
 ```
@@ -27,6 +27,7 @@ docs/compose/spec/<feature>.md   ← Problem / Design / Tasks
 - 业务对象与读写用例
 - 对外 HTTP 路径与 JSON 契约
 - 是否需要 MCP 业务工具（默认：需要，与 HTTP 同一 Service）
+- 是否需要 `web/` 页面（Vue3 + TDesign）及关键交互
 - 错误码用例（invalid / not_found / conflict…）
 - 超出范围项（写进 Out of Scope）
 
@@ -51,8 +52,9 @@ docs/compose/spec/<feature>.md   ← Problem / Design / Tasks
 1. Domain 字段与状态机
 2. DTO JSON 字段
 3. 错误码与 HTTP 映射
-4. 表结构与迁移版本
+4. 表结构与 schema 版本
 5. MCP tool 名称与 inputSchema
+6. 前端页面字段与 `web/src/types` 类型
 
 ## 4. 实现顺序
 
@@ -62,13 +64,14 @@ docs/compose/spec/<feature>.md   ← Problem / Design / Tasks
 4. HTTP handler + httptest
 5. MCP tools + 报文测试
 6. 组装（`examples/<feature>/app.go`）与入口
+7. 前端 `web/`：types → api → TDesign 页面
 
 每完成一层就跑该层测试，不攒到最后。
 
 ## 5. 验收与评审
 
-- 验收命令三连必须全绿。
-- 评审关注：契约是否兑现、分层是否被破坏、测试是否测行为。
+- 后端三连与 `web` 的 `npm run build` 必须全绿。
+- 评审关注：契约是否兑现、分层是否被破坏、测试是否测行为、前端 DTO 是否对齐。
 - 通过后把 spec 标记 `delivered`，勾选 Tasks，填写 Report。
 
 ## 6. 变更

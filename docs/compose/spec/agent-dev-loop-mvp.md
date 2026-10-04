@@ -150,10 +150,16 @@ Domain 字段：`id, title, description, status(todo|doing|done), created_at, up
 
 ## [S3] Out of Scope
 
-- 前端/SPA/SSR 页面。
+- SPA/SSR 复杂前端工程（路由框架、状态管理、组件库自研）；`web/` 仅为 Vite + Vue3 + TDesign 单页参考。
 - ORM、代码生成 CLI、脚手架 MCP、鉴权/多租户、生产级连接池调优。
 - 完整 MCP 资源/订阅/采样等能力；仅 tools 三方法。
 - OpenAPI 生成、分布式追踪、消息队列。
+
+## Amendment 2026-10-04
+
+- 工作区由 `.worktrees` 改为仓库主目录；功能已合入 `develop`。
+- 明确多数据库 = **启动时按 DSN 连接一种库**，不是库间迁数；`migrations/` 仅应用 schema 版本。
+- **新增 `web/`**：TypeScript + Vite + Vue3 + TDesign（`tdesign-vue-next`），入口 `web/index.html`，经 `/api` 代理调用 tasks HTTP API。
 
 ## Tasks
 

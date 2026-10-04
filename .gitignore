@@ -25,6 +25,12 @@ profile.cov
 go.work
 go.work.sum
 
+# Frontend
+web/node_modules/
+web/dist/
+web/.vite/
+web/*.tsbuildinfo
+
 # env file
 .env
 

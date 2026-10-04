@@ -1,11 +1,11 @@
 ---
 name: gosilite-dev
-description: Use when developing, reviewing, or extending web API features with the gosilite Go framework — layered Handler/Service/Repository code, dual HTTP + MCP business exposure, startup DB connection via DSN (sqlite/mysql/postgres), application schema version files, and the Compose-aligned requirements loop. Trigger on gosilite, tasks example, business MCP tool, or "用 gosilite 开发接口".
+description: Use when developing, reviewing, or extending web features with gosilite — Go layered Handler/Service/Repository, dual HTTP + MCP business exposure, startup DB via DSN, and Vue3+TDesign frontend in web/. Trigger on gosilite, tasks example, business MCP tool, web/ 页面, or "用 gosilite 开发接口".
 ---
 
 # gosilite 开发技能
 
-把 Web 功能需求变成可验收的 Go 代码：**分层实现 + HTTP/MCP 双通道 + 统一错误模型**。
+把 Web 功能需求变成可验收的交付：**Go 分层实现 + HTTP/MCP 双通道 + Vue3/TDesign 前端 + 统一错误模型**。
 
 ## 何时使用
 
@@ -20,16 +20,18 @@ description: Use when developing, reviewing, or extending web API features with 
 2. 错误只用 `httpx.Error`（`invalid` / `not_found` / `conflict` / `internal`…）。
 3. 同一业务只实现一次 Service；HTTP 与 MCP 都是适配器。
 4. **启动连一种库**：`GOSILITE_DB_DSN` 选定 sqlite/mysql/postgres；SQL 占位符经 `dbx.Dialect`。这是换连接，不是迁库。
-5. 验收三连：`go test ./...`、`go vet ./...`、`go build ./...`。
+5. 前端在 `web/`：Vue3 + Vite + TypeScript + **TDesign**（`tdesign-vue-next`），DTO 与后端 JSON 字段对齐。
+6. 验收：后端 `go test ./... && go vet ./... && go build ./...`；前端 `cd web && npm run build`。
 
 ## 标准开发流程
 
-1. **定契约**：字段、路由、错误码、表、MCP tool 名。
+1. **定契约**：字段、路由、错误码、表、MCP tool 名、页面字段。
 2. **写 spec**（若功能值得成文）：`docs/compose/spec/<feature>.md`，含 Tasks + acceptance。
 3. **Schema 版本文件**：`migrations/NNNN_name.sql`（应用建表，启动时在所选库上幂等应用）。
 4. **Repo → Service → HTTP → MCP**，每层带测试。
-5. **双通道断言**：MCP 创建的数据 HTTP 能读到，反之亦然。
-6. **跑验收三连**，修到全绿。
+5. **前端**（若功能含页面）：在 `web/src` 用 TDesign 组件接同一 API；类型放 `web/src/types`。
+6. **双通道断言**：MCP 创建的数据 HTTP 能读到，反之亦然。
+7. **跑验收**（后端三连 + `web` build），修到全绿。
 
 ## 代码骨架
 
@@ -46,6 +48,15 @@ app.go        # 组装 + embed migrations
 migrations/   # 应用 schema 版本文件
 ```
 
+前端（`web/`）：
+
+```text
+web/index.html          # Vite 入口
+web/src/api/tasks.ts    # fetch 封装 + envelope
+web/src/types/task.ts   # 与后端 DTO 对齐
+web/src/App.vue         # TDesign 页面
+```
+
 MCP tool 命名：`<feature>_<verb>`（例：`tasks_create`）。禁止注册系统运维类工具。
 
 ## 测试要求
@@ -53,6 +64,7 @@ MCP tool 命名：`<feature>_<verb>`（例：`tasks_create`）。禁止注册系
 - Service：真 SQLite + 固定时钟（`WithClock`）
 - HTTP：`httptest` 断言 status + envelope
 - MCP：JSON-RPC 报文测 `tools/list` / `tools/call`（含 get/update/delete）
+- 前端：`npm run build`（vue-tsc）必须通过；重要交互可用 curl/Vite 代理验证 API
 - 修 bug 必有回归测试
 - 默认测 sqlite；若宣称支持 mysql/postgres，用同一 SQL 流程在对应驱动上跑 schema 版本与 CRUD
 
@@ -69,5 +81,6 @@ MCP tool 命名：`<feature>_<verb>`（例：`tasks_create`）。禁止注册系
 - [ ] 无 Handler 业务逻辑 / 无 Repo 外泄漏 SQL
 - [ ] JSON 契约与错误码符合统一 envelope
 - [ ] 新增能力同时暴露 HTTP 与 MCP（或在 spec 中写明只做其一的原因）
+- [ ] 前端 DTO/字段与后端 JSON 一致；使用 TDesign 组件体系
 - [ ] 启动只连 DSN 指定的一种库；schema 版本幂等可重复执行
-- [ ] `go test/vet/build` 全绿
+- [ ] `go test/vet/build` 与 `web` 的 `npm run build` 全绿
