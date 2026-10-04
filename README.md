@@ -81,7 +81,7 @@ Agent (MCP client) ──MCP tools──►  mcpx tools ───┘
 2. 按 `docs/process/requirements.md` 澄清契约（含 API JSON 与页面字段）
 3. 按 `docs/patterns/{design,coding,testing}.md` 分层实现
 4. 后端 Service → HTTP/MCP；前端 `web/` 用 TDesign 对齐同一 DTO
-5. 用 skill `.mimocode/skills/gosilite-dev` 引导生成与自检
+5. 用 skill `.agents/skills/gosilite-dev` 引导生成与自检
 6. `go test ./... && go vet ./... && go build ./...` 与 `cd web && npm run build` 验收
 
 ## 文档

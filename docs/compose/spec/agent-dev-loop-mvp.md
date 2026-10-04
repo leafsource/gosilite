@@ -47,7 +47,7 @@ gosilite/
   cmd/tasks/      # 示例进程入口（HTTP，可选 MCP stdio）
   docs/patterns/  # design / coding / testing
   docs/process/   # requirements 闭环
-  .mimocode/skills/gosilite-dev/
+  .agents/skills/gosilite-dev/
 ```
 
 ### [S2.1] Layering & coding model
@@ -138,7 +138,7 @@ Domain 字段：`id, title, description, status(todo|doing|done), created_at, up
 3. **编码**：repo → service → handler/mcp；禁止跨层调用。
 4. **测试**：表驱动；Service 用真 SQLite 仓储（少 mock）；HTTP 用 `httptest`；MCP 用 JSON-RPC 报文测 `tools/call`。
 5. **验收**：`go test ./...`、`go vet ./...`、`go build ./...`。
-6. **skill**：`.mimocode/skills/gosilite-dev/SKILL.md` 引用上述文档与检查清单。
+6. **skill**：`.agents/skills/gosilite-dev/SKILL.md` 引用上述文档与检查清单。
 
 ### [S2.8] Patterns catalog（文档沉淀）
 
