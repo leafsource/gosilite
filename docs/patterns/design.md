@@ -1,65 +1,95 @@
 # 设计模式（Design Patterns）
 
-gosilite 面向 agent 高频生成与修改 Web 功能，因此模式数量刻意收敛到可重复、可校验的一组。
+gosilite 面向 Agent 高频生成与修改 Web 功能，模式刻意收敛到可重复、可校验的一组。**以本仓库实际代码为准**，不要套用其他框架的记忆。
 
 ## 1. 分层 + 单向依赖
 
 ```text
-HTTP Handler / MCP Tool  →  Service  →  Repository 接口  →  SQL 实现
-         ↓                     ↓
-     DTO / JSON            Domain + httpx.Error
+web (TDesign Vue3)
+        │  HTTP JSON {code,msg,data}
+        ▼
+api/handler  ──►  application/service  ──►  application/dal/repository  ──►  application/infra
+  Hertz           具体 Service 类型          GORM Query/SQL                PG / Redis / RustFS
+        │               │
+   api/model DTO    errorx + types/errno
+        │
+application.Module (Init + RegisterRoutes) ──► 挂载 api/router 生成物
 ```
 
-- Handler/MCP 只做边界校验、DTO 绑定、错误映射，不写业务规则。
-- Service 唯一持有业务规则与事务边界。
-- Repository 接口由 Service 所在包定义；实现可替换（SQL / 内存）。
-- 禁止 Handler 直接碰 `database/sql`。Repository 失败时返回 `*httpx.Error`（业务错误码），**不要**返回裸 `http.StatusXxx` 数字。
+- Handler：绑定校验、调用 Service、映射响应；**不写业务规则、不碰 GORM**。
+- Service：唯一持有业务规则、权限判断、事务边界；构造时注入 Repository / Cache / Storage。
+- Repository：接口在 service 可见，实现用 gorm gen query；只做持久化。
+- Infra：连接、缓存、对象存储；业务代码不直接 `redis.New` / `gorm.Open`。
+- 路由与中间件挂载在 `api/router/**`；权限用 `api/middleware/permission`。
 
-## 2. DTO 边界
+## 2. IDL 契约边界
 
-- `CreateXRequest` / `UpdateXRequest` / `ListXQuery` 与 Domain 结构分离。
-- JSON 字段名一经交付保持稳定；内部字段名可重构。
-- 更新用指针字段表达「未传 / 显式置空」。
+- 公开 HTTP 契约以 `idl/**/*.thrift` 为源；`api/model`、`api/router` 由 `hz`/`thriftgo` 生成。
+- JSON 字段名使用 **camelCase**（`accessToken`、`expiresIn`），与前端 `web/src/api` 一致。
+- 生成文件禁止手改；调整字段先改 IDL 再生成。
+- 手写扩展放在 handler / service / repository，不塞进生成目录。
 
-## 3. 统一错误模型
+## 1.1 Module 插件
 
-- 全系统只用 `*httpx.Error`，code 固定为：`invalid` / `unauthorized` / `forbidden` / `not_found` / `conflict` / `internal`。
-- HTTP 与 MCP 共用同一 code 词表，agent 客户端只学一套语义。
-- 成功 envelope：`{"ok":true,"data":...}`；失败：`{"ok":false,"error":{code,message,detail}}`。
+- 契约：`application.Module`（`Name` / `Init` / `RegisterRoutes`）。
+- 装配：`Bootstrap` 初始化 infra 并 Init 全部模块；`MountRoutes` 按序挂路由。
+- 模块自己 `InitService` 建具体 Service 并安装包级门面；Handler 不依赖 `I*Service`。
+- 新域 = 新 Module + 注册表一行；路由仍来自 IDL/hz 生成的 `Register`。
 
-## 4. Repository + Dialect（启动连库，非迁库）
+## 3. 统一错误与响应模型
 
-- 项目启动时通过 `GOSILITE_DB_DSN`（或等价配置）**连接一种数据库**；换库 = 换 DSN。
-- Repository 只写可移植 SQL；占位符由 `dbx.Dialect` 按**当前驱动**生成（`?` / `$n`）。
-- DSN scheme 决定驱动：`sqlite://` / `mysql://` / `postgres://`。
-- `migrations/NNNN_name.sql` 是**应用 schema 版本**（建表/索引），在所选库上启动时幂等应用；不是 MySQL↔PostgreSQL 之间的数据迁移工具。
+成功：
 
-## 5. 双通道业务能力（HTTP + MCP）
+```json
+{ "code": 200, "msg": "success", "data": { ... } }
+```
 
-- 同一 Service 方法被两种适配器复用：
-  - HTTP：REST/JSON，给用户与常规客户端。
-  - MCP Tool：`tasks_*` 命名，给 agent 客户端。
-- MCP **只暴露业务接口能力**，不暴露脚手架/测试/运维等系统工具。
-- 新增能力时先写 Service 测试，再挂 HTTP 与 MCP，禁止两套业务实现。
+业务失败（HTTP 仍为 200，除非鉴权/参数）：
 
-## 6. 中间件链
+```json
+{ "code": 700000003, "msg": "invalid username or password..." }
+```
 
-顺序固定：`Recover → RequestID → Logging → mux`。
+- 全系统业务错误只用 `errorx.New` / `errorx.WrapByCode`，错误码在 `types/errno` 注册。
+- 词表按域划分（用户 700 000 000 段），消息模板支持 `{param}`。
+- 401/400 仅用于：未认证、非法参数；其余业务语义用 `code` 表达，便于前端统一处理。
+- Handler 只使用 `pkg/utils/response` 的 `SuccessWithData` / `Error` / `Unauthorized` / `InvalidParamRequestResponse`。
 
-- Recover：panic → 500 envelope。
-- RequestID：传播/生成 `X-Request-ID`。
-- Logging：一行结构化访问日志。
+## 4. 会话（OAuth2 风格）
 
-## 7. 前端（Vue3 + TDesign）
+- 登录 / 刷新返回 `SessionTokenResponse`：`accessToken`、`tokenType`、`expiresIn`、`refreshToken`。
+- **禁止**再使用 `token` + `expire` 旧字段对。
+- Access token = Hertz JWT（`Authorization: Bearer`）；Refresh token = Redis，支持 rotation 与按用户 generation 吊销。
+- 登出：吊销 refresh + access denylist（TTL ≤ 24h）。
+- 改密成功后必须吊销该用户全部 refresh token。
+- 前端 `useUserStore` 对并发 401 做单飞 refresh，避免轮换竞态。
 
-- 目录：`web/`，栈固定为 **TypeScript + Vite + Vue3 + TDesign（`tdesign-vue-next`）**。
-- 入口：`web/index.html` → `src/main.ts`；页面用 TDesign 组件，不引入额外 UI 体系。
-- `src/types` 与后端 DTO JSON 字段同名（snake_case 保持一致）。
-- `src/api` 只做 fetch + envelope 解包（`ok/data/error`）；业务规则仍在 Go Service。
-- 开发代理：`/api` → 后端；生产可将 `web/dist` 交给任意静态服务或反代。
+## 5. Repository + GORM Gen
 
-## 8. 构造器注入
+- 模型与 query 在 `application/<domain>/dal/{model,query}` 由 gen 生成；repository 手写。
+- Repository 接口由 service 包依赖，便于测试替身。
+- `RowsAffected == 0` 或 `gorm.ErrRecordNotFound` 映射为 `errorx` 业务错误（如 `ErrUserResourceNotFound`）。
+- 列表强制 `page`/`pageSize`，禁止无边界全量查询。
+- DDL/模型字段结构化；禁止用 JSON blob 顶替业务列。
 
-- `NewService(repo)`、`NewHandler(svc)`、`NewSQLRepository(db)`。
-- 时钟等环境因素用 `WithClock` 在测试中注入，生产不传。
-- 不使用全局可变状态。
+## 6. 中间件链（入口固定）
+
+顺序：`ContextCache → pprof(可选) → gzip(可选) → RequestID → AccessLog → Recovery → CORS → route`。
+
+- Recovery：panic → `R.Error`，打 stack。
+- RequestID：`x-request-id`。
+- 权限中间件在路由 `middleware.go` 按需挂载：`permission.Default()` / `permission.New(条件...)`。
+- 业务模块不得调用 `h.Spin()`；组装只在 `main.go`。
+
+## 7. 构造器与生命周期
+
+- `NewXxxRepository(db)`、`InitService(ctx, db, oss, cache)`。
+- 全局仅保留框架级单例（`conf`、`permission.Security`、SVC 门面）；新代码优先显式注入。
+- 进程入口负责配置加载、infra 初始化、优雅退出；库内不泄漏裸 goroutine。
+
+## 8. 前端契约
+
+- API 封装：`web/src/utils/request`（Axios）+ `web/src/api/*.ts`。
+- 类型与后端 IDL 字段一致；envelope 解包按 `{code,msg,data}`。
+- 登录态：Pinia `user` store，persist `token`/`refreshToken`。
+- 页面路由权限由 `store/modules/permission` 控制；业务页放 `web/src/pages/<feature>/`。

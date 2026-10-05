@@ -1,97 +1,106 @@
 # gosilite
 
-轻量级 Go 框架 + Vue3 前端 + Agent 工程体系闭环，用于**由 agent 驱动的 Web 功能快捷开发**。
+由 Agent 驱动的轻量级 Go + Vue3 全栈 Web 快速开发框架。
 
-业务能力一次实现，三端共用契约：
+后端 **CloudWeGo Hertz**，前端 **Vue3 + TypeScript + Vite + TDesign（tdesign-vue-next-starter）**。结构参考相邻 `skyx-cloud-golang`，并收敛为 Agent 可重复生成的开发边界。
 
-- **HTTP / JSON API** — 给前端与常规客户端
-- **MCP business tools** — 给 agent 客户端（只暴露业务接口，不是系统运维工具）
-- **Vue3 前端**（`web/`）— TypeScript + Vite + TDesign
+## 运行时与 PATH
 
-## 快速开始
+- 本机 Go：`/Users/leafsource/.local/go/bin/go`（go1.27.x）。若 `go` 不在 PATH：
+  ```bash
+  export PATH="$HOME/.local/go/bin:$PATH"
+  ```
+- 入口：仓库根目录 `main.go`（**不是** `cmd/gosilite`）。
+- 配置：`conf/<env>/conf.yaml`，用 `GO_ENV=test|dev|prod` 选择；测试默认 `conf/test/conf.yaml`（HTTP `:8888`）。
 
-### 后端
-
-```bash
-go test ./...
-go build ./...
-```
-
-运行示例 HTTP 服务（默认内存 SQLite；本机 8080 被占用时换端口）：
-
-```bash
-GOSILITE_HTTP_ADDR=:18080 go run ./cmd/tasks
-# POST http://127.0.0.1:18080/api/tasks  {"title":"hello"}
-```
-
-以 MCP 业务服务器模式运行（stdio JSON-RPC）：
-
-```bash
-GOSILITE_MCP_STDIO=1 go run ./cmd/tasks
-# initialize / tools/list / tools/call  → tasks_create 等
-```
-
-### 前端（web/）
-
-```bash
-cd web
-npm install
-npm run dev
-# http://127.0.0.1:5173/  （入口 web/index.html）
-```
-
-默认把 `/api` 代理到 `http://127.0.0.1:18080`，可用环境变量覆盖：
-
-```bash
-GOSILITE_API_URL=http://127.0.0.1:8080 npm run dev
-```
-
-生产构建：`npm run build`（输出 `web/dist`）。
-
-环境变量（后端）：
-
-| 变量 | 默认 | 说明 |
-|------|------|------|
-| `GOSILITE_HTTP_ADDR` | `:8080` | HTTP 监听地址 |
-| `GOSILITE_DB_DSN` | `sqlite://:memory:` | 启动时连接**一种**库：`sqlite://` / `mysql://user:pass@host/db` / `postgres://...` |
-| `GOSILITE_MCP_STDIO` | 关 | 置 1 时以 MCP stdio 模式启动 |
-
-## 架构
+## 目录结构
 
 ```text
-Vue3/TDesign web/  ──HTTP JSON──►  HTTP Handler ──┐
-                                                ├─► Service ─► Repository ─► 一种数据库
-Agent (MCP client) ──MCP tools──►  mcpx tools ───┘
-         ↓                     ↓
-      DTO / JSON          Domain + httpx.Error
+main.go                # Hertz 生产入口
+api/handler/           # Handler：绑定、校验、响应
+api/router/            # 路由与中间件注册
+api/model/             # IDL 生成 DTO
+api/middleware/        # JWT/权限等中间件
+application/           # Service、dal、infra
+conf/                  # 环境配置
+idl/                   # Thrift IDL（API 契约源）
+pkg/                   # errorx、response、logger 等
+types/                 # errno、consts
+script/codegen/        # 生成模板
+web/                   # TDesign Vue3 前端
+docs/                  # 设计/流程/Hertz 索引
 ```
 
-| 路径 | 职责 |
-|------|------|
-| `httpx` | 统一错误模型、JSON envelope、中间件 |
-| `dbx` | 按 DSN 启动连一种库、方言占位符、schema 版本文件 |
-| `mcpx` | 业务能力 → MCP tools（stdio JSON-RPC） |
-| `app` | 环境变量配置 |
-| `examples/tasks` | 端到端参考（CRUD 双通道） |
-| `web/` | Vue3 + Vite + TypeScript + TDesign 前端 |
+依赖方向：`api/handler → application/service → application/dal → application/infra`。  
+业务域以 **Module 插件** 挂载：`Bootstrap` Init 服务 → `MountRoutes` 注册路由（见 `application/module.go`）。
 
-## Agent 工程闭环
+## 基础设施（Docker）
 
-1. 需求写入 `docs/compose/spec/<feature>.md`
-2. 按 `docs/process/requirements.md` 澄清契约（含 API JSON 与页面字段）
-3. 按 `docs/patterns/{design,coding,testing}.md` 分层实现
-4. 后端 Service → HTTP/MCP；前端 `web/` 用 TDesign 对齐同一 DTO
-5. 用 skill `.agents/skills/gosilite-dev` 引导生成与自检
-6. `go test ./... && go vet ./... && go build ./...` 与 `cd web && npm run build` 验收
+```bash
+docker compose up -d
+```
 
-## 文档
+| 服务 | 端口 | 说明 |
+|------|------|------|
+| PostgreSQL | 5432 | db `gosilite` / user `gosilite` |
+| Redis | 6379 | 会话 refresh / denylist |
+| RustFS | 19000 (API), 19001 (UI) | S3 兼容；host 9000 被占用故映射 19000 |
 
-- `docs/patterns/design.md` — 设计模式
-- `docs/patterns/coding.md` — 编码模式
-- `docs/patterns/testing.md` — 测试模式
-- `docs/process/requirements.md` — 需求开发流程
-- `docs/compose/spec/agent-dev-loop-mvp.md` — 本 MVP 规格
+## 启动
 
-## License
+```bash
+export PATH="$HOME/.local/go/bin:$PATH"
+GO_ENV=test go run .          # Hertz :8888
+curl -s http://127.0.0.1:8888/ping
 
-MIT
+cd web && npm install && npm run dev   # Vite :5173
+```
+
+登录 API（经 Vite 代理 `/user/*` → `:8888`）：
+
+```text
+POST /user/login     → { accessToken, tokenType, expiresIn, refreshToken }
+POST /user/refresh
+POST /user/logout
+POST /user/password
+GET  /user/info
+GET  /user/profile
+```
+
+响应信封：`{"code":200,"msg":"success","data":...}`。会话字段为 OAuth2 风格 camelCase，**不再使用** `token`/`expire`。
+
+## Hertz 与 hz
+
+唯一 HTTP 框架是 Hertz：https://cloudwego.cn/zh/docs/hertz/
+
+```bash
+go install github.com/cloudwego/hertz/cmd/hz@latest
+hz update -I idl -idl idl/framework/user.thrift -customize_package idl/package.yaml
+```
+
+生成代码落在 `api/model`、`api/router`（及 handler 骨架）；契约先改 `idl/`。
+
+## 验收命令
+
+```bash
+export PATH="$HOME/.local/go/bin:$PATH"
+go test ./...
+go vet ./...
+go build ./...
+cd web && npm run build
+```
+
+## Agent 工作规范
+
+1. 编码前阅读 `AGENTS.md`、`.agents/skills/gosilite-dev/SKILL.md`、相关 IDL/Service。
+2. 先契约（IDL、DTO、错误码、权限）再实现；流程见 `docs/process/requirements.md`。
+3. Handler 只绑定/校验/响应；业务在 Service；SQL 在 Repository。
+4. 错误码集中在 `types/errno`；响应只经 `pkg/utils/response`。
+5. 修 bug 必须有回归测试；完成必须验收四连全绿。
+
+## 设计目标
+
+- **规范化**：IDL、生成代码、业务、infra 边界清晰。
+- **高易用性**：固定模块骨架 + skill 检查清单，Agent 可重复产出。
+- **高性能**：Hertz、GORM 连接池、分页与索引、避免重复序列化。
+- **高可用**：配置校验、Recovery、RequestID、访问日志、会话吊销、RustFS 兼容容错。
