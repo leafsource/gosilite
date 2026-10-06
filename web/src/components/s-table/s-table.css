@@ -1,0 +1,148 @@
+.s-table {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: var(--td-comp-margin-m);
+  height: 100%;
+}
+
+/* 第 1 行：查询区（查询后生效） */
+.s-table__search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--td-comp-margin-s);
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+/* flex-basis 固定宽度：覆盖 TDesign .t-input__wrap/.t-select__wrap 默认的 width:100% */
+.s-table__keyword {
+  flex: 0 0 220px;
+  width: 220px;
+}
+
+.s-table__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--td-comp-margin-s);
+}
+
+/* 第 2 行：批量操作（最左侧）+ 功能操作区贴在 刷新/列设置 左侧 */
+.s-table__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--td-comp-margin-s);
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+/* 表格区填满剩余高度：表体自适应滚动，分页贴在 s-table 底部 */
+.s-table > .t-table {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.s-table > .t-table > .t-table__content {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.s-table > .t-table > .t-table__pagination-wrap {
+  flex-shrink: 0;
+}
+
+.s-table__batch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--td-comp-margin-s);
+  min-width: 0;
+}
+
+.s-table__batch-count {
+  color: var(--td-text-color-secondary);
+}
+
+.s-table__toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--td-comp-margin-s);
+  margin-left: auto;
+}
+
+.s-table__toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--td-comp-margin-s);
+}
+
+.s-table__toolbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* 列设置：列表 + 拖拽排序 */
+.s-table__column-panel {
+  width: 260px;
+  max-height: 360px;
+  padding: var(--td-comp-paddingTB-s) 0;
+  overflow-y: auto;
+}
+
+.s-table__column-item {
+  display: flex;
+  align-items: center;
+  gap: var(--td-comp-margin-xs);
+  padding: 6px 12px;
+  cursor: grab;
+  user-select: none;
+  border: 1px solid transparent;
+  border-radius: var(--td-radius-small);
+}
+
+.s-table__column-item:hover {
+  background-color: var(--td-bg-color-container-hover);
+}
+
+.s-table__column-item.is-dragging {
+  opacity: 0.55;
+  background-color: var(--td-bg-color-container-active);
+  border-color: var(--td-brand-color);
+}
+
+.s-table__column-item.is-drop-target {
+  border-color: var(--td-brand-color);
+}
+
+.s-table__column-grip {
+  display: flex;
+  align-items: center;
+  color: var(--td-text-color-placeholder);
+  cursor: grab;
+}
+
+.s-table__column-item.is-off {
+  opacity: 0.55;
+}
+
+.s-table__column-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.s-table__column-toggle {
+  color: var(--td-text-color-secondary);
+  cursor: pointer;
+}
