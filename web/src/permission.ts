@@ -5,7 +5,7 @@ import { MessagePlugin } from 'tdesign-vue-next';
 import type { RouteRecordRaw } from 'vue-router';
 
 import router from '@/router';
-import { getPermissionStore, useUserStore } from '@/store';
+import { getConfigStore, getPermissionStore, useUserStore } from '@/store';
 import { normalizePath } from '@/utils/route';
 import { PAGE_NOT_FOUND_ROUTE } from '@/utils/route/constant';
 
@@ -26,6 +26,8 @@ router.beforeEach(async (to, from, next) => {
     }
     try {
       await userStore.getUserInfo();
+      // 登录后拉取私有参数（sys.page.size 等），会话内仅一次
+      await getConfigStore().loadPrivate();
 
       const { asyncRoutes } = permissionStore;
 

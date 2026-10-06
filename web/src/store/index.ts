@@ -6,6 +6,8 @@ store.use(createPersistedState());
 
 export { store };
 
+export * from './modules/config';
+export * from './modules/dict';
 export * from './modules/notification';
 export * from './modules/permission';
 export * from './modules/setting';

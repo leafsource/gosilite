@@ -5,7 +5,7 @@
     <div class="login-container">
       <div class="title-container">
         <h1 class="title margin-no">{{ t('pages.login.loginTitle') }}</h1>
-        <h1 class="title">{{ t('common.appName') }}</h1>
+        <h1 class="title">{{ configStore.appName || t('common.appName') }}</h1>
         <div class="sub-title">
           <p class="tip">{{ type === 'register' ? t('pages.login.existAccount') : t('pages.login.noAccount') }}</p>
           <p class="tip" @click="switchType(type === 'register' ? 'login' : 'register')">
@@ -27,6 +27,7 @@ import { ref } from 'vue';
 
 import TdesignSetting from '@/layouts/setting.vue';
 import { t } from '@/locales';
+import { useConfigStore } from '@/store';
 
 import LoginHeader from './components/Header.vue';
 import Login from './components/Login.vue';
@@ -35,6 +36,9 @@ import Register from './components/Register.vue';
 defineOptions({
   name: 'LoginIndex',
 });
+const configStore = useConfigStore();
+// 登录页作为 global 配置的重试点（main 启动拉取失败时进入登录页会再试）
+void configStore.loadGlobal();
 const type = ref('login');
 const switchType = (val: string) => {
   type.value = val;

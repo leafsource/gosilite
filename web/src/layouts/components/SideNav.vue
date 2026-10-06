@@ -21,7 +21,9 @@
             <t-icon :name="collapsed ? 'menu-unfold' : 'menu-fold'" />
           </template>
         </t-button>
-        <span v-show="!isCompact" :class="versionCls"> {{ !collapsed ? t('common.appName') : '' }} {{ version }} </span>
+        <span v-show="!isCompact" :class="versionCls">
+          {{ !collapsed ? configStore.appName || t('common.appName') : '' }} {{ version }}
+        </span>
       </template>
     </t-menu>
     <div :class="`${prefix}-side-nav-placeholder${collapsed ? '-hidden' : ''}`"></div>
@@ -41,7 +43,7 @@ import AssetLogo from '@/assets/assets-t-logo.svg?component';
 import { prefix } from '@/config/global';
 import { t } from '@/locales';
 import { getActive } from '@/router';
-import { useSettingStore } from '@/store';
+import { useConfigStore, useSettingStore } from '@/store';
 import type { MenuRoute, ModeType } from '@/types/interface';
 import { normalizePath } from '@/utils/route';
 
@@ -160,6 +162,7 @@ const menuCls = computed(() => {
 
 const router = useRouter();
 const settingStore = useSettingStore();
+const configStore = useConfigStore();
 
 const autoCollapsed = () => {
   const isCompact = window.innerWidth <= MIN_POINT;
