@@ -18,6 +18,8 @@ type Service struct {
 	repo     repository.ISystemUserRepository
 	imageOSS imagex.ImageX
 	sessions *SessionStore
+	posts    repository.IPostRepository
+	roleRBAC repository.IRoleRBACRepository
 }
 
 // NewService builds a user service with explicit dependencies.
@@ -26,6 +28,8 @@ func NewService(db *gorm.DB, imageOSS imagex.ImageX, cacheClient cache.CacheClie
 		repo:     repository.NewSystemUserRepository(db),
 		imageOSS: imageOSS,
 		sessions: NewSessionStore(cacheClient),
+		posts:    repository.NewPostRepository(db),
+		roleRBAC: repository.NewRoleRBACRepository(db),
 	}
 }
 

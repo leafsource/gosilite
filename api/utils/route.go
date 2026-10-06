@@ -6,23 +6,28 @@ import (
 	"sort"
 )
 
-// ConvertToRoutes 将菜单列表转换为路由树
-func ConvertToRoutes(menus []*model.SystemMenu) []*menu.Route { // 返回值切片
-	// 创建菜单映射，便于查找
-	menuMap := make(map[int64]*model.SystemMenu) // 改为值
-	for _, menu := range menus {
-		menuMap[menu.ID] = menu
+// ConvertToRoutes 将菜单列表转换为路由树（根：parent_id 为 0 或 -1）
+func ConvertToRoutes(menus []*model.SystemMenu) []*menu.Route {
+	menuMap := make(map[int64]*model.SystemMenu)
+	for _, m := range menus {
+		menuMap[m.ID] = m
 	}
+	return buildRouteTree(menus, menuMap, 0)
+}
 
-	// 构建树形结构
-	return buildRouteTree(menus, menuMap, -1)
+func isRootParent(parentID int64) bool {
+	return parentID == 0 || parentID == -1
 }
 
 func buildRouteTree(menus []*model.SystemMenu, menuMap map[int64]*model.SystemMenu, parentID int64) []*menu.Route {
-	var routes []*menu.Route // 值切片
+	var routes []*menu.Route
 
 	for _, menuData := range menus {
-		if menuData.ParentID != parentID {
+		if parentID == 0 {
+			if !isRootParent(menuData.ParentID) {
+				continue
+			}
+		} else if menuData.ParentID != parentID {
 			continue
 		}
 
@@ -107,7 +112,7 @@ func buildFullPath(menu *model.SystemMenu, menuMap map[int64]*model.SystemMenu) 
 	}
 
 	// 根菜单直接返回
-	if menu.ParentID == -1 {
+	if menu.ParentID == -1 || menu.ParentID == 0 {
 		return menu.Path
 	}
 

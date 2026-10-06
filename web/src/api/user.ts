@@ -19,6 +19,12 @@ export interface UserProfile {
   avatarURL: string;
 }
 
+export interface UserAuthInfo {
+  user: UserProfile;
+  roles: string[];
+  permissions: string[];
+}
+
 export interface ChangePasswordParams {
   currentPassword: string;
   newPassword: string;
@@ -37,7 +43,7 @@ export function login(data: LoginParams) {
 }
 
 export function fetchUserInfo() {
-  return request.get<UserProfile>({ url: Api.Info });
+  return request.get<UserAuthInfo>({ url: Api.Info });
 }
 
 export function refreshSession(refreshToken: string) {

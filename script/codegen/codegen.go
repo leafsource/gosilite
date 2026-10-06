@@ -33,20 +33,44 @@ var generateConfig = map[string]map[string]map[string]any{
 			"repository": false,
 			"service":    false,
 		},
+		"system_dept": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_post": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_user_post": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_role_menu": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_role_dept": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_dict_type": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_dict_data": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_config": {
+			"repository": false,
+			"service":    false,
+		},
 	},
 	"application/agent/dal/query": {
 		"single_agent_draft": {
 			"model_info": &agent.ModelInfo{},
 		},
 	},
-	// "application/framework/system_user/dal/query": {
-	// 	"system_user":      {},
-	// 	"system_user_role": {},
-	// },
-	// "application/framework/role/dal/query": {
-	// 	"system_role":            {},
-	// 	"system_role_permission": {},
-	// },
 }
 
 func main() {

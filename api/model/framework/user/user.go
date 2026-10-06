@@ -1932,8 +1932,8 @@ func (p *ChangePasswordRequest) String() string {
 type UserController interface {
 	// 登录
 	Login(ctx context.Context, req *LoginRequest) (r *SessionTokenResponse, err error)
-	// 获取用户信息
-	GetInfo(ctx context.Context) (r *UserProfile, err error)
+	// 获取用户信息（含 roles / permissions）
+	GetInfo(ctx context.Context) (r *LoginUserResponse, err error)
 	// 获取用户资料
 	GetProfile(ctx context.Context) (r *UserProfile, err error)
 	// 刷新会话
@@ -1981,7 +1981,7 @@ func (p *UserControllerClient) Login(ctx context.Context, req *LoginRequest) (r 
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *UserControllerClient) GetInfo(ctx context.Context) (r *UserProfile, err error) {
+func (p *UserControllerClient) GetInfo(ctx context.Context) (r *LoginUserResponse, err error) {
 	var _args UserControllerGetInfoArgs
 	var _result UserControllerGetInfoResult
 	if err = p.Client_().Call(ctx, "GetInfo", &_args, &_result); err != nil {
@@ -2148,7 +2148,7 @@ func (p *userControllerProcessorGetInfo) Process(ctx context.Context, seqId int3
 	iprot.ReadMessageEnd()
 	var err2 error
 	result := UserControllerGetInfoResult{}
-	var retval *UserProfile
+	var retval *LoginUserResponse
 	if retval, err2 = p.handler.GetInfo(ctx); err2 != nil {
 		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetInfo: "+err2.Error())
 		oprot.WriteMessageBegin("GetInfo", thrift.EXCEPTION, seqId)
@@ -2795,7 +2795,7 @@ func (p *UserControllerGetInfoArgs) String() string {
 }
 
 type UserControllerGetInfoResult struct {
-	Success *UserProfile `thrift:"success,0,optional"`
+	Success *LoginUserResponse `thrift:"success,0,optional"`
 }
 
 func NewUserControllerGetInfoResult() *UserControllerGetInfoResult {
@@ -2805,9 +2805,9 @@ func NewUserControllerGetInfoResult() *UserControllerGetInfoResult {
 func (p *UserControllerGetInfoResult) InitDefault() {
 }
 
-var UserControllerGetInfoResult_Success_DEFAULT *UserProfile
+var UserControllerGetInfoResult_Success_DEFAULT *LoginUserResponse
 
-func (p *UserControllerGetInfoResult) GetSuccess() (v *UserProfile) {
+func (p *UserControllerGetInfoResult) GetSuccess() (v *LoginUserResponse) {
 	if !p.IsSetSuccess() {
 		return UserControllerGetInfoResult_Success_DEFAULT
 	}
@@ -2879,7 +2879,7 @@ ReadStructEndError:
 }
 
 func (p *UserControllerGetInfoResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewUserProfile()
+	_field := NewLoginUserResponse()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}

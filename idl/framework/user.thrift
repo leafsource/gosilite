@@ -61,8 +61,8 @@ service UserController {
     // 登录
     SessionTokenResponse Login(1: LoginRequest req)(api.post="/user/login")
 
-    // 获取用户信息
-    UserProfile GetInfo()(api.get="/user/info")
+    // 获取用户信息（含 roles / permissions）
+    LoginUserResponse GetInfo()(api.get="/user/info")
 
     // 获取用户资料
     UserProfile GetProfile()(api.get="user/profile")

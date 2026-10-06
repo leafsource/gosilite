@@ -61,6 +61,7 @@ const isFramePage = computed(() => {
 .page-container {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  height: 100%;
 }
 
 .page-container > * {

@@ -61,6 +61,7 @@ description: Use when developing, reviewing, or extending web API features with 
 3. **改 IDL** → `hz update -I idl -idl idl/<domain>/<file>.thrift -customize_package idl/package.yaml`。
 4. **Repo → Service → Handler → Router**，每层可测。
 5. **前端接入**：`web/src/api/*.ts` 类型与 envelope、`store` / 登录态、必要页面。
+6. **TDesign MCP 强制**：写/改 `t-*` 组件前先调 `tdesign-mcp-server` 的 `get-component-docs`（选型 `get-component-list`、样式 `get-component-dom`、升级查 `get-component-changelog`）；配置在仓库根 `.mcp.json`。禁止凭记忆猜组件 API。
 6. **测试 + 验收四连**，修到全绿。
 7. **评审**（需要时）→ spec `status: delivered`。
 
@@ -142,6 +143,18 @@ web/src/api/<feature>.ts                 # 前端契约
 - `docs/hertz/api-index.md` — Hertz 速查
 - `application/framework/` + `api/handler/framework/user/` — 端到端参考
 
+## 前端组件
+
+写 `web/` 时同时加载 `.agents/skills/frontend-dev/SKILL.md`（s-* 通用组件 + TDesign MCP）。
+
+## 系统管理（system-rbac）
+
+- 五域：部门树 / 岗位 / 用户 / 菜单 / 角色（含 data_scope 数据权限与 role_menu 分配）。
+- IDL：`idl/framework/system.thrift` → `hz update` 生成 `api/model|router/framework/system`；Handler 在 `api/handler/framework/system` 手写业务。
+- 模型：`go run ./script/codegen` 生成 `*.gen.go`；迁移见 `script/migrations/0002_system_rbac.sql`。
+- 路由由 framework Module `RegisterRoutes` 挂载；`_systemMw` 已挂 `permission.Default()`。
+- 前端：`web/src/pages/system/*` + `web/src/api/system/*` + `web/src/router/modules/system.ts`。
+
 ## 检查清单
 
 - [ ] 无 Handler 业务逻辑 / 无 Repository 外泄漏 SQL
@@ -150,4 +163,5 @@ web/src/api/<feature>.ts                 # 前端契约
 - [ ] 错误码在 `types/errno` 注册，禁止魔法数字散落
 - [ ] IDL 变更已重新生成，生成文件无手改
 - [ ] 列表接口分页；管理接口挂 `permission` 中间件
+- [ ] 前端 `t-*` 组件 API 已用 TDesign MCP `get-component-docs` 核对（未凭记忆）
 - [ ] `go test ./...`、`go vet ./...`、`go build ./...`、`cd web && npm run build` 全绿

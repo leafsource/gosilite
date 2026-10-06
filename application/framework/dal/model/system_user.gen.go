@@ -25,6 +25,7 @@ type SystemUser struct {
 	CreateTime  time.Time `gorm:"column:create_time;comment:创建时间" json:"create_time"`         // 创建时间
 	CreateBy    string    `gorm:"column:create_by;comment:创建人ID" json:"create_by"`            // 创建人ID
 	UpdateBy    string    `gorm:"column:update_by;comment:修改人ID" json:"update_by"`            // 修改人ID
+	DeptID      int64     `gorm:"column:dept_id;not null;comment:所属部门" json:"dept_id"`        // 所属部门
 }
 
 // TableName SystemUser's table name

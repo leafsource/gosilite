@@ -6,6 +6,7 @@ package model
 
 import (
 	"gosilite/api/model/agent"
+
 	"gorm.io/gorm"
 )
 

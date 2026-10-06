@@ -40,6 +40,8 @@ func newSystemRole(db *gorm.DB, opts ...gen.DOOption) systemRole {
 	_systemRole.CreatedBy = field.NewInt64(tableName, "created_by")
 	_systemRole.UpdatedBy = field.NewInt64(tableName, "updated_by")
 	_systemRole.DeletedAt = field.NewField(tableName, "deleted_at")
+	_systemRole.DataScope = field.NewInt16(tableName, "data_scope")
+	_systemRole.OrderNum = field.NewInt32(tableName, "order_num")
 
 	_systemRole.fillFieldMap()
 
@@ -62,6 +64,8 @@ type systemRole struct {
 	CreatedBy   field.Int64  // 创建人ID
 	UpdatedBy   field.Int64  // 修改人ID
 	DeletedAt   field.Field  // 删除日期
+	DataScope   field.Int16  // 数据范围 1全部 2本部门 3本部门及以下 4仅本人 5自定义
+	OrderNum    field.Int32
 
 	fieldMap map[string]field.Expr
 }
@@ -90,6 +94,8 @@ func (s *systemRole) updateTableName(table string) *systemRole {
 	s.CreatedBy = field.NewInt64(table, "created_by")
 	s.UpdatedBy = field.NewInt64(table, "updated_by")
 	s.DeletedAt = field.NewField(table, "deleted_at")
+	s.DataScope = field.NewInt16(table, "data_scope")
+	s.OrderNum = field.NewInt32(table, "order_num")
 
 	s.fillFieldMap()
 
@@ -106,7 +112,7 @@ func (s *systemRole) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *systemRole) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 12)
+	s.fieldMap = make(map[string]field.Expr, 14)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["name"] = s.Name
 	s.fieldMap["code"] = s.Code
@@ -119,6 +125,8 @@ func (s *systemRole) fillFieldMap() {
 	s.fieldMap["created_by"] = s.CreatedBy
 	s.fieldMap["updated_by"] = s.UpdatedBy
 	s.fieldMap["deleted_at"] = s.DeletedAt
+	s.fieldMap["data_scope"] = s.DataScope
+	s.fieldMap["order_num"] = s.OrderNum
 }
 
 func (s systemRole) clone(db *gorm.DB) systemRole {

@@ -43,18 +43,21 @@ func Login(ctx context.Context, c *app.RequestContext) {
 // GetInfo .
 // @router /user/info [GET]
 func GetInfo(ctx context.Context, c *app.RequestContext) {
-	resp := &user.UserProfile{}
-
-	user := ctxutil.GetLoginUser(ctx)
-	if user == nil {
+	loginUser := ctxutil.GetLoginUser(ctx)
+	if loginUser == nil {
 		R.Error(ctx, c, errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "session is required")))
 		return
 	}
-	resp.ID = user.ID
-	resp.Account = user.Account
-	resp.Username = user.Username
-	resp.AvatarURL = user.AvatarURL
-
+	resp := &user.LoginUserResponse{
+		User: &user.UserProfile{
+			ID:          loginUser.ID,
+			Account:     loginUser.Account,
+			Username:    loginUser.Username,
+			AvatarURL:   loginUser.AvatarURL,
+		},
+		Roles:       loginUser.Roles,
+		Permissions: loginUser.Permissions,
+	}
 	R.SuccessWithData(ctx, c, resp)
 }
 

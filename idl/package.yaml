@@ -1,24 +1,15 @@
 layouts:
   - path: handler.go
     body: |-
-      {{$OutDirs := GetUniqueHandlerOutDir .Methods}}
       package {{.PackageName}}
       import (
        "context"
 
        "github.com/cloudwego/hertz/pkg/app"
-        "github.com/cloudwego/hertz/pkg/protocol/consts"
       {{- range $k, $v := .Imports}}
        {{$k}} "{{$v.Package}}"
       {{- end}}
-      {{- range $_, $OutDir := $OutDirs}}
-        {{if eq $OutDir "" -}}
-          "{{$.ProjPackage}}/api/service"
-        {{- else -}}
-          "{{$.ProjPackage}}/api/service/{{$OutDir}}"
-        {{- end -}}
-      {{- end}}
-      "{{$.ProjPackage}}/api/utils"
+       R "gosilite/pkg/utils/response"
       )
       {{range $_, $MethodInfo := .Methods}}
       {{$MethodInfo.Comment}}
@@ -28,14 +19,14 @@ layouts:
        var req {{$MethodInfo.RequestTypeName}}
        err = c.BindAndValidate(&req)
        if err != nil {
-          utils.SendErrResponse(ctx, c, consts.StatusOK, err)
+          R.InvalidParamRequestResponse(c, err.Error())
           return
        }
        {{end}}
         resp := &{{$MethodInfo.ReturnTypeName}}{}
         // TODO: 实现业务逻辑
-        
-       utils.SendSuccessResponse(ctx, c, consts.StatusOK, resp)
+
+       R.SuccessWithData(ctx, c, resp)
       }
       {{end}}
     update_behavior:

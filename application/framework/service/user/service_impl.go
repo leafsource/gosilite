@@ -45,6 +45,7 @@ func (s *Service) Authorizator(ctx context.Context, userId int64) (*ctxutil.Logi
 		AvatarURL:   resource.URL,
 		Roles:       s.repo.FindRoleCodes(ctx, user.ID),
 		Permissions: s.repo.FindPermissionCodes(ctx, user.ID),
+		DeptID:      user.DeptID,
 	}, nil
 }
 

@@ -17,29 +17,53 @@ import (
 
 var (
 	Q                    = new(Query)
+	SystemConfig         *systemConfig
+	SystemDept           *systemDept
+	SystemDictData       *systemDictData
+	SystemDictType       *systemDictType
 	SystemMenu           *systemMenu
+	SystemPost           *systemPost
 	SystemRole           *systemRole
+	SystemRoleDept       *systemRoleDept
+	SystemRoleMenu       *systemRoleMenu
 	SystemRolePermission *systemRolePermission
 	SystemUser           *systemUser
+	SystemUserPost       *systemUserPost
 	SystemUserRole       *systemUserRole
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
+	SystemConfig = &Q.SystemConfig
+	SystemDept = &Q.SystemDept
+	SystemDictData = &Q.SystemDictData
+	SystemDictType = &Q.SystemDictType
 	SystemMenu = &Q.SystemMenu
+	SystemPost = &Q.SystemPost
 	SystemRole = &Q.SystemRole
+	SystemRoleDept = &Q.SystemRoleDept
+	SystemRoleMenu = &Q.SystemRoleMenu
 	SystemRolePermission = &Q.SystemRolePermission
 	SystemUser = &Q.SystemUser
+	SystemUserPost = &Q.SystemUserPost
 	SystemUserRole = &Q.SystemUserRole
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:                   db,
+		SystemConfig:         newSystemConfig(db, opts...),
+		SystemDept:           newSystemDept(db, opts...),
+		SystemDictData:       newSystemDictData(db, opts...),
+		SystemDictType:       newSystemDictType(db, opts...),
 		SystemMenu:           newSystemMenu(db, opts...),
+		SystemPost:           newSystemPost(db, opts...),
 		SystemRole:           newSystemRole(db, opts...),
+		SystemRoleDept:       newSystemRoleDept(db, opts...),
+		SystemRoleMenu:       newSystemRoleMenu(db, opts...),
 		SystemRolePermission: newSystemRolePermission(db, opts...),
 		SystemUser:           newSystemUser(db, opts...),
+		SystemUserPost:       newSystemUserPost(db, opts...),
 		SystemUserRole:       newSystemUserRole(db, opts...),
 	}
 }
@@ -47,10 +71,18 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 type Query struct {
 	db *gorm.DB
 
+	SystemConfig         systemConfig
+	SystemDept           systemDept
+	SystemDictData       systemDictData
+	SystemDictType       systemDictType
 	SystemMenu           systemMenu
+	SystemPost           systemPost
 	SystemRole           systemRole
+	SystemRoleDept       systemRoleDept
+	SystemRoleMenu       systemRoleMenu
 	SystemRolePermission systemRolePermission
 	SystemUser           systemUser
+	SystemUserPost       systemUserPost
 	SystemUserRole       systemUserRole
 }
 
@@ -59,10 +91,18 @@ func (q *Query) Available() bool { return q.db != nil }
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:                   db,
+		SystemConfig:         q.SystemConfig.clone(db),
+		SystemDept:           q.SystemDept.clone(db),
+		SystemDictData:       q.SystemDictData.clone(db),
+		SystemDictType:       q.SystemDictType.clone(db),
 		SystemMenu:           q.SystemMenu.clone(db),
+		SystemPost:           q.SystemPost.clone(db),
 		SystemRole:           q.SystemRole.clone(db),
+		SystemRoleDept:       q.SystemRoleDept.clone(db),
+		SystemRoleMenu:       q.SystemRoleMenu.clone(db),
 		SystemRolePermission: q.SystemRolePermission.clone(db),
 		SystemUser:           q.SystemUser.clone(db),
+		SystemUserPost:       q.SystemUserPost.clone(db),
 		SystemUserRole:       q.SystemUserRole.clone(db),
 	}
 }
@@ -78,28 +118,52 @@ func (q *Query) WriteDB() *Query {
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:                   db,
+		SystemConfig:         q.SystemConfig.replaceDB(db),
+		SystemDept:           q.SystemDept.replaceDB(db),
+		SystemDictData:       q.SystemDictData.replaceDB(db),
+		SystemDictType:       q.SystemDictType.replaceDB(db),
 		SystemMenu:           q.SystemMenu.replaceDB(db),
+		SystemPost:           q.SystemPost.replaceDB(db),
 		SystemRole:           q.SystemRole.replaceDB(db),
+		SystemRoleDept:       q.SystemRoleDept.replaceDB(db),
+		SystemRoleMenu:       q.SystemRoleMenu.replaceDB(db),
 		SystemRolePermission: q.SystemRolePermission.replaceDB(db),
 		SystemUser:           q.SystemUser.replaceDB(db),
+		SystemUserPost:       q.SystemUserPost.replaceDB(db),
 		SystemUserRole:       q.SystemUserRole.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
+	SystemConfig         ISystemConfigDo
+	SystemDept           ISystemDeptDo
+	SystemDictData       ISystemDictDataDo
+	SystemDictType       ISystemDictTypeDo
 	SystemMenu           ISystemMenuDo
+	SystemPost           ISystemPostDo
 	SystemRole           ISystemRoleDo
+	SystemRoleDept       ISystemRoleDeptDo
+	SystemRoleMenu       ISystemRoleMenuDo
 	SystemRolePermission ISystemRolePermissionDo
 	SystemUser           ISystemUserDo
+	SystemUserPost       ISystemUserPostDo
 	SystemUserRole       ISystemUserRoleDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
+		SystemConfig:         q.SystemConfig.WithContext(ctx),
+		SystemDept:           q.SystemDept.WithContext(ctx),
+		SystemDictData:       q.SystemDictData.WithContext(ctx),
+		SystemDictType:       q.SystemDictType.WithContext(ctx),
 		SystemMenu:           q.SystemMenu.WithContext(ctx),
+		SystemPost:           q.SystemPost.WithContext(ctx),
 		SystemRole:           q.SystemRole.WithContext(ctx),
+		SystemRoleDept:       q.SystemRoleDept.WithContext(ctx),
+		SystemRoleMenu:       q.SystemRoleMenu.WithContext(ctx),
 		SystemRolePermission: q.SystemRolePermission.WithContext(ctx),
 		SystemUser:           q.SystemUser.WithContext(ctx),
+		SystemUserPost:       q.SystemUserPost.WithContext(ctx),
 		SystemUserRole:       q.SystemUserRole.WithContext(ctx),
 	}
 }

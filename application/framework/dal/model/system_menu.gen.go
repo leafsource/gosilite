@@ -38,6 +38,8 @@ type SystemMenu struct {
 	Redirect         string    `gorm:"column:redirect;not null;comment:重定向路径" json:"redirect"`                      // 重定向路径
 	Expanded         bool      `gorm:"column:expanded;not null;comment:菜单是否默认展开" json:"expanded"`                   // 菜单是否默认展开
 	HiddenBreadcrumb bool      `gorm:"column:hidden_breadcrumb;not null;comment:面包屑中是否隐藏" json:"hidden_breadcrumb"` // 面包屑中是否隐藏
+	Perms            string    `gorm:"column:perms;not null;comment:权限标识 e.g. system:user:list" json:"perms"`       // 权限标识 e.g. system:user:list
+	Status           int16     `gorm:"column:status;not null" json:"status"`
 }
 
 // TableName SystemMenu's table name

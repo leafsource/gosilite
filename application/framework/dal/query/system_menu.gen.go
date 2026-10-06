@@ -54,6 +54,8 @@ func newSystemMenu(db *gorm.DB, opts ...gen.DOOption) systemMenu {
 	_systemMenu.Redirect = field.NewString(tableName, "redirect")
 	_systemMenu.Expanded = field.NewBool(tableName, "expanded")
 	_systemMenu.HiddenBreadcrumb = field.NewBool(tableName, "hidden_breadcrumb")
+	_systemMenu.Perms = field.NewString(tableName, "perms")
+	_systemMenu.Status = field.NewInt16(tableName, "status")
 
 	_systemMenu.fillFieldMap()
 
@@ -90,6 +92,8 @@ type systemMenu struct {
 	Redirect         field.String // 重定向路径
 	Expanded         field.Bool   // 菜单是否默认展开
 	HiddenBreadcrumb field.Bool   // 面包屑中是否隐藏
+	Perms            field.String // 权限标识 e.g. system:user:list
+	Status           field.Int16
 
 	fieldMap map[string]field.Expr
 }
@@ -132,6 +136,8 @@ func (s *systemMenu) updateTableName(table string) *systemMenu {
 	s.Redirect = field.NewString(table, "redirect")
 	s.Expanded = field.NewBool(table, "expanded")
 	s.HiddenBreadcrumb = field.NewBool(table, "hidden_breadcrumb")
+	s.Perms = field.NewString(table, "perms")
+	s.Status = field.NewInt16(table, "status")
 
 	s.fillFieldMap()
 
@@ -148,7 +154,7 @@ func (s *systemMenu) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *systemMenu) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 26)
+	s.fieldMap = make(map[string]field.Expr, 28)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["parent_id"] = s.ParentID
 	s.fieldMap["permission_code"] = s.PermissionCode
@@ -175,6 +181,8 @@ func (s *systemMenu) fillFieldMap() {
 	s.fieldMap["redirect"] = s.Redirect
 	s.fieldMap["expanded"] = s.Expanded
 	s.fieldMap["hidden_breadcrumb"] = s.HiddenBreadcrumb
+	s.fieldMap["perms"] = s.Perms
+	s.fieldMap["status"] = s.Status
 }
 
 func (s systemMenu) clone(db *gorm.DB) systemMenu {

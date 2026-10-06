@@ -4,6 +4,31 @@
 
 ## 包与命名
 
+### 前端文件命名（强制）
+
+1. **单文件组件 / 类**：`PascalCase.vue`（如 `STable.vue`、`TDesignSelect.vue`）
+2. **目录下主文件**：`index.ts` / `index.vue`（按目录导入）
+3. **接口定义文件**：`camelCase`（如 `list.ts`、`dictModel.ts`、`configModel.ts`）
+4. **资源 / 样式文件**：`kebab-case`（如 `s-table.css`、`login-banner.png`）
+
+### 通用组件 s-*（强制）
+
+- 同一 UI **第 3 处**复用 → 抽到 `web/src/components/s-<name>/`，组件名 `S<Name>`（范例：`s-table` / `STable`）。
+- 仅模块内使用 → 放该模块 `components/`，不进全局。
+- `t-*` 组件 API 经 TDesign MCP `get-component-docs` 核对；细则见 skill `frontend-dev`。
+
+示例：
+
+```text
+web/src/components/s-table/index.vue   # 组件主文件
+web/src/components/s-table/sTable.ts   # 接口/类型（camelCase）
+web/src/components/s-table/s-table.css
+web/src/api/system/dict.ts               # API
+web/src/api/system/dictModel.ts          # 类型
+```
+
+### Go 侧
+
 - 框架包短且表义：`conf` / `pkg/errorx` / `pkg/utils/response` / `types/errno` / `types/consts`。
 - 业务按域：`application/framework/...`、`application/agent/...`；生成模型包名来自 IDL `namespace`。
 - 构造函数 `NewXxx`；初始化门面 `InitService`；可选配置 `WithXxx`。
@@ -40,6 +65,17 @@
 - 会话字段使用 `accessToken` / `tokenType` / `expiresIn` / `refreshToken`。
 
 ## 前端（web/）
+
+### TDesign MCP（强制）
+
+写/改任何 `t-*` 组件前，必须用 TDesign MCP（配置：仓库根 `.mcp.json`，`tdesign-mcp-server`）：
+
+- `get-component-docs`：查 props / events / slots —— **禁止凭记忆写组件 API**
+- `get-component-list`：选型
+- `get-component-changelog`：升级组件库前
+- `get-component-dom`：调 DOM/样式时
+
+### 约定
 
 - 请求封装改 `web/src/utils/request`，业务只写 `web/src/api/<feature>.ts`。
 - 新类型放 `api` 旁或 `web/src/types`；不要在组件里内联重复定义 DTO。

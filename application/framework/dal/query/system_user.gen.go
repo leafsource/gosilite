@@ -41,6 +41,7 @@ func newSystemUser(db *gorm.DB, opts ...gen.DOOption) systemUser {
 	_systemUser.CreateTime = field.NewTime(tableName, "create_time")
 	_systemUser.CreateBy = field.NewString(tableName, "create_by")
 	_systemUser.UpdateBy = field.NewString(tableName, "update_by")
+	_systemUser.DeptID = field.NewInt64(tableName, "dept_id")
 
 	_systemUser.fillFieldMap()
 
@@ -64,6 +65,7 @@ type systemUser struct {
 	CreateTime  field.Time   // 创建时间
 	CreateBy    field.String // 创建人ID
 	UpdateBy    field.String // 修改人ID
+	DeptID      field.Int64  // 所属部门
 
 	fieldMap map[string]field.Expr
 }
@@ -93,6 +95,7 @@ func (s *systemUser) updateTableName(table string) *systemUser {
 	s.CreateTime = field.NewTime(table, "create_time")
 	s.CreateBy = field.NewString(table, "create_by")
 	s.UpdateBy = field.NewString(table, "update_by")
+	s.DeptID = field.NewInt64(table, "dept_id")
 
 	s.fillFieldMap()
 
@@ -109,7 +112,7 @@ func (s *systemUser) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *systemUser) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 13)
+	s.fieldMap = make(map[string]field.Expr, 14)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["account"] = s.Account
 	s.fieldMap["mobile_phone"] = s.MobilePhone
@@ -123,6 +126,7 @@ func (s *systemUser) fillFieldMap() {
 	s.fieldMap["create_time"] = s.CreateTime
 	s.fieldMap["create_by"] = s.CreateBy
 	s.fieldMap["update_by"] = s.UpdateBy
+	s.fieldMap["dept_id"] = s.DeptID
 }
 
 func (s systemUser) clone(db *gorm.DB) systemUser {
