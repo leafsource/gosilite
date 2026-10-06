@@ -4,11 +4,13 @@ package menu
 
 import (
 	"github.com/cloudwego/hertz/pkg/app"
+
+	"gosilite/api/middleware/permission"
 )
 
 func rootMw() []app.HandlerFunc {
 	// your code...
-	return nil
+	return permission.Default()
 }
 
 func _menuMw() []app.HandlerFunc {

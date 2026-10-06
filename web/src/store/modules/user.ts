@@ -7,7 +7,8 @@ import type { UserInfo } from '@/types/interface';
 
 const InitUserInfo: UserInfo = {
   name: '', // 用户名，用于展示在页面右上角头像处
-  roles: [], // 前端权限模型使用 如果使用请配置modules/permission-fe.ts使用
+  roles: [], // 角色码（超管判定 admin/system）
+  permissions: [], // 权限码，供 v-permission 指令使用
 };
 
 // 单飞的 refresh：并发 401 共享同一次刷新，避免轮换中的 refresh token 被重复使用
@@ -31,6 +32,9 @@ export const useUserStore = defineStore('user', {
     roles: (state) => {
       return state.userInfo?.roles;
     },
+    permissions: (state) => {
+      return state.userInfo?.permissions ?? [];
+    },
   },
   actions: {
     setSession(tokens: { accessToken: string; refreshToken: string }) {
@@ -51,7 +55,9 @@ export const useUserStore = defineStore('user', {
       const res = await fetchUserInfo();
       this.userInfo = {
         ...InitUserInfo,
-        name: res.username || res.account,
+        name: res.user?.username || res.user?.account,
+        roles: res.roles ?? [],
+        permissions: res.permissions ?? [],
       };
     },
     async refreshAccessToken(): Promise<string> {

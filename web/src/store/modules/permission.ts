@@ -4,36 +4,46 @@ import type { RouteRecordRaw } from 'vue-router';
 
 import type { RouteItem } from '@/api/model/permissionModel';
 import { getMenuList } from '@/api/permission';
-import router, { allRoutes, fixedRouterList, homepageRouterList } from '@/router';
+import router, { allRoutes, homepageRouterList } from '@/router';
 import { store } from '@/store';
 import { transformObjectToRoute } from '@/utils/route';
+import { PAGE_NOT_FOUND_ROUTE } from '@/utils/route/constant';
+
+const normalize = (path: string) => (path.startsWith('/') ? path : `/${path}`);
 
 export const usePermissionStore = defineStore('permission', {
   state: () => ({
     whiteListRouters: ['/login'],
     routers: [] as Array<RouteRecordRaw>,
     removeRoutes: [] as Array<RouteRecordRaw>,
+    // 待注册的动态路由（后端菜单中静态模块未覆盖的 path + 404）
     asyncRoutes: [] as Array<RouteRecordRaw>,
+    // 侧栏业务菜单：以后端菜单（已按角色过滤）为唯一来源
+    menuRoutes: [] as Array<RouteRecordRaw>,
   }),
   actions: {
     async initRoutes() {
-      const accessedRouters = this.asyncRoutes;
-
-      // 在菜单展示全部路由
-      this.routers = cloneDeep([...homepageRouterList, ...accessedRouters, ...fixedRouterList]);
-      // 在菜单只展示动态路由和首页
-      // this.routers = [...homepageRouterList, ...accessedRouters];
-      // 在菜单只展示动态路由
-      // this.routers = [...accessedRouters];
+      // 侧栏 = 首页（静态，权威） + 后端菜单（按角色过滤）；
+      // fixedRouterList（system/user/result 等静态业务模块）不再进侧栏，
+      // 但路由仍注册、URL 可直达，越权由 API 403 与 v-permission 兜底。
+      this.routers = cloneDeep([...homepageRouterList, ...this.menuRoutes]);
     },
     async buildAsyncRoutes() {
       try {
-        // 发起菜单权限请求 获取菜单列表（与静态路由同 path 的顶层菜单去重，避免覆盖静态路由）
-        const staticPaths = new Set(allRoutes.map((route) => route.path));
-        const asyncRoutes: Array<RouteItem> = (await getMenuList()).list.filter(
-          (route) => !staticPaths.has(route.path),
+        const rawList: Array<RouteItem> = (await getMenuList()).list;
+
+        // 注册：与静态路由同 path 的交由静态模块提供组件，避免覆盖
+        const staticPaths = new Set(allRoutes.map((route) => normalize(route.path)));
+        const toRegister = rawList.filter((route) => !staticPaths.has(normalize(route.path)));
+        this.asyncRoutes = transformObjectToRoute(cloneDeep(toRegister));
+
+        // 侧栏：后端菜单全量展示（信任后端过滤结果），仅去掉与静态首页重复的根
+        const homePaths = new Set(homepageRouterList.map((route) => normalize(route.path)));
+        const toDisplay = rawList.filter((route) => !homePaths.has(normalize(route.path)));
+        this.menuRoutes = transformObjectToRoute(cloneDeep(toDisplay)).filter(
+          (route) => route.name !== PAGE_NOT_FOUND_ROUTE.name,
         );
-        this.asyncRoutes = transformObjectToRoute(asyncRoutes);
+
         await this.initRoutes();
         return this.asyncRoutes;
       } catch (error) {
@@ -48,6 +58,8 @@ export const usePermissionStore = defineStore('permission', {
         }
       });
       this.asyncRoutes = [];
+      this.menuRoutes = [];
+      this.routers = [];
     },
   },
 });

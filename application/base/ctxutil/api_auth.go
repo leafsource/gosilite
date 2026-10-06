@@ -13,6 +13,7 @@ type LoginUser struct {
 	AvatarURL   string   `json:"avatar_url"`
 	Roles       []string `json:"roles"`
 	Permissions []string `json:"permissions"`
+	DeptID      int64    `json:"dept_id"`
 }
 
 func GetLoginUser(ctx context.Context) *LoginUser {
@@ -33,4 +34,14 @@ func GetLoginUserID(ctx context.Context) int64 {
 
 func SetLoginUser(ctx context.Context, loginUser *LoginUser) {
 	ctxcache.Store(ctx, consts.LoginUserDataCtx, loginUser)
+}
+
+// IsSuperRole 超管角色判定：admin 与内置 system 均不受 perms/菜单限制
+func IsSuperRole(roles []string) bool {
+	for _, role := range roles {
+		if role == "admin" || role == "system" {
+			return true
+		}
+	}
+	return false
 }

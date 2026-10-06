@@ -18,8 +18,8 @@ func GetRoutes(ctx context.Context, c *app.RequestContext) {
 	var err error
 
 	resp := &menu.RouteResponse{}
-	// TODO: 实现业务逻辑
-	menus, err := menuService.SystemMenuSVC.AllMenu(ctx)
+	// 按当前登录用户角色过滤（admin 全量），剔除按钮行
+	menus, err := menuService.SystemMenuSVC.VisibleMenus(ctx)
 	if err != nil {
 		R.Failed(ctx, c, consts.StatusOK, err)
 		return

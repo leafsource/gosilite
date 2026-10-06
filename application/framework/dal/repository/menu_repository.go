@@ -27,6 +27,9 @@ type ISystemMenuRepository interface {
 
 	// Find 获取SystemMenu列表
 	Find(ctx context.Context) ([]*model.SystemMenu, error)
+
+	// FindMenuIDsByUser 用户经 user_role -> role_menu 关联的菜单 id 集合
+	FindMenuIDsByUser(ctx context.Context, userID int64) ([]int64, error)
 }
 
 // SystemMenuRepositoryImpl 仓库实现
@@ -91,4 +94,22 @@ func (r *SystemMenuRepositoryImpl) Find(ctx context.Context) ([]*model.SystemMen
 		return nil, err
 	}
 	return entities, nil
+}
+
+// FindMenuIDsByUser 用户经 user_role -> role_menu 关联的菜单 id 集合
+func (r *SystemMenuRepositoryImpl) FindMenuIDsByUser(ctx context.Context, userID int64) ([]int64, error) {
+	var ids []int64
+
+	roleMenu := r.query.SystemRoleMenu
+	userRole := r.query.SystemUserRole
+
+	err := roleMenu.WithContext(ctx).
+		LeftJoin(userRole, roleMenu.RoleID.EqCol(userRole.RoleID)).
+		Where(userRole.UserID.Eq(userID)).
+		Distinct().
+		Pluck(roleMenu.MenuID, &ids)
+	if err != nil {
+		return nil, err
+	}
+	return ids, nil
 }

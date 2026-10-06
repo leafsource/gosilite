@@ -77,6 +77,11 @@ func (p *PermissionCondition) Check(ctx context.Context, c *app.RequestContext, 
 		return false
 	}
 
+	// 超管（admin/system）豁免 perms 校验
+	if ctxutil.IsSuperRole(loginUser.Roles) {
+		return true
+	}
+
 	if len(p.permissions) == 0 {
 		return true
 	}

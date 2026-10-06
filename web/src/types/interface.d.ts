@@ -21,6 +21,7 @@ export type ModeType = 'dark' | 'light';
 export interface UserInfo {
   name: string;
   roles: string[];
+  permissions: string[];
 }
 
 export interface NotificationItem {
