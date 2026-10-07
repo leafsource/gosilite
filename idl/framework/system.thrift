@@ -214,14 +214,40 @@ struct RoleSaveRequest {
     7: i32 orderNum
 }
 
-struct RoleMenuRequest {
-    1: i64 roleId
-    2: list<i64> menuIds
+// 角色授权：权限项（按钮 F 提升后的权限标识）
+struct RolePermItem {
+    1: i64 id
+    2: string menuName
+    3: string perms
+    4: bool checked
 }
 
-struct RoleDeptRequest {
+// 角色授权：菜单行（F 已提升为 perms，不再单独成行）
+struct RoleAuthMenuNode {
+    1: i64 id
+    2: i64 parentId
+    3: string menuName
+    4: string menuType
+    5: string icon
+    6: i32 orderNum
+    7: bool checked
+    8: list<RolePermItem> perms
+    9: list<RoleAuthMenuNode> children
+}
+
+// 角色授权快照：一次返回菜单树勾选态 + 数据范围 + 自定义部门
+struct RoleAuthorizeResponse {
+    1: i32 dataScope
+    2: list<RoleAuthMenuNode> menus
+    3: list<i64> deptIds
+}
+
+// 角色授权保存：菜单 + 数据范围 + 自定义部门一次提交
+struct RoleAuthorizeSaveRequest {
     1: i64 roleId
-    2: list<i64> deptIds
+    2: list<i64> menuIds
+    3: list<i64> deptIds
+    4: i32 dataScope
 }
 
 // 服务定义
@@ -259,8 +285,6 @@ service SystemController {
     RoleDTO RoleCreate(1: RoleSaveRequest req)(api.post = "/system/role")
     RoleDTO RoleUpdate(1: RoleSaveRequest req)(api.put = "/system/role")
     i32 RoleRemove(1: IdRequest req)(api.delete = "/system/role")
-    i32 RoleAssignMenu(1: RoleMenuRequest req)(api.put = "/system/role/menu")
-    i32 RoleAssignDept(1: RoleDeptRequest req)(api.put = "/system/role/dept")
-    IdsResponse RoleMenus(1: IdRequest req)(api.get = "/system/role/menus")
-    IdsResponse RoleDepts(1: IdRequest req)(api.get = "/system/role/depts")
+    RoleAuthorizeResponse RoleAuthorize(1: IdRequest req)(api.get = "/system/role/authorize")
+    i32 RoleAuthorizeSave(1: RoleAuthorizeSaveRequest req)(api.put = "/system/role/authorize")
 }

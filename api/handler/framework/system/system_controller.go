@@ -440,64 +440,33 @@ func RoleRemove(ctx context.Context, c *app.RequestContext) {
 	R.SuccessWithData(ctx, c, int32(1))
 }
 
-// RoleAssignMenu .
-// @router /system/role/menu [PUT]
-func RoleAssignMenu(ctx context.Context, c *app.RequestContext) {
-	var req system.RoleMenuRequest
-	if err := c.BindAndValidate(&req); err != nil {
-		R.InvalidParamRequestResponse(c, err.Error())
-		return
-	}
-	if err := role.SystemRoleSVC.AssignMenus(ctx, req.RoleId, req.MenuIds); err != nil {
-		R.Error(ctx, c, err)
-		return
-	}
-	R.SuccessWithData(ctx, c, int32(1))
-}
-
-// RoleAssignDept .
-// @router /system/role/dept [PUT]
-func RoleAssignDept(ctx context.Context, c *app.RequestContext) {
-	var req system.RoleDeptRequest
-	if err := c.BindAndValidate(&req); err != nil {
-		R.InvalidParamRequestResponse(c, err.Error())
-		return
-	}
-	if err := role.SystemRoleSVC.AssignDepts(ctx, req.RoleId, req.DeptIds); err != nil {
-		R.Error(ctx, c, err)
-		return
-	}
-	R.SuccessWithData(ctx, c, int32(1))
-}
-
-// RoleMenus .
-// @router /system/role/menus [GET]
-func RoleMenus(ctx context.Context, c *app.RequestContext) {
+// RoleAuthorize 角色授权快照（菜单树勾选态 + 数据范围 + 自定义部门）
+// @router /system/role/authorize [GET]
+func RoleAuthorize(ctx context.Context, c *app.RequestContext) {
 	var req system.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {
 		R.InvalidParamRequestResponse(c, err.Error())
 		return
 	}
-	ids, err := role.SystemRoleSVC.MenuIDs(ctx, req.ID)
+	snap, err := role.SystemRoleSVC.Authorize(ctx, req.ID)
 	if err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
-	R.SuccessWithData(ctx, c, &system.IdsResponse{Ids: ids})
+	R.SuccessWithData(ctx, c, toRoleAuthorizeResponse(snap))
 }
 
-// RoleDepts .
-// @router /system/role/depts [GET]
-func RoleDepts(ctx context.Context, c *app.RequestContext) {
-	var req system.IdRequest
+// RoleAuthorizeSave 角色授权整体保存（菜单 + 数据范围 + 自定义部门）
+// @router /system/role/authorize [PUT]
+func RoleAuthorizeSave(ctx context.Context, c *app.RequestContext) {
+	var req system.RoleAuthorizeSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
 		R.InvalidParamRequestResponse(c, err.Error())
 		return
 	}
-	ids, err := role.SystemRoleSVC.DeptIDs(ctx, req.ID)
-	if err != nil {
+	if err := role.SystemRoleSVC.SaveAuthorize(ctx, req.RoleId, req.MenuIds, req.DeptIds, req.DataScope); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
-	R.SuccessWithData(ctx, c, &system.IdsResponse{Ids: ids})
+	R.SuccessWithData(ctx, c, int32(1))
 }

@@ -1,7 +1,7 @@
 import { request } from '@/utils/request';
 
 // 角色 DTO（RoleDTO）
-export type RoleDTO = {
+export interface RoleDTO {
   id: string;
   name: string;
   code: string;
@@ -9,15 +9,15 @@ export type RoleDTO = {
   state: string;
   dataScope: number;
   orderNum: number;
-};
+}
 
-export type RoleQuery = {
+export interface RoleQuery {
   page?: number;
   pageSize?: number;
   keyword?: string;
-};
+}
 
-export type RoleSaveParams = {
+export interface RoleSaveParams {
   id?: string;
   name: string;
   code: string;
@@ -25,25 +25,49 @@ export type RoleSaveParams = {
   state: string;
   dataScope: number;
   orderNum: number;
-};
+}
 
-export type RoleMenuParams = {
-  roleId: string;
-  menuIds: string[];
-};
+// ===== 授权快照（GET /system/role/authorize） =====
 
-export type RoleDeptParams = {
+/** i64 经 JSON 到前端为 number；比对时组件内统一 String() 归一化 */
+export type RoleId = string | number;
+
+export interface RolePermItem {
+  id: RoleId;
+  menuName: string;
+  perms: string;
+  checked: boolean;
+}
+
+export interface RoleAuthMenuNode {
+  id: RoleId;
+  parentId: RoleId;
+  menuName: string;
+  menuType: string;
+  icon: string;
+  orderNum: number;
+  checked: boolean;
+  perms: RolePermItem[];
+  children?: RoleAuthMenuNode[];
+}
+
+export interface RoleAuthorizeSnapshot {
+  dataScope: number;
+  menus: RoleAuthMenuNode[];
+  deptIds: RoleId[];
+}
+
+export interface RoleAuthorizeSaveParams {
   roleId: string;
-  deptIds: string[];
-};
+  menuIds: RoleId[];
+  deptIds: RoleId[];
+  dataScope: number;
+}
 
 const Api = {
   List: '/system/role/list',
   Base: '/system/role',
-  Menu: '/system/role/menu',
-  Dept: '/system/role/dept',
-  Menus: '/system/role/menus',
-  Depts: '/system/role/depts',
+  Authorize: '/system/role/authorize',
 };
 
 export function fetchRoleList(params?: RoleQuery) {
@@ -62,18 +86,10 @@ export function removeRole(id: string) {
   return request.delete<number>({ url: Api.Base, data: { id }, params: { id } });
 }
 
-export function assignRoleMenu(data: RoleMenuParams) {
-  return request.put<number>({ url: Api.Menu, data });
+export function fetchRoleAuthorize(id: string) {
+  return request.get<RoleAuthorizeSnapshot>({ url: Api.Authorize, params: { id } });
 }
 
-export function assignRoleDept(data: RoleDeptParams) {
-  return request.put<number>({ url: Api.Dept, data });
-}
-
-export function fetchRoleMenus(roleId: string) {
-  return request.get<{ ids: string[] }>({ url: Api.Menus, params: { id: roleId } });
-}
-
-export function fetchRoleDepts(roleId: string) {
-  return request.get<{ ids: string[] }>({ url: Api.Depts, params: { id: roleId } });
+export function saveRoleAuthorize(data: RoleAuthorizeSaveParams) {
+  return request.put<number>({ url: Api.Authorize, data });
 }

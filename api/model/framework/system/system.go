@@ -8664,32 +8664,1146 @@ func (p *RoleSaveRequest) String() string {
 
 }
 
-type RoleMenuRequest struct {
-	RoleId  int64   `thrift:"roleId,1" form:"roleId" json:"roleId" query:"roleId"`
-	MenuIds []int64 `thrift:"menuIds,2,default,list<i64>" form:"menuIds" json:"menuIds" query:"menuIds"`
+// 角色授权：权限项（按钮 F 提升后的权限标识）
+type RolePermItem struct {
+	ID       int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	MenuName string `thrift:"menuName,2" form:"menuName" json:"menuName" query:"menuName"`
+	Perms    string `thrift:"perms,3" form:"perms" json:"perms" query:"perms"`
+	Checked  bool   `thrift:"checked,4" form:"checked" json:"checked" query:"checked"`
 }
 
-func NewRoleMenuRequest() *RoleMenuRequest {
-	return &RoleMenuRequest{}
+func NewRolePermItem() *RolePermItem {
+	return &RolePermItem{}
 }
 
-func (p *RoleMenuRequest) InitDefault() {
+func (p *RolePermItem) InitDefault() {
 }
 
-func (p *RoleMenuRequest) GetRoleId() (v int64) {
+func (p *RolePermItem) GetID() (v int64) {
+	return p.ID
+}
+
+func (p *RolePermItem) GetMenuName() (v string) {
+	return p.MenuName
+}
+
+func (p *RolePermItem) GetPerms() (v string) {
+	return p.Perms
+}
+
+func (p *RolePermItem) GetChecked() (v bool) {
+	return p.Checked
+}
+
+var fieldIDToName_RolePermItem = map[int16]string{
+	1: "id",
+	2: "menuName",
+	3: "perms",
+	4: "checked",
+}
+
+func (p *RolePermItem) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_RolePermItem[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *RolePermItem) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ID = _field
+	return nil
+}
+func (p *RolePermItem) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.MenuName = _field
+	return nil
+}
+func (p *RolePermItem) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Perms = _field
+	return nil
+}
+func (p *RolePermItem) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Checked = _field
+	return nil
+}
+
+func (p *RolePermItem) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("RolePermItem"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *RolePermItem) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.ID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *RolePermItem) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("menuName", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.MenuName); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *RolePermItem) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("perms", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Perms); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *RolePermItem) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("checked", thrift.BOOL, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteBool(p.Checked); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+
+func (p *RolePermItem) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("RolePermItem(%+v)", *p)
+
+}
+
+// 角色授权：菜单行（F 已提升为 perms，不再单独成行）
+type RoleAuthMenuNode struct {
+	ID       int64               `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ParentId int64               `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
+	MenuName string              `thrift:"menuName,3" form:"menuName" json:"menuName" query:"menuName"`
+	MenuType string              `thrift:"menuType,4" form:"menuType" json:"menuType" query:"menuType"`
+	Icon     string              `thrift:"icon,5" form:"icon" json:"icon" query:"icon"`
+	OrderNum int32               `thrift:"orderNum,6" form:"orderNum" json:"orderNum" query:"orderNum"`
+	Checked  bool                `thrift:"checked,7" form:"checked" json:"checked" query:"checked"`
+	Perms    []*RolePermItem     `thrift:"perms,8,default,list<RolePermItem>" form:"perms" json:"perms" query:"perms"`
+	Children []*RoleAuthMenuNode `thrift:"children,9,default,list<RoleAuthMenuNode>" form:"children" json:"children" query:"children"`
+}
+
+func NewRoleAuthMenuNode() *RoleAuthMenuNode {
+	return &RoleAuthMenuNode{}
+}
+
+func (p *RoleAuthMenuNode) InitDefault() {
+}
+
+func (p *RoleAuthMenuNode) GetID() (v int64) {
+	return p.ID
+}
+
+func (p *RoleAuthMenuNode) GetParentId() (v int64) {
+	return p.ParentId
+}
+
+func (p *RoleAuthMenuNode) GetMenuName() (v string) {
+	return p.MenuName
+}
+
+func (p *RoleAuthMenuNode) GetMenuType() (v string) {
+	return p.MenuType
+}
+
+func (p *RoleAuthMenuNode) GetIcon() (v string) {
+	return p.Icon
+}
+
+func (p *RoleAuthMenuNode) GetOrderNum() (v int32) {
+	return p.OrderNum
+}
+
+func (p *RoleAuthMenuNode) GetChecked() (v bool) {
+	return p.Checked
+}
+
+func (p *RoleAuthMenuNode) GetPerms() (v []*RolePermItem) {
+	return p.Perms
+}
+
+func (p *RoleAuthMenuNode) GetChildren() (v []*RoleAuthMenuNode) {
+	return p.Children
+}
+
+var fieldIDToName_RoleAuthMenuNode = map[int16]string{
+	1: "id",
+	2: "parentId",
+	3: "menuName",
+	4: "menuType",
+	5: "icon",
+	6: "orderNum",
+	7: "checked",
+	8: "perms",
+	9: "children",
+}
+
+func (p *RoleAuthMenuNode) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField7(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 8:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 9:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField9(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_RoleAuthMenuNode[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *RoleAuthMenuNode) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ID = _field
+	return nil
+}
+func (p *RoleAuthMenuNode) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ParentId = _field
+	return nil
+}
+func (p *RoleAuthMenuNode) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.MenuName = _field
+	return nil
+}
+func (p *RoleAuthMenuNode) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.MenuType = _field
+	return nil
+}
+func (p *RoleAuthMenuNode) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Icon = _field
+	return nil
+}
+func (p *RoleAuthMenuNode) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.OrderNum = _field
+	return nil
+}
+func (p *RoleAuthMenuNode) ReadField7(iprot thrift.TProtocol) error {
+
+	var _field bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Checked = _field
+	return nil
+}
+func (p *RoleAuthMenuNode) ReadField8(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*RolePermItem, 0, size)
+	values := make([]RolePermItem, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.Perms = _field
+	return nil
+}
+func (p *RoleAuthMenuNode) ReadField9(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*RoleAuthMenuNode, 0, size)
+	values := make([]RoleAuthMenuNode, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.Children = _field
+	return nil
+}
+
+func (p *RoleAuthMenuNode) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("RoleAuthMenuNode"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
+			goto WriteFieldError
+		}
+		if err = p.writeField8(oprot); err != nil {
+			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField9(oprot); err != nil {
+			fieldId = 9
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *RoleAuthMenuNode) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.ID); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *RoleAuthMenuNode) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("parentId", thrift.I64, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.ParentId); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *RoleAuthMenuNode) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("menuName", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.MenuName); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *RoleAuthMenuNode) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("menuType", thrift.STRING, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.MenuType); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+
+func (p *RoleAuthMenuNode) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("icon", thrift.STRING, 5); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Icon); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+
+func (p *RoleAuthMenuNode) writeField6(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("orderNum", thrift.I32, 6); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.OrderNum); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
+}
+
+func (p *RoleAuthMenuNode) writeField7(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("checked", thrift.BOOL, 7); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteBool(p.Checked); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
+}
+
+func (p *RoleAuthMenuNode) writeField8(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("perms", thrift.LIST, 8); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Perms)); err != nil {
+		return err
+	}
+	for _, v := range p.Perms {
+		if err := v.Write(oprot); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+
+func (p *RoleAuthMenuNode) writeField9(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("children", thrift.LIST, 9); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Children)); err != nil {
+		return err
+	}
+	for _, v := range p.Children {
+		if err := v.Write(oprot); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
+}
+
+func (p *RoleAuthMenuNode) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("RoleAuthMenuNode(%+v)", *p)
+
+}
+
+// 角色授权快照：一次返回菜单树勾选态 + 数据范围 + 自定义部门
+type RoleAuthorizeResponse struct {
+	DataScope int32               `thrift:"dataScope,1" form:"dataScope" json:"dataScope" query:"dataScope"`
+	Menus     []*RoleAuthMenuNode `thrift:"menus,2,default,list<RoleAuthMenuNode>" form:"menus" json:"menus" query:"menus"`
+	DeptIds   []int64             `thrift:"deptIds,3,default,list<i64>" form:"deptIds" json:"deptIds" query:"deptIds"`
+}
+
+func NewRoleAuthorizeResponse() *RoleAuthorizeResponse {
+	return &RoleAuthorizeResponse{}
+}
+
+func (p *RoleAuthorizeResponse) InitDefault() {
+}
+
+func (p *RoleAuthorizeResponse) GetDataScope() (v int32) {
+	return p.DataScope
+}
+
+func (p *RoleAuthorizeResponse) GetMenus() (v []*RoleAuthMenuNode) {
+	return p.Menus
+}
+
+func (p *RoleAuthorizeResponse) GetDeptIds() (v []int64) {
+	return p.DeptIds
+}
+
+var fieldIDToName_RoleAuthorizeResponse = map[int16]string{
+	1: "dataScope",
+	2: "menus",
+	3: "deptIds",
+}
+
+func (p *RoleAuthorizeResponse) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_RoleAuthorizeResponse[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *RoleAuthorizeResponse) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.DataScope = _field
+	return nil
+}
+func (p *RoleAuthorizeResponse) ReadField2(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]*RoleAuthMenuNode, 0, size)
+	values := make([]RoleAuthMenuNode, size)
+	for i := 0; i < size; i++ {
+		_elem := &values[i]
+		_elem.InitDefault()
+
+		if err := _elem.Read(iprot); err != nil {
+			return err
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.Menus = _field
+	return nil
+}
+func (p *RoleAuthorizeResponse) ReadField3(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]int64, 0, size)
+	for i := 0; i < size; i++ {
+
+		var _elem int64
+		if v, err := iprot.ReadI64(); err != nil {
+			return err
+		} else {
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.DeptIds = _field
+	return nil
+}
+
+func (p *RoleAuthorizeResponse) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("RoleAuthorizeResponse"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *RoleAuthorizeResponse) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("dataScope", thrift.I32, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.DataScope); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *RoleAuthorizeResponse) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("menus", thrift.LIST, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Menus)); err != nil {
+		return err
+	}
+	for _, v := range p.Menus {
+		if err := v.Write(oprot); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *RoleAuthorizeResponse) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("deptIds", thrift.LIST, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteListBegin(thrift.I64, len(p.DeptIds)); err != nil {
+		return err
+	}
+	for _, v := range p.DeptIds {
+		if err := oprot.WriteI64(v); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteListEnd(); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *RoleAuthorizeResponse) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("RoleAuthorizeResponse(%+v)", *p)
+
+}
+
+// 角色授权保存：菜单 + 数据范围 + 自定义部门一次提交
+type RoleAuthorizeSaveRequest struct {
+	RoleId    int64   `thrift:"roleId,1" form:"roleId" json:"roleId" query:"roleId"`
+	MenuIds   []int64 `thrift:"menuIds,2,default,list<i64>" form:"menuIds" json:"menuIds" query:"menuIds"`
+	DeptIds   []int64 `thrift:"deptIds,3,default,list<i64>" form:"deptIds" json:"deptIds" query:"deptIds"`
+	DataScope int32   `thrift:"dataScope,4" form:"dataScope" json:"dataScope" query:"dataScope"`
+}
+
+func NewRoleAuthorizeSaveRequest() *RoleAuthorizeSaveRequest {
+	return &RoleAuthorizeSaveRequest{}
+}
+
+func (p *RoleAuthorizeSaveRequest) InitDefault() {
+}
+
+func (p *RoleAuthorizeSaveRequest) GetRoleId() (v int64) {
 	return p.RoleId
 }
 
-func (p *RoleMenuRequest) GetMenuIds() (v []int64) {
+func (p *RoleAuthorizeSaveRequest) GetMenuIds() (v []int64) {
 	return p.MenuIds
 }
 
-var fieldIDToName_RoleMenuRequest = map[int16]string{
-	1: "roleId",
-	2: "menuIds",
+func (p *RoleAuthorizeSaveRequest) GetDeptIds() (v []int64) {
+	return p.DeptIds
 }
 
-func (p *RoleMenuRequest) Read(iprot thrift.TProtocol) (err error) {
+func (p *RoleAuthorizeSaveRequest) GetDataScope() (v int32) {
+	return p.DataScope
+}
+
+var fieldIDToName_RoleAuthorizeSaveRequest = map[int16]string{
+	1: "roleId",
+	2: "menuIds",
+	3: "deptIds",
+	4: "dataScope",
+}
+
+func (p *RoleAuthorizeSaveRequest) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -8724,6 +9838,22 @@ func (p *RoleMenuRequest) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
+		case 3:
+			if fieldTypeId == thrift.LIST {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
 		default:
 			if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
@@ -8743,7 +9873,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_RoleMenuRequest[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_RoleAuthorizeSaveRequest[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -8753,7 +9883,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *RoleMenuRequest) ReadField1(iprot thrift.TProtocol) error {
+func (p *RoleAuthorizeSaveRequest) ReadField1(iprot thrift.TProtocol) error {
 
 	var _field int64
 	if v, err := iprot.ReadI64(); err != nil {
@@ -8764,7 +9894,7 @@ func (p *RoleMenuRequest) ReadField1(iprot thrift.TProtocol) error {
 	p.RoleId = _field
 	return nil
 }
-func (p *RoleMenuRequest) ReadField2(iprot thrift.TProtocol) error {
+func (p *RoleAuthorizeSaveRequest) ReadField2(iprot thrift.TProtocol) error {
 	_, size, err := iprot.ReadListBegin()
 	if err != nil {
 		return err
@@ -8787,10 +9917,44 @@ func (p *RoleMenuRequest) ReadField2(iprot thrift.TProtocol) error {
 	p.MenuIds = _field
 	return nil
 }
+func (p *RoleAuthorizeSaveRequest) ReadField3(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return err
+	}
+	_field := make([]int64, 0, size)
+	for i := 0; i < size; i++ {
 
-func (p *RoleMenuRequest) Write(oprot thrift.TProtocol) (err error) {
+		var _elem int64
+		if v, err := iprot.ReadI64(); err != nil {
+			return err
+		} else {
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
+	}
+	p.DeptIds = _field
+	return nil
+}
+func (p *RoleAuthorizeSaveRequest) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.DataScope = _field
+	return nil
+}
+
+func (p *RoleAuthorizeSaveRequest) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
-	if err = oprot.WriteStructBegin("RoleMenuRequest"); err != nil {
+	if err = oprot.WriteStructBegin("RoleAuthorizeSaveRequest"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -8800,6 +9964,14 @@ func (p *RoleMenuRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
 			goto WriteFieldError
 		}
 	}
@@ -8820,7 +9992,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *RoleMenuRequest) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *RoleAuthorizeSaveRequest) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("roleId", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -8837,7 +10009,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *RoleMenuRequest) writeField2(oprot thrift.TProtocol) (err error) {
+func (p *RoleAuthorizeSaveRequest) writeField2(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("menuIds", thrift.LIST, 2); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -8862,189 +10034,8 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 
-func (p *RoleMenuRequest) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("RoleMenuRequest(%+v)", *p)
-
-}
-
-type RoleDeptRequest struct {
-	RoleId  int64   `thrift:"roleId,1" form:"roleId" json:"roleId" query:"roleId"`
-	DeptIds []int64 `thrift:"deptIds,2,default,list<i64>" form:"deptIds" json:"deptIds" query:"deptIds"`
-}
-
-func NewRoleDeptRequest() *RoleDeptRequest {
-	return &RoleDeptRequest{}
-}
-
-func (p *RoleDeptRequest) InitDefault() {
-}
-
-func (p *RoleDeptRequest) GetRoleId() (v int64) {
-	return p.RoleId
-}
-
-func (p *RoleDeptRequest) GetDeptIds() (v []int64) {
-	return p.DeptIds
-}
-
-var fieldIDToName_RoleDeptRequest = map[int16]string{
-	1: "roleId",
-	2: "deptIds",
-}
-
-func (p *RoleDeptRequest) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.I64 {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 2:
-			if fieldTypeId == thrift.LIST {
-				if err = p.ReadField2(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_RoleDeptRequest[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *RoleDeptRequest) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field int64
-	if v, err := iprot.ReadI64(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.RoleId = _field
-	return nil
-}
-func (p *RoleDeptRequest) ReadField2(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]int64, 0, size)
-	for i := 0; i < size; i++ {
-
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
-			return err
-		} else {
-			_elem = v
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
-		return err
-	}
-	p.DeptIds = _field
-	return nil
-}
-
-func (p *RoleDeptRequest) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("RoleDeptRequest"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-		if err = p.writeField2(oprot); err != nil {
-			fieldId = 2
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *RoleDeptRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("roleId", thrift.I64, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.RoleId); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *RoleDeptRequest) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("deptIds", thrift.LIST, 2); err != nil {
+func (p *RoleAuthorizeSaveRequest) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("deptIds", thrift.LIST, 3); err != nil {
 		goto WriteFieldBeginError
 	}
 	if err := oprot.WriteListBegin(thrift.I64, len(p.DeptIds)); err != nil {
@@ -9063,16 +10054,33 @@ func (p *RoleDeptRequest) writeField2(oprot thrift.TProtocol) (err error) {
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 
-func (p *RoleDeptRequest) String() string {
+func (p *RoleAuthorizeSaveRequest) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("dataScope", thrift.I32, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.DataScope); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+
+func (p *RoleAuthorizeSaveRequest) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("RoleDeptRequest(%+v)", *p)
+	return fmt.Sprintf("RoleAuthorizeSaveRequest(%+v)", *p)
 
 }
 
@@ -9127,13 +10135,9 @@ type SystemController interface {
 
 	RoleRemove(ctx context.Context, req *IdRequest) (r int32, err error)
 
-	RoleAssignMenu(ctx context.Context, req *RoleMenuRequest) (r int32, err error)
+	RoleAuthorize(ctx context.Context, req *IdRequest) (r *RoleAuthorizeResponse, err error)
 
-	RoleAssignDept(ctx context.Context, req *RoleDeptRequest) (r int32, err error)
-
-	RoleMenus(ctx context.Context, req *IdRequest) (r *IdsResponse, err error)
-
-	RoleDepts(ctx context.Context, req *IdRequest) (r *IdsResponse, err error)
+	RoleAuthorizeSave(ctx context.Context, req *RoleAuthorizeSaveRequest) (r int32, err error)
 }
 
 type SystemControllerClient struct {
@@ -9374,38 +10378,20 @@ func (p *SystemControllerClient) RoleRemove(ctx context.Context, req *IdRequest)
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *SystemControllerClient) RoleAssignMenu(ctx context.Context, req *RoleMenuRequest) (r int32, err error) {
-	var _args SystemControllerRoleAssignMenuArgs
+func (p *SystemControllerClient) RoleAuthorize(ctx context.Context, req *IdRequest) (r *RoleAuthorizeResponse, err error) {
+	var _args SystemControllerRoleAuthorizeArgs
 	_args.Req = req
-	var _result SystemControllerRoleAssignMenuResult
-	if err = p.Client_().Call(ctx, "RoleAssignMenu", &_args, &_result); err != nil {
+	var _result SystemControllerRoleAuthorizeResult
+	if err = p.Client_().Call(ctx, "RoleAuthorize", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *SystemControllerClient) RoleAssignDept(ctx context.Context, req *RoleDeptRequest) (r int32, err error) {
-	var _args SystemControllerRoleAssignDeptArgs
+func (p *SystemControllerClient) RoleAuthorizeSave(ctx context.Context, req *RoleAuthorizeSaveRequest) (r int32, err error) {
+	var _args SystemControllerRoleAuthorizeSaveArgs
 	_args.Req = req
-	var _result SystemControllerRoleAssignDeptResult
-	if err = p.Client_().Call(ctx, "RoleAssignDept", &_args, &_result); err != nil {
-		return
-	}
-	return _result.GetSuccess(), nil
-}
-func (p *SystemControllerClient) RoleMenus(ctx context.Context, req *IdRequest) (r *IdsResponse, err error) {
-	var _args SystemControllerRoleMenusArgs
-	_args.Req = req
-	var _result SystemControllerRoleMenusResult
-	if err = p.Client_().Call(ctx, "RoleMenus", &_args, &_result); err != nil {
-		return
-	}
-	return _result.GetSuccess(), nil
-}
-func (p *SystemControllerClient) RoleDepts(ctx context.Context, req *IdRequest) (r *IdsResponse, err error) {
-	var _args SystemControllerRoleDeptsArgs
-	_args.Req = req
-	var _result SystemControllerRoleDeptsResult
-	if err = p.Client_().Call(ctx, "RoleDepts", &_args, &_result); err != nil {
+	var _result SystemControllerRoleAuthorizeSaveResult
+	if err = p.Client_().Call(ctx, "RoleAuthorizeSave", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -9455,10 +10441,8 @@ func NewSystemControllerProcessor(handler SystemController) *SystemControllerPro
 	self.AddToProcessorMap("RoleCreate", &systemControllerProcessorRoleCreate{handler: handler})
 	self.AddToProcessorMap("RoleUpdate", &systemControllerProcessorRoleUpdate{handler: handler})
 	self.AddToProcessorMap("RoleRemove", &systemControllerProcessorRoleRemove{handler: handler})
-	self.AddToProcessorMap("RoleAssignMenu", &systemControllerProcessorRoleAssignMenu{handler: handler})
-	self.AddToProcessorMap("RoleAssignDept", &systemControllerProcessorRoleAssignDept{handler: handler})
-	self.AddToProcessorMap("RoleMenus", &systemControllerProcessorRoleMenus{handler: handler})
-	self.AddToProcessorMap("RoleDepts", &systemControllerProcessorRoleDepts{handler: handler})
+	self.AddToProcessorMap("RoleAuthorize", &systemControllerProcessorRoleAuthorize{handler: handler})
+	self.AddToProcessorMap("RoleAuthorizeSave", &systemControllerProcessorRoleAuthorizeSave{handler: handler})
 	return self
 }
 func (p *SystemControllerProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -10631,16 +11615,16 @@ func (p *systemControllerProcessorRoleRemove) Process(ctx context.Context, seqId
 	return true, err
 }
 
-type systemControllerProcessorRoleAssignMenu struct {
+type systemControllerProcessorRoleAuthorize struct {
 	handler SystemController
 }
 
-func (p *systemControllerProcessorRoleAssignMenu) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := SystemControllerRoleAssignMenuArgs{}
+func (p *systemControllerProcessorRoleAuthorize) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := SystemControllerRoleAuthorizeArgs{}
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("RoleAssignMenu", thrift.EXCEPTION, seqId)
+		oprot.WriteMessageBegin("RoleAuthorize", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -10649,107 +11633,11 @@ func (p *systemControllerProcessorRoleAssignMenu) Process(ctx context.Context, s
 
 	iprot.ReadMessageEnd()
 	var err2 error
-	result := SystemControllerRoleAssignMenuResult{}
-	var retval int32
-	if retval, err2 = p.handler.RoleAssignMenu(ctx, args.Req); err2 != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing RoleAssignMenu: "+err2.Error())
-		oprot.WriteMessageBegin("RoleAssignMenu", thrift.EXCEPTION, seqId)
-		x.Write(oprot)
-		oprot.WriteMessageEnd()
-		oprot.Flush(ctx)
-		return true, err2
-	} else {
-		result.Success = &retval
-	}
-	if err2 = oprot.WriteMessageBegin("RoleAssignMenu", thrift.REPLY, seqId); err2 != nil {
-		err = err2
-	}
-	if err2 = result.Write(oprot); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-		err = err2
-	}
-	if err != nil {
-		return
-	}
-	return true, err
-}
-
-type systemControllerProcessorRoleAssignDept struct {
-	handler SystemController
-}
-
-func (p *systemControllerProcessorRoleAssignDept) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := SystemControllerRoleAssignDeptArgs{}
-	if err = args.Read(iprot); err != nil {
-		iprot.ReadMessageEnd()
-		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("RoleAssignDept", thrift.EXCEPTION, seqId)
-		x.Write(oprot)
-		oprot.WriteMessageEnd()
-		oprot.Flush(ctx)
-		return false, err
-	}
-
-	iprot.ReadMessageEnd()
-	var err2 error
-	result := SystemControllerRoleAssignDeptResult{}
-	var retval int32
-	if retval, err2 = p.handler.RoleAssignDept(ctx, args.Req); err2 != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing RoleAssignDept: "+err2.Error())
-		oprot.WriteMessageBegin("RoleAssignDept", thrift.EXCEPTION, seqId)
-		x.Write(oprot)
-		oprot.WriteMessageEnd()
-		oprot.Flush(ctx)
-		return true, err2
-	} else {
-		result.Success = &retval
-	}
-	if err2 = oprot.WriteMessageBegin("RoleAssignDept", thrift.REPLY, seqId); err2 != nil {
-		err = err2
-	}
-	if err2 = result.Write(oprot); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
-		err = err2
-	}
-	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-		err = err2
-	}
-	if err != nil {
-		return
-	}
-	return true, err
-}
-
-type systemControllerProcessorRoleMenus struct {
-	handler SystemController
-}
-
-func (p *systemControllerProcessorRoleMenus) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := SystemControllerRoleMenusArgs{}
-	if err = args.Read(iprot); err != nil {
-		iprot.ReadMessageEnd()
-		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("RoleMenus", thrift.EXCEPTION, seqId)
-		x.Write(oprot)
-		oprot.WriteMessageEnd()
-		oprot.Flush(ctx)
-		return false, err
-	}
-
-	iprot.ReadMessageEnd()
-	var err2 error
-	result := SystemControllerRoleMenusResult{}
-	var retval *IdsResponse
-	if retval, err2 = p.handler.RoleMenus(ctx, args.Req); err2 != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing RoleMenus: "+err2.Error())
-		oprot.WriteMessageBegin("RoleMenus", thrift.EXCEPTION, seqId)
+	result := SystemControllerRoleAuthorizeResult{}
+	var retval *RoleAuthorizeResponse
+	if retval, err2 = p.handler.RoleAuthorize(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing RoleAuthorize: "+err2.Error())
+		oprot.WriteMessageBegin("RoleAuthorize", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -10757,7 +11645,7 @@ func (p *systemControllerProcessorRoleMenus) Process(ctx context.Context, seqId 
 	} else {
 		result.Success = retval
 	}
-	if err2 = oprot.WriteMessageBegin("RoleMenus", thrift.REPLY, seqId); err2 != nil {
+	if err2 = oprot.WriteMessageBegin("RoleAuthorize", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -10775,16 +11663,16 @@ func (p *systemControllerProcessorRoleMenus) Process(ctx context.Context, seqId 
 	return true, err
 }
 
-type systemControllerProcessorRoleDepts struct {
+type systemControllerProcessorRoleAuthorizeSave struct {
 	handler SystemController
 }
 
-func (p *systemControllerProcessorRoleDepts) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := SystemControllerRoleDeptsArgs{}
+func (p *systemControllerProcessorRoleAuthorizeSave) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := SystemControllerRoleAuthorizeSaveArgs{}
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("RoleDepts", thrift.EXCEPTION, seqId)
+		oprot.WriteMessageBegin("RoleAuthorizeSave", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -10793,19 +11681,19 @@ func (p *systemControllerProcessorRoleDepts) Process(ctx context.Context, seqId 
 
 	iprot.ReadMessageEnd()
 	var err2 error
-	result := SystemControllerRoleDeptsResult{}
-	var retval *IdsResponse
-	if retval, err2 = p.handler.RoleDepts(ctx, args.Req); err2 != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing RoleDepts: "+err2.Error())
-		oprot.WriteMessageBegin("RoleDepts", thrift.EXCEPTION, seqId)
+	result := SystemControllerRoleAuthorizeSaveResult{}
+	var retval int32
+	if retval, err2 = p.handler.RoleAuthorizeSave(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing RoleAuthorizeSave: "+err2.Error())
+		oprot.WriteMessageBegin("RoleAuthorizeSave", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
 		return true, err2
 	} else {
-		result.Success = retval
+		result.Success = &retval
 	}
-	if err2 = oprot.WriteMessageBegin("RoleDepts", thrift.REPLY, seqId); err2 != nil {
+	if err2 = oprot.WriteMessageBegin("RoleAuthorizeSave", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -17645,35 +18533,35 @@ func (p *SystemControllerRoleRemoveResult) String() string {
 
 }
 
-type SystemControllerRoleAssignMenuArgs struct {
-	Req *RoleMenuRequest `thrift:"req,1"`
+type SystemControllerRoleAuthorizeArgs struct {
+	Req *IdRequest `thrift:"req,1"`
 }
 
-func NewSystemControllerRoleAssignMenuArgs() *SystemControllerRoleAssignMenuArgs {
-	return &SystemControllerRoleAssignMenuArgs{}
+func NewSystemControllerRoleAuthorizeArgs() *SystemControllerRoleAuthorizeArgs {
+	return &SystemControllerRoleAuthorizeArgs{}
 }
 
-func (p *SystemControllerRoleAssignMenuArgs) InitDefault() {
+func (p *SystemControllerRoleAuthorizeArgs) InitDefault() {
 }
 
-var SystemControllerRoleAssignMenuArgs_Req_DEFAULT *RoleMenuRequest
+var SystemControllerRoleAuthorizeArgs_Req_DEFAULT *IdRequest
 
-func (p *SystemControllerRoleAssignMenuArgs) GetReq() (v *RoleMenuRequest) {
+func (p *SystemControllerRoleAuthorizeArgs) GetReq() (v *IdRequest) {
 	if !p.IsSetReq() {
-		return SystemControllerRoleAssignMenuArgs_Req_DEFAULT
+		return SystemControllerRoleAuthorizeArgs_Req_DEFAULT
 	}
 	return p.Req
 }
 
-var fieldIDToName_SystemControllerRoleAssignMenuArgs = map[int16]string{
+var fieldIDToName_SystemControllerRoleAuthorizeArgs = map[int16]string{
 	1: "req",
 }
 
-func (p *SystemControllerRoleAssignMenuArgs) IsSetReq() bool {
+func (p *SystemControllerRoleAuthorizeArgs) IsSetReq() bool {
 	return p.Req != nil
 }
 
-func (p *SystemControllerRoleAssignMenuArgs) Read(iprot thrift.TProtocol) (err error) {
+func (p *SystemControllerRoleAuthorizeArgs) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -17719,7 +18607,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleAssignMenuArgs[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleAuthorizeArgs[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -17729,8 +18617,8 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *SystemControllerRoleAssignMenuArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewRoleMenuRequest()
+func (p *SystemControllerRoleAuthorizeArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewIdRequest()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -17738,9 +18626,9 @@ func (p *SystemControllerRoleAssignMenuArgs) ReadField1(iprot thrift.TProtocol) 
 	return nil
 }
 
-func (p *SystemControllerRoleAssignMenuArgs) Write(oprot thrift.TProtocol) (err error) {
+func (p *SystemControllerRoleAuthorizeArgs) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
-	if err = oprot.WriteStructBegin("RoleAssignMenu_args"); err != nil {
+	if err = oprot.WriteStructBegin("RoleAuthorize_args"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -17766,7 +18654,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *SystemControllerRoleAssignMenuArgs) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *SystemControllerRoleAuthorizeArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -17783,43 +18671,337 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *SystemControllerRoleAssignMenuArgs) String() string {
+func (p *SystemControllerRoleAuthorizeArgs) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("SystemControllerRoleAssignMenuArgs(%+v)", *p)
+	return fmt.Sprintf("SystemControllerRoleAuthorizeArgs(%+v)", *p)
 
 }
 
-type SystemControllerRoleAssignMenuResult struct {
+type SystemControllerRoleAuthorizeResult struct {
+	Success *RoleAuthorizeResponse `thrift:"success,0,optional"`
+}
+
+func NewSystemControllerRoleAuthorizeResult() *SystemControllerRoleAuthorizeResult {
+	return &SystemControllerRoleAuthorizeResult{}
+}
+
+func (p *SystemControllerRoleAuthorizeResult) InitDefault() {
+}
+
+var SystemControllerRoleAuthorizeResult_Success_DEFAULT *RoleAuthorizeResponse
+
+func (p *SystemControllerRoleAuthorizeResult) GetSuccess() (v *RoleAuthorizeResponse) {
+	if !p.IsSetSuccess() {
+		return SystemControllerRoleAuthorizeResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+var fieldIDToName_SystemControllerRoleAuthorizeResult = map[int16]string{
+	0: "success",
+}
+
+func (p *SystemControllerRoleAuthorizeResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *SystemControllerRoleAuthorizeResult) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleAuthorizeResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *SystemControllerRoleAuthorizeResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewRoleAuthorizeResponse()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *SystemControllerRoleAuthorizeResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("RoleAuthorize_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *SystemControllerRoleAuthorizeResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := p.Success.Write(oprot); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *SystemControllerRoleAuthorizeResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("SystemControllerRoleAuthorizeResult(%+v)", *p)
+
+}
+
+type SystemControllerRoleAuthorizeSaveArgs struct {
+	Req *RoleAuthorizeSaveRequest `thrift:"req,1"`
+}
+
+func NewSystemControllerRoleAuthorizeSaveArgs() *SystemControllerRoleAuthorizeSaveArgs {
+	return &SystemControllerRoleAuthorizeSaveArgs{}
+}
+
+func (p *SystemControllerRoleAuthorizeSaveArgs) InitDefault() {
+}
+
+var SystemControllerRoleAuthorizeSaveArgs_Req_DEFAULT *RoleAuthorizeSaveRequest
+
+func (p *SystemControllerRoleAuthorizeSaveArgs) GetReq() (v *RoleAuthorizeSaveRequest) {
+	if !p.IsSetReq() {
+		return SystemControllerRoleAuthorizeSaveArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_SystemControllerRoleAuthorizeSaveArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *SystemControllerRoleAuthorizeSaveArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *SystemControllerRoleAuthorizeSaveArgs) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleAuthorizeSaveArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *SystemControllerRoleAuthorizeSaveArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewRoleAuthorizeSaveRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *SystemControllerRoleAuthorizeSaveArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("RoleAuthorizeSave_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *SystemControllerRoleAuthorizeSaveArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *SystemControllerRoleAuthorizeSaveArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("SystemControllerRoleAuthorizeSaveArgs(%+v)", *p)
+
+}
+
+type SystemControllerRoleAuthorizeSaveResult struct {
 	Success *int32 `thrift:"success,0,optional"`
 }
 
-func NewSystemControllerRoleAssignMenuResult() *SystemControllerRoleAssignMenuResult {
-	return &SystemControllerRoleAssignMenuResult{}
+func NewSystemControllerRoleAuthorizeSaveResult() *SystemControllerRoleAuthorizeSaveResult {
+	return &SystemControllerRoleAuthorizeSaveResult{}
 }
 
-func (p *SystemControllerRoleAssignMenuResult) InitDefault() {
+func (p *SystemControllerRoleAuthorizeSaveResult) InitDefault() {
 }
 
-var SystemControllerRoleAssignMenuResult_Success_DEFAULT int32
+var SystemControllerRoleAuthorizeSaveResult_Success_DEFAULT int32
 
-func (p *SystemControllerRoleAssignMenuResult) GetSuccess() (v int32) {
+func (p *SystemControllerRoleAuthorizeSaveResult) GetSuccess() (v int32) {
 	if !p.IsSetSuccess() {
-		return SystemControllerRoleAssignMenuResult_Success_DEFAULT
+		return SystemControllerRoleAuthorizeSaveResult_Success_DEFAULT
 	}
 	return *p.Success
 }
 
-var fieldIDToName_SystemControllerRoleAssignMenuResult = map[int16]string{
+var fieldIDToName_SystemControllerRoleAuthorizeSaveResult = map[int16]string{
 	0: "success",
 }
 
-func (p *SystemControllerRoleAssignMenuResult) IsSetSuccess() bool {
+func (p *SystemControllerRoleAuthorizeSaveResult) IsSetSuccess() bool {
 	return p.Success != nil
 }
 
-func (p *SystemControllerRoleAssignMenuResult) Read(iprot thrift.TProtocol) (err error) {
+func (p *SystemControllerRoleAuthorizeSaveResult) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -17865,7 +19047,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleAssignMenuResult[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleAuthorizeSaveResult[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -17875,7 +19057,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *SystemControllerRoleAssignMenuResult) ReadField0(iprot thrift.TProtocol) error {
+func (p *SystemControllerRoleAuthorizeSaveResult) ReadField0(iprot thrift.TProtocol) error {
 
 	var _field *int32
 	if v, err := iprot.ReadI32(); err != nil {
@@ -17887,9 +19069,9 @@ func (p *SystemControllerRoleAssignMenuResult) ReadField0(iprot thrift.TProtocol
 	return nil
 }
 
-func (p *SystemControllerRoleAssignMenuResult) Write(oprot thrift.TProtocol) (err error) {
+func (p *SystemControllerRoleAuthorizeSaveResult) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
-	if err = oprot.WriteStructBegin("RoleAssignMenu_result"); err != nil {
+	if err = oprot.WriteStructBegin("RoleAuthorizeSave_result"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -17915,7 +19097,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *SystemControllerRoleAssignMenuResult) writeField0(oprot thrift.TProtocol) (err error) {
+func (p *SystemControllerRoleAuthorizeSaveResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
 		if err = oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
 			goto WriteFieldBeginError
@@ -17934,895 +19116,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
 }
 
-func (p *SystemControllerRoleAssignMenuResult) String() string {
+func (p *SystemControllerRoleAuthorizeSaveResult) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("SystemControllerRoleAssignMenuResult(%+v)", *p)
-
-}
-
-type SystemControllerRoleAssignDeptArgs struct {
-	Req *RoleDeptRequest `thrift:"req,1"`
-}
-
-func NewSystemControllerRoleAssignDeptArgs() *SystemControllerRoleAssignDeptArgs {
-	return &SystemControllerRoleAssignDeptArgs{}
-}
-
-func (p *SystemControllerRoleAssignDeptArgs) InitDefault() {
-}
-
-var SystemControllerRoleAssignDeptArgs_Req_DEFAULT *RoleDeptRequest
-
-func (p *SystemControllerRoleAssignDeptArgs) GetReq() (v *RoleDeptRequest) {
-	if !p.IsSetReq() {
-		return SystemControllerRoleAssignDeptArgs_Req_DEFAULT
-	}
-	return p.Req
-}
-
-var fieldIDToName_SystemControllerRoleAssignDeptArgs = map[int16]string{
-	1: "req",
-}
-
-func (p *SystemControllerRoleAssignDeptArgs) IsSetReq() bool {
-	return p.Req != nil
-}
-
-func (p *SystemControllerRoleAssignDeptArgs) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleAssignDeptArgs[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleAssignDeptArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewRoleDeptRequest()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Req = _field
-	return nil
-}
-
-func (p *SystemControllerRoleAssignDeptArgs) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("RoleAssignDept_args"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleAssignDeptArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Req.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *SystemControllerRoleAssignDeptArgs) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("SystemControllerRoleAssignDeptArgs(%+v)", *p)
-
-}
-
-type SystemControllerRoleAssignDeptResult struct {
-	Success *int32 `thrift:"success,0,optional"`
-}
-
-func NewSystemControllerRoleAssignDeptResult() *SystemControllerRoleAssignDeptResult {
-	return &SystemControllerRoleAssignDeptResult{}
-}
-
-func (p *SystemControllerRoleAssignDeptResult) InitDefault() {
-}
-
-var SystemControllerRoleAssignDeptResult_Success_DEFAULT int32
-
-func (p *SystemControllerRoleAssignDeptResult) GetSuccess() (v int32) {
-	if !p.IsSetSuccess() {
-		return SystemControllerRoleAssignDeptResult_Success_DEFAULT
-	}
-	return *p.Success
-}
-
-var fieldIDToName_SystemControllerRoleAssignDeptResult = map[int16]string{
-	0: "success",
-}
-
-func (p *SystemControllerRoleAssignDeptResult) IsSetSuccess() bool {
-	return p.Success != nil
-}
-
-func (p *SystemControllerRoleAssignDeptResult) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 0:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField0(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleAssignDeptResult[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleAssignDeptResult) ReadField0(iprot thrift.TProtocol) error {
-
-	var _field *int32
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = &v
-	}
-	p.Success = _field
-	return nil
-}
-
-func (p *SystemControllerRoleAssignDeptResult) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("RoleAssignDept_result"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField0(oprot); err != nil {
-			fieldId = 0
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleAssignDeptResult) writeField0(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSuccess() {
-		if err = oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := oprot.WriteI32(*p.Success); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
-}
-
-func (p *SystemControllerRoleAssignDeptResult) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("SystemControllerRoleAssignDeptResult(%+v)", *p)
-
-}
-
-type SystemControllerRoleMenusArgs struct {
-	Req *IdRequest `thrift:"req,1"`
-}
-
-func NewSystemControllerRoleMenusArgs() *SystemControllerRoleMenusArgs {
-	return &SystemControllerRoleMenusArgs{}
-}
-
-func (p *SystemControllerRoleMenusArgs) InitDefault() {
-}
-
-var SystemControllerRoleMenusArgs_Req_DEFAULT *IdRequest
-
-func (p *SystemControllerRoleMenusArgs) GetReq() (v *IdRequest) {
-	if !p.IsSetReq() {
-		return SystemControllerRoleMenusArgs_Req_DEFAULT
-	}
-	return p.Req
-}
-
-var fieldIDToName_SystemControllerRoleMenusArgs = map[int16]string{
-	1: "req",
-}
-
-func (p *SystemControllerRoleMenusArgs) IsSetReq() bool {
-	return p.Req != nil
-}
-
-func (p *SystemControllerRoleMenusArgs) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleMenusArgs[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleMenusArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewIdRequest()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Req = _field
-	return nil
-}
-
-func (p *SystemControllerRoleMenusArgs) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("RoleMenus_args"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleMenusArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Req.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *SystemControllerRoleMenusArgs) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("SystemControllerRoleMenusArgs(%+v)", *p)
-
-}
-
-type SystemControllerRoleMenusResult struct {
-	Success *IdsResponse `thrift:"success,0,optional"`
-}
-
-func NewSystemControllerRoleMenusResult() *SystemControllerRoleMenusResult {
-	return &SystemControllerRoleMenusResult{}
-}
-
-func (p *SystemControllerRoleMenusResult) InitDefault() {
-}
-
-var SystemControllerRoleMenusResult_Success_DEFAULT *IdsResponse
-
-func (p *SystemControllerRoleMenusResult) GetSuccess() (v *IdsResponse) {
-	if !p.IsSetSuccess() {
-		return SystemControllerRoleMenusResult_Success_DEFAULT
-	}
-	return p.Success
-}
-
-var fieldIDToName_SystemControllerRoleMenusResult = map[int16]string{
-	0: "success",
-}
-
-func (p *SystemControllerRoleMenusResult) IsSetSuccess() bool {
-	return p.Success != nil
-}
-
-func (p *SystemControllerRoleMenusResult) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 0:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField0(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleMenusResult[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleMenusResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewIdsResponse()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Success = _field
-	return nil
-}
-
-func (p *SystemControllerRoleMenusResult) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("RoleMenus_result"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField0(oprot); err != nil {
-			fieldId = 0
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleMenusResult) writeField0(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSuccess() {
-		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.Success.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
-}
-
-func (p *SystemControllerRoleMenusResult) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("SystemControllerRoleMenusResult(%+v)", *p)
-
-}
-
-type SystemControllerRoleDeptsArgs struct {
-	Req *IdRequest `thrift:"req,1"`
-}
-
-func NewSystemControllerRoleDeptsArgs() *SystemControllerRoleDeptsArgs {
-	return &SystemControllerRoleDeptsArgs{}
-}
-
-func (p *SystemControllerRoleDeptsArgs) InitDefault() {
-}
-
-var SystemControllerRoleDeptsArgs_Req_DEFAULT *IdRequest
-
-func (p *SystemControllerRoleDeptsArgs) GetReq() (v *IdRequest) {
-	if !p.IsSetReq() {
-		return SystemControllerRoleDeptsArgs_Req_DEFAULT
-	}
-	return p.Req
-}
-
-var fieldIDToName_SystemControllerRoleDeptsArgs = map[int16]string{
-	1: "req",
-}
-
-func (p *SystemControllerRoleDeptsArgs) IsSetReq() bool {
-	return p.Req != nil
-}
-
-func (p *SystemControllerRoleDeptsArgs) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleDeptsArgs[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleDeptsArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewIdRequest()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Req = _field
-	return nil
-}
-
-func (p *SystemControllerRoleDeptsArgs) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("RoleDepts_args"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleDeptsArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Req.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *SystemControllerRoleDeptsArgs) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("SystemControllerRoleDeptsArgs(%+v)", *p)
-
-}
-
-type SystemControllerRoleDeptsResult struct {
-	Success *IdsResponse `thrift:"success,0,optional"`
-}
-
-func NewSystemControllerRoleDeptsResult() *SystemControllerRoleDeptsResult {
-	return &SystemControllerRoleDeptsResult{}
-}
-
-func (p *SystemControllerRoleDeptsResult) InitDefault() {
-}
-
-var SystemControllerRoleDeptsResult_Success_DEFAULT *IdsResponse
-
-func (p *SystemControllerRoleDeptsResult) GetSuccess() (v *IdsResponse) {
-	if !p.IsSetSuccess() {
-		return SystemControllerRoleDeptsResult_Success_DEFAULT
-	}
-	return p.Success
-}
-
-var fieldIDToName_SystemControllerRoleDeptsResult = map[int16]string{
-	0: "success",
-}
-
-func (p *SystemControllerRoleDeptsResult) IsSetSuccess() bool {
-	return p.Success != nil
-}
-
-func (p *SystemControllerRoleDeptsResult) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 0:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField0(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemControllerRoleDeptsResult[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleDeptsResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewIdsResponse()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Success = _field
-	return nil
-}
-
-func (p *SystemControllerRoleDeptsResult) Write(oprot thrift.TProtocol) (err error) {
-	var fieldId int16
-	if err = oprot.WriteStructBegin("RoleDepts_result"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField0(oprot); err != nil {
-			fieldId = 0
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *SystemControllerRoleDeptsResult) writeField0(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSuccess() {
-		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.Success.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
-}
-
-func (p *SystemControllerRoleDeptsResult) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("SystemControllerRoleDeptsResult(%+v)", *p)
+	return fmt.Sprintf("SystemControllerRoleAuthorizeSaveResult(%+v)", *p)
 
 }

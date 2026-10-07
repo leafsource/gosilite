@@ -212,4 +212,6 @@ docker compose up -d
 
 完成前必须 `./script/check.sh` 全绿（前端交付时加 `WEB=1`）。
 
+本地测试账号（dev/test 库，系统管理员）：`skyx` / `Admin@123`，用于登录联调与页面冒烟。
+
 **禁止**：`git reset --clean/checkout` 破坏未提交重建现场；引入 Gin/MinIO；手改 `*.gen.go` / `api/model` / hz 生成的 `Register`。

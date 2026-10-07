@@ -5,6 +5,7 @@ import (
 	"gosilite/application/framework/dal/model"
 	"gosilite/application/framework/service/dept"
 	"gosilite/application/framework/service/menu"
+	"gosilite/application/framework/service/role"
 	"gosilite/application/framework/service/user"
 )
 
@@ -183,6 +184,33 @@ func toRoleDTOs(list []*model.SystemRole) []*system.RoleDTO {
 	out := make([]*system.RoleDTO, 0, len(list))
 	for _, r := range list {
 		out = append(out, toRoleDTO(r))
+	}
+	return out
+}
+
+// toRoleAuthorizeResponse 授权快照 service VO → 生成 DTO
+func toRoleAuthorizeResponse(s *role.AuthorizeSnapshot) *system.RoleAuthorizeResponse {
+	return &system.RoleAuthorizeResponse{
+		DataScope: s.DataScope,
+		Menus:     toRoleAuthMenuNodes(s.Menus),
+		DeptIds:   s.DeptIDs,
+	}
+}
+
+func toRoleAuthMenuNodes(nodes []*role.AuthorizeMenuNode) []*system.RoleAuthMenuNode {
+	out := make([]*system.RoleAuthMenuNode, 0, len(nodes))
+	for _, n := range nodes {
+		perms := make([]*system.RolePermItem, 0, len(n.Perms))
+		for _, p := range n.Perms {
+			perms = append(perms, &system.RolePermItem{
+				ID: p.ID, MenuName: p.MenuName, Perms: p.Perms, Checked: p.Checked,
+			})
+		}
+		out = append(out, &system.RoleAuthMenuNode{
+			ID: n.ID, ParentId: n.ParentID, MenuName: n.MenuName, MenuType: n.MenuType,
+			Icon: n.Icon, OrderNum: n.OrderNum, Checked: n.Checked,
+			Perms: perms, Children: toRoleAuthMenuNodes(n.Children),
+		})
 	}
 	return out
 }

@@ -103,22 +103,6 @@ func _roleremoveMw() []app.HandlerFunc {
 	return permission.HPermissions("system:role:remove")
 }
 
-func _roleassigndeptMw() []app.HandlerFunc {
-	return permission.HPermissions("system:role:assign")
-}
-
-func _roledeptsMw() []app.HandlerFunc {
-	return permission.HPermissions("system:role:list")
-}
-
-func _roleassignmenuMw() []app.HandlerFunc {
-	return permission.HPermissions("system:role:assign")
-}
-
-func _rolemenusMw() []app.HandlerFunc {
-	return permission.HPermissions("system:role:list")
-}
-
 func _rolecreateMw() []app.HandlerFunc {
 	return permission.HPermissions("system:role:add")
 }
@@ -169,4 +153,12 @@ func _user0Mw() []app.HandlerFunc {
 
 func _userlistMw() []app.HandlerFunc {
 	return permission.HPermissions("system:user:list")
+}
+
+func _roleauthorizeMw() []app.HandlerFunc {
+	return permission.HPermissions("system:role:assign")
+}
+
+func _roleauthorizesaveMw() []app.HandlerFunc {
+	return permission.HPermissions("system:role:assign")
 }

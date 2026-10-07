@@ -28,8 +28,7 @@
       <template #op="{ row }">
         <t-space>
           <t-link v-permission="'system:role:edit'" theme="primary" @click="openEdit(row)">编辑</t-link>
-          <t-link v-permission="'system:role:assign'" theme="primary" @click="openMenuAssign(row)">分配菜单</t-link>
-          <t-link v-permission="'system:role:assign'" theme="primary" @click="openDeptAssign(row)">数据部门</t-link>
+          <t-link v-permission="'system:role:assign'" theme="primary" @click="openAuthorize(row)">授权</t-link>
           <t-link v-permission="'system:role:remove'" theme="danger" @click="openDelete(row)">删除</t-link>
         </t-space>
       </template>
@@ -53,9 +52,6 @@
         <t-form-item label="描述">
           <t-textarea v-model="form.description" placeholder="角色描述" :autosize="{ minRows: 2, maxRows: 4 }" />
         </t-form-item>
-        <t-form-item label="数据范围">
-          <t-radio-group v-model="form.dataScope" :options="dataScopeOptions" />
-        </t-form-item>
         <t-form-item label="状态">
           <t-radio-group v-model="form.state" :options="stateOptions" />
         </t-form-item>
@@ -65,63 +61,8 @@
       </t-form>
     </s-form-dialog>
 
-    <!-- 分配菜单 -->
-    <t-drawer
-      v-model:visible="menuDrawerVisible"
-      :header="menuDrawerRole ? `分配菜单：${menuDrawerRole.name}` : '分配菜单'"
-      size="large"
-      :footer="false"
-      destroy-on-close
-    >
-      <div class="role-page__drawer-toolbar">
-        <t-input v-model="menuFilter" placeholder="搜索菜单" clearable />
-        <t-button variant="outline" size="small" @click="menuCheckedIds = collectAllIds(menuTreeData)"> 全选 </t-button>
-        <t-button variant="outline" size="small" @click="menuCheckedIds = []">清空</t-button>
-      </div>
-      <t-tree
-        :data="filteredMenuTree"
-        checkable
-        value-mode="all"
-        hover
-        :expanded="menuExpanded"
-        :value="menuCheckedIds"
-        @expand="onMenuExpand"
-        @change="onMenuCheck"
-      />
-      <div class="role-page__drawer-actions">
-        <t-button variant="outline" @click="menuDrawerVisible = false">取消</t-button>
-        <t-button theme="primary" :loading="menuSaving" @click="onSaveMenuAssign">保存</t-button>
-      </div>
-    </t-drawer>
-
-    <!-- 分配数据部门 -->
-    <t-drawer
-      v-model:visible="deptDrawerVisible"
-      :header="deptDrawerRole ? `数据部门：${deptDrawerRole.name}` : '数据部门'"
-      size="large"
-      :footer="false"
-      destroy-on-close
-    >
-      <div class="role-page__drawer-toolbar">
-        <t-input v-model="deptFilter" placeholder="搜索部门" clearable />
-        <t-button variant="outline" size="small" @click="deptCheckedIds = collectAllIds(deptTreeData)"> 全选 </t-button>
-        <t-button variant="outline" size="small" @click="deptCheckedIds = []">清空</t-button>
-      </div>
-      <t-tree
-        :data="filteredDeptTree"
-        checkable
-        value-mode="all"
-        hover
-        :expanded="deptExpanded"
-        :value="deptCheckedIds"
-        @expand="onDeptExpand"
-        @change="onDeptCheck"
-      />
-      <div class="role-page__drawer-actions">
-        <t-button variant="outline" @click="deptDrawerVisible = false">取消</t-button>
-        <t-button theme="primary" :loading="deptSaving" @click="onSaveDeptAssign">保存</t-button>
-      </div>
-    </t-drawer>
+    <!-- 授权（菜单权限 + 数据权限） -->
+    <authorize-drawer v-model:visible="authVisible" :role="authRole" />
 
     <t-dialog
       v-model:visible="confirmVisible"
@@ -137,37 +78,17 @@ import type { PrimaryTableCol } from 'tdesign-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
-import type { DeptNode, DeptTreeItem } from '@/api/system/dept';
-import { fetchDeptTree } from '@/api/system/dept';
-import type { MenuNode, MenuTreeItem } from '@/api/system/menu';
-import { fetchMenuTree } from '@/api/system/menu';
 import type { RoleDTO, RoleSaveParams } from '@/api/system/role';
-import {
-  assignRoleDept,
-  assignRoleMenu,
-  createRole,
-  fetchRoleDepts,
-  fetchRoleList,
-  fetchRoleMenus,
-  removeRole,
-  updateRole,
-} from '@/api/system/role';
+import { createRole, fetchRoleList, removeRole, updateRole } from '@/api/system/role';
 import SFormDialog from '@/components/s-form-dialog/index.vue';
 import STable from '@/components/s-table/index.vue';
 import { useConfigStore, useDict } from '@/store';
 
+import AuthorizeDrawer from './components/AuthorizeDrawer.vue';
+
 const stateDict = useDict('sys_state');
 const stateOptions = stateDict.options;
 const dataScopeDict = useDict('sys_data_scope');
-const dataScopeOptions = computed(() =>
-  dataScopeDict.options.value.map((o) => ({ label: o.label, value: Number(o.value) })),
-);
-
-interface TreeNode {
-  value: string;
-  label: string;
-  children?: TreeNode[];
-}
 
 const columns: PrimaryTableCol[] = [
   { title: '角色名称', colKey: 'name', width: 160 },
@@ -176,7 +97,7 @@ const columns: PrimaryTableCol[] = [
   { title: '状态', colKey: 'state', width: 100 },
   { title: '描述', colKey: 'description', minWidth: 200 },
   { title: '排序', colKey: 'orderNum', width: 80 },
-  { title: '操作', colKey: 'op', width: 300, fixed: 'right' },
+  { title: '操作', colKey: 'op', width: 220, fixed: 'right' },
 ];
 
 const loading = ref(false);
@@ -302,150 +223,13 @@ async function onConfirmDelete() {
   }
 }
 
-// ===== 通用树工具 =====
-function collectIds(nodes: TreeNode[], acc: string[] = []): string[] {
-  nodes.forEach((node) => {
-    acc.push(node.value);
-    if (node.children) collectIds(node.children, acc);
-  });
-  return acc;
-}
+// ===== 授权（菜单权限 + 数据部门） =====
+const authVisible = ref(false);
+const authRole = ref<RoleDTO | null>(null);
 
-function collectAllIds(nodes: TreeNode[]): string[] {
-  return collectIds(nodes, []);
-}
-
-function filterTree(nodes: TreeNode[], keyword: string): TreeNode[] {
-  if (!keyword) return nodes;
-  const lower = keyword.toLowerCase();
-  const walk = (items: TreeNode[]): TreeNode[] =>
-    items
-      .map((item) => ({ ...item, children: item.children ? walk(item.children) : item.children }))
-      .filter((item) => item.label.toLowerCase().includes(lower) || (item.children ? item.children.length > 0 : false));
-  return walk(nodes);
-}
-
-// ===== 分配菜单 =====
-const menuDrawerVisible = ref(false);
-const menuDrawerRole = ref<RoleDTO | null>(null);
-const menuSaving = ref(false);
-const menuTreeData = ref<MenuTreeItem[]>([]);
-const menuCheckedIds = ref<string[]>([]);
-const menuExpanded = ref<string[]>([]);
-const menuFilter = ref('');
-const menuLoaded = ref(false);
-
-const filteredMenuTree = computed(() => filterTree(menuTreeData.value, menuFilter.value.trim()));
-
-function menuNodesToTree(nodes: MenuNode[]): MenuTreeItem[] {
-  return nodes.map((node) => ({
-    value: node.id,
-    label: node.label,
-    menuType: node.menuType,
-    children: node.children && node.children.length ? menuNodesToTree(node.children) : undefined,
-  }));
-}
-
-function onMenuExpand(value: Array<string | number>) {
-  menuExpanded.value = value.map((item) => String(item));
-}
-
-function onMenuCheck(value: Array<string | number>) {
-  menuCheckedIds.value = value.map((item) => String(item));
-}
-
-async function openMenuAssign(row: RoleDTO) {
-  menuDrawerRole.value = row;
-  menuCheckedIds.value = [];
-  menuFilter.value = '';
-  menuDrawerVisible.value = true;
-  try {
-    if (!menuLoaded.value) {
-      const treeRes = await fetchMenuTree();
-      menuTreeData.value = menuNodesToTree(treeRes.list || []);
-      menuExpanded.value = collectIds(menuTreeData.value);
-      menuLoaded.value = true;
-    }
-    const checkedRes = await fetchRoleMenus(row.id);
-    menuCheckedIds.value = checkedRes.ids || [];
-  } catch (e) {
-    MessagePlugin.error(errMsg(e));
-  }
-}
-
-async function onSaveMenuAssign() {
-  if (!menuDrawerRole.value) return;
-  menuSaving.value = true;
-  try {
-    await assignRoleMenu({ roleId: menuDrawerRole.value.id, menuIds: menuCheckedIds.value });
-    MessagePlugin.success('菜单分配成功');
-    menuDrawerVisible.value = false;
-  } catch (e) {
-    MessagePlugin.error(errMsg(e));
-  } finally {
-    menuSaving.value = false;
-  }
-}
-
-// ===== 分配数据部门 =====
-const deptDrawerVisible = ref(false);
-const deptDrawerRole = ref<RoleDTO | null>(null);
-const deptSaving = ref(false);
-const deptTreeData = ref<DeptTreeItem[]>([]);
-const deptCheckedIds = ref<string[]>([]);
-const deptExpanded = ref<string[]>([]);
-const deptFilter = ref('');
-const deptLoaded = ref(false);
-
-const filteredDeptTree = computed(() => filterTree(deptTreeData.value, deptFilter.value.trim()));
-
-function deptNodesToTree(nodes: DeptNode[]): DeptTreeItem[] {
-  return nodes.map((node) => ({
-    value: node.id,
-    label: node.label,
-    children: node.children && node.children.length ? deptNodesToTree(node.children) : undefined,
-  }));
-}
-
-function onDeptExpand(value: Array<string | number>) {
-  deptExpanded.value = value.map((item) => String(item));
-}
-
-function onDeptCheck(value: Array<string | number>) {
-  deptCheckedIds.value = value.map((item) => String(item));
-}
-
-async function openDeptAssign(row: RoleDTO) {
-  deptDrawerRole.value = row;
-  deptCheckedIds.value = [];
-  deptFilter.value = '';
-  deptDrawerVisible.value = true;
-  try {
-    if (!deptLoaded.value) {
-      const treeRes = await fetchDeptTree();
-      deptTreeData.value = deptNodesToTree(treeRes.list || []);
-      deptExpanded.value = collectIds(deptTreeData.value);
-      deptLoaded.value = true;
-    }
-    const checkedRes = await fetchRoleDepts(row.id);
-    deptCheckedIds.value = checkedRes.ids || [];
-  } catch (e) {
-    MessagePlugin.error(errMsg(e));
-  }
-}
-
-async function onSaveDeptAssign() {
-  if (!deptDrawerRole.value) return;
-  deptSaving.value = true;
-  try {
-    await assignRoleDept({ roleId: deptDrawerRole.value.id, deptIds: deptCheckedIds.value });
-    MessagePlugin.success('数据部门分配成功');
-    deptDrawerVisible.value = false;
-  } catch (e) {
-    MessagePlugin.error(errMsg(e));
-  } finally {
-    deptSaving.value = false;
-  }
+function openAuthorize(row: RoleDTO) {
+  authRole.value = row;
+  authVisible.value = true;
 }
 
 function errMsg(e: unknown): string {
@@ -461,21 +245,5 @@ onMounted(() => {
   background-color: var(--td-bg-color-container);
   border-radius: var(--td-radius-medium);
   padding: var(--td-comp-paddingTB-xl) var(--td-comp-paddingLR-xl);
-}
-
-.role-page__drawer-toolbar {
-  display: flex;
-  align-items: center;
-  gap: var(--td-comp-margin-s);
-  margin-bottom: var(--td-comp-margin-m);
-}
-
-.role-page__drawer-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--td-comp-margin-s);
-  margin-top: var(--td-comp-margin-xl);
-  padding-top: var(--td-comp-margin-m);
-  border-top: 1px solid var(--td-border-level-1-color);
 }
 </style>
