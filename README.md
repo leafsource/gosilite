@@ -28,7 +28,7 @@ pkg/                   # errorx、response、logger 等
 types/                 # errno、consts
 script/codegen/        # 生成模板
 web/                   # TDesign Vue3 前端
-docs/                  # 设计/流程/Hertz 索引
+docs/compose/spec/     # feature spec（Compose Next）
 ```
 
 依赖方向：`api/handler → application/service → application/dal → application/infra`。  
@@ -93,7 +93,7 @@ cd web && npm run build
 ## Agent 工作规范
 
 1. 编码前阅读 `AGENTS.md`、`.agents/skills/gosilite-dev/SKILL.md`、相关 IDL/Service。
-2. 先契约（IDL、DTO、错误码、权限）再实现；流程见 `docs/process/requirements.md`。
+2. 先契约（IDL、DTO、错误码、权限）再实现；流程见 `.agents/skills/gosilite-dev/references/requirements.md`。
 3. Handler 只绑定/校验/响应；业务在 Service；SQL 在 Repository。
 4. 错误码集中在 `types/errno`；响应只经 `pkg/utils/response`。
 5. 修 bug 必须有回归测试；完成必须验收四连全绿。

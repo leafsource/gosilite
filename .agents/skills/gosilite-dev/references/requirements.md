@@ -1,6 +1,6 @@
-# 需求开发流程（Requirements Loop）
+# 需求闭环（Requirements Loop）
 
-与 **Compose Next** 对齐：一个 feature 一份文档，需求 → 设计 → 编码 → 验收 → 归档可被 Agent 完整驱动。
+与 Compose Next 对齐：一个 feature 一份文档，需求 → 设计 → 编码 → 验收 → 归档可被 Agent 完整驱动。
 
 ## 闭环总览
 
@@ -15,7 +15,7 @@ docs/compose/spec/<feature>.md   ← Problem / Design / Out of Scope / Tasks
     ↓
 测试：service → http → 会话/权限 → 前端 build
     ↓
-验收：go test/vet/build && cd web && npm run build
+验收：./script/check.sh （WEB=1 可带前端）
     ↓
 评审 → spec status: delivered
 ```
@@ -40,13 +40,13 @@ docs/compose/spec/<feature>.md   ← Problem / Design / Out of Scope / Tasks
 
 ### 1.2 需求解析（内部完成，不输出）
 
-拿到需求后，先在内部逐项判断。对每个评估维度做三分类：
+对每个评估维度做三分类：
 
 - 【可推断】能从上下文推出 → 自己补全
 - 【可默认】有合理默认值 → 假设 + 标注
 - 【必须问】无法推断 + 影响执行 → 加入询问列表
 
-评估维度清单：
+评估维度：
 
 1. 功能目标、输入输出、业务规则、验收标准、优先级
 2. 技术选型、实现难度、依赖、兼容性
@@ -55,9 +55,9 @@ docs/compose/spec/<feature>.md   ← Problem / Design / Out of Scope / Tasks
 
 ### 1.3 信息推断（项目落点）
 
-主动读取：项目文件结构、现有代码与配置、`go.mod` / `web/package.json`、现有模块的命名与模式、`AGENTS.md` 与 README、需求措辞和上下文。
+主动读取：项目文件结构、现有代码与配置、`go.mod` / `web/package.json`、现有模块命名与模式、`AGENTS.md` 与 README、需求措辞和上下文。
 
-推断优先级：**项目现有惯例 > 行业最佳实践 > 通用默认值**。本项目惯例即：Hertz 分层（handler → service → repository）、`{code,msg,data}` 信封、camelCase 契约、`SessionTokenResponse` 会话字段、`types/errno` 错误码（详见 `gosilite-dev` skill「项目事实」表）。
+推断优先级：**项目现有惯例 > 行业最佳实践 > 通用默认值**。本项目惯例即：Hertz 分层、`{code,msg,data}` 信封、camelCase、`SessionTokenResponse`、`types/errno`（见 SKILL.md「项目事实」表）。
 
 ### 1.4 假设标注
 
@@ -82,6 +82,7 @@ docs/compose/spec/<feature>.md   ← Problem / Design / Out of Scope / Tasks
 
 ### 1.6 澄清输出模板
 
+```text
 【我的理解】
 （1–2 句复述需求）
 
@@ -98,6 +99,7 @@ docs/compose/spec/<feature>.md   ← Problem / Design / Out of Scope / Tasks
 - 推荐：……（理由）
 - 备选：……（代价：……）
 - 风险 / 影响面 / 前置条件：……
+```
 
 示例——用户说「帮我写个用户登录接口」：
 
@@ -108,20 +110,20 @@ docs/compose/spec/<feature>.md   ← Problem / Design / Out of Scope / Tasks
 
 ### 1.7 行为准则
 
-应该做：先读代码/上下文再下判断；能推断的不问；假设要标注；问题要带选项、要少、要关键；主动指出需求不合理处并给替代方案；说清风险、代价、不确定性。
+应该做：先读代码/上下文再下判断；能推断的不问；假设要标注；问题要少、要关键、带选项；主动指出不合理处并给替代方案；说清风险、代价、不确定性。
 
 禁止做：把需求确认清单逐条甩给用户；能推断还去问；开放式提问（「你想要什么？」）；不标注假设就默认执行；闷头写代码不做需求评估；对不合理需求直接拒绝而不给替代方案；过度设计（需求只要 A，别做 A+B+C）。
 
 ### 1.8 特殊场景
 
-- **需求太模糊**：不要逐条问。先基于最可能的理解给一个方案 + 标注假设，然后问 1–2 个最关键的分叉点。
-- **需求不合理**：先说明为什么不合理（技术上/逻辑上/资源上），再给替代方案，让用户选。
+- **需求太模糊**：不逐条问。先按最可能的理解给方案 + 标注假设，再问 1–2 个最关键分叉点。
+- **需求不合理**：先说明为什么不合理（技术/逻辑/资源），再给替代方案让用户选。
 - **需求有冲突**：指出冲突点，给出取舍建议，请用户拍板。
-- **信息不足但可假设**：先按最合理假设给出完整方案，标注「如果 X 不是这样，方案会变成 Y」，让用户低成本纠偏。
+- **信息不足但可假设**：按最合理假设给完整方案，标注「如果 X 不是这样，方案会变成 Y」，让用户低成本纠偏。
 
 ## 2. Spec 文档
 
-路径：`docs/compose/spec/<feature>.md`（不要加日期到文件名）。
+路径：`docs/compose/spec/<feature>.md`（文件名不加日期）。
 
 ```markdown
 ---
@@ -172,7 +174,7 @@ commits: <short-base-sha>..<short-head-sha>
 
 ## 5. 验收与评审
 
-- 验收四连必须全绿（见 `docs/patterns/testing.md`）。
+- 验收必须全绿（见 `references/testing.md`）。
 - 评审关注：契约是否兑现、分层是否被破坏、会话字段是否 OAuth2 风格、测试是否测行为。
 - 通过后把 spec 标记 `delivered`，勾选 Tasks，填写 Report。
 
@@ -183,7 +185,7 @@ commits: <short-base-sha>..<short-head-sha>
 - 在原 spec 追加 Amendment 或新开 feature 文档。
 - 不重编号已有 `[Sn]` 锚点。
 - 先补失败测试再改实现。
-- 若破坏 JSON 契约，必须同时改 IDL、前端类型、本技能契约表。
+- 若破坏 JSON 契约，必须同时改 IDL、前端类型、skill 契约表。
 
 ## 7. Compose Next 操作映射
 
@@ -193,13 +195,13 @@ commits: <short-base-sha>..<short-head-sha>
 | Workspace | 功能分支或 `.worktrees/<slug>`（默认不要在 main 直接改） |
 | Spec | `docs/compose/spec/<feature>.md` |
 | Implement | 上文「实现顺序」 |
-| Verify | 验收四连 + 登录冒烟 |
+| Verify | 验收命令 + 登录冒烟 |
 | Review | 独立 subagent 按 Tasks 验收 |
 | Finalize | spec `delivered` + Report |
 
 ## 8. Agent 执行注意
 
-- 编码前读 `AGENTS.md`、`.agents/skills/gosilite-dev/SKILL.md`、相关 IDL/Service。
-- 不虚构 Hertz/生成器 API；不确定就查 `docs/hertz/api-index.md` 或官方文档。
+- 编码前读 `AGENTS.md`、本 skill、相关 IDL/Service。
+- 不虚构 Hertz/生成器 API；不确定就查 `references/hertz-api.md` 或官方文档。
 - 不要恢复 Gin、`cmd/gosilite`、`token`/`expire` 旧会话字段、MinIO。
 - 工作区已有大量重建未提交改动时，禁止 `git reset/clean/checkout` 破坏现场。

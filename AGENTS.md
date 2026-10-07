@@ -6,11 +6,10 @@
 
 - 本文件
 - `README.md`
-- `.agents/skills/gosilite-dev/SKILL.md`（后端/全栈）
+- `.agents/skills/gosilite-dev/SKILL.md`（后端/全栈，含 references/）
 - `.agents/skills/frontend-dev/SKILL.md`（写 `web/` 时）
 - 相关 `idl/`、`conf/`、`application/`、`api/` 文件
-- Hertz 官方中文文档：`https://cloudwego.cn/zh/docs/hertz/`
-- `docs/hertz/api-index.md`
+- Hertz 官方中文文档：`https://cloudwego.cn/zh/docs/hertz/`（速查：`gosilite-dev/references/hertz-api.md`）
 
 ## Skills 自动使用
 
@@ -18,45 +17,29 @@
 
 | 条件 | Skill |
 |------|--------|
-| 改 Go 业务/API/迁移/会话/分层 | `gosilite-dev` |
+| 改 Go 业务/API/迁移/会话/分层/测试/交付 | `gosilite-dev` |
 | 新增或修改 `web/**/*.vue`、`components/**`、使用 `t-*`、组件重复 ≥3 处、组件命名 | `frontend-dev` |
 | 走 Compose Next 多阶段交付 | 已加载的 `compose-next` 流程 |
 
 未显式 `/<skill>` 时，上表条件即视为自动触发；一次任务可同时命中多个 skill。
 
-## 前端组件（摘要，细则见 frontend-dev skill）
+深度约定在 skill 的 `references/`（设计/编码/测试/需求闭环/Hertz 速查）；本文件只保留**硬边界**，与 skill 冲突时以 skill 细则 + 仓库实际代码为准。
+
+## 前端组件（摘要，细则见 frontend-dev）
 
 1. **通用组件** ≥3 处复用 → `web/src/components/s-<name>/`，组件名 `S<Name>`（现成：`s-table`）。
 2. **业务组件** → 模块下 `components/`（如 `pages/system/dict/components/`），不进全局。
-3. 同一 UI **第 3 次**拷贝 → 停止复制，抽 `s-*`。
+3. 同一 UI **第 3 次**拷贝 → 停止复制，抽 `s-*` 并回改已有拷贝。
 4. `t-*` API 必须先 **TDesign MCP** `get-component-docs`，禁止凭记忆。
+5. 弹出表单：`t-form-item` >5 → `t-drawer`；≤5 → `t-dialog`。
 
 ## 前端 TDesign MCP（强制）
 
-配置见仓库根 `.mcp.json`，连接命令：`npx -y tdesign-mcp-server@latest`：
+配置见仓库根 `.mcp.json`，连接命令：`npx -y tdesign-mcp-server@latest`。
 
-```json
-{
-  "mcpServers": {
-    "tdesign-mcp-server": {
-      "command": "npx",
-      "args": ["-y", "tdesign-mcp-server@latest"]
-    }
-  }
-}
-```
+**MCP 必须开启使用**：未连接成功不得开始前端开发，禁止绕过 MCP 凭记忆写 `t-*`（配置改动需重启引擎或新开会话）。
 
-**MCP 必须开启使用**：未连接成功不得开始前端开发，禁止绕过 MCP 凭记忆写 `t-*` 代码（配置改动需重启引擎或新开会话才加载）。
-
-Tools：`get-component-docs`（写代码前必查）、`get-component-list`（选型）、`get-component-dom`（DOM/样式）、`get-component-changelog`（升级前）。
-
-规则：
-
-1. 新增或修改 `t-*` 前，先 `get-component-docs` 核对 props/events。
-2. 组件报错或属性不生效时，先 `get-component-dom` / docs，再改代码。
-3. 升级 `tdesign-vue-next` 前必查 changelog。
-4. 选型不确定用 `get-component-list`。
-5. 前端完成后 `WEB=1 ./script/check.sh`。
+Tools：`get-component-docs`（写码前必查）、`get-component-list`（选型）、`get-component-dom`（DOM/样式）、`get-component-changelog`（升级前）。
 
 ---
 
@@ -81,7 +64,7 @@ idl/                        # Thrift 契约源【手写，是 hz 的输入】
 script/codegen/             # gorm/service/repository 脚手架模板【手写模板】
 pkg/ types/                 # errorx、response、errno【手写】
 web/                        # TDesign Vue3 前端【手写】
-docs/                       # patterns / process / hertz / compose spec【手写】
+docs/compose/spec/          # feature spec（Compose Next）【手写】
 ```
 
 依赖方向：
@@ -132,7 +115,7 @@ web → Hertz API
 ### 4. 完全手写（永不生成）
 
 - `main.go`、`application/module.go`、`application/application.go`、各域 `module.go`
-- Handler 业务逻辑、Service、Repository 方法体、权限中间件、`types/errno`、`conf`、`docs`、`web`、`pkg`
+- Handler 业务逻辑、Service、Repository 方法体、权限中间件、`types/errno`、`conf`、`web`、`pkg`
 - 迁移 SQL、README/AGENTS/skill
 
 ### 边界速查
@@ -168,23 +151,25 @@ CRUD 样板         templates/*.tmpl     script/codegen（仅新文件）
 - Repository：接口 + GORM（gen query 或 `*gorm.DB`）；不进 Handler。
 - Module：`Name` / `Init(ctx, deps)` / `RegisterRoutes(h)`；注册于 `application.builtinModules()`。
 - DTO 与持久化模型分离；业务字段结构化，不用 JSON blob。
+- model↔DTO/VO 转换集中在对应包 `convert.go`。
 
 ---
 
 ## 五、标准开发流程
 
 ```text
-1. 定契约     DTO 字段、路由、错误码、表、权限码（system:*:xxx）
-2. （可选）   docs/compose/spec/<feature>.md  —— 功能值得成文时
-3. 迁移       script/migrations/NNNN_*.sql 幂等 DDL + 种子
-4. 生成       表模型 → gorm gen；HTTP → 改 idl 后 hz update
+1. 澄清     能推断不问；假设标注；关键问 ≤3（gosilite-dev/references/requirements.md）
+2. 定契约   DTO 字段、路由、错误码、表、权限码（system:*:xxx）
+3. （可选） docs/compose/spec/<feature>.md
+4. 迁移     script/migrations/NNNN_*.sql 幂等 DDL + 种子
+5. 生成     表模型 → gorm gen；HTTP → 改 idl 后 hz update
    （纯手写系统管理路由可跳过 hz，直接 handler+router 挂进 Module）
-5. 仓储       dal/repository（手写或 codegen 初稿）
-6. 服务       service/**（具体类型 + NewService）
-7. 装配       域 module.Init / RegisterRoutes；需要时改 builtinModules
-8. 前端       web/src/api + pages，envelope 对齐 {code,msg,data}
-9. 验收       ./script/check.sh   （WEB=1 可带前端 build）
-10. 文档      更新本文件/skill 中与该变更相关的约定
+6. 仓储     dal/repository（手写或 codegen 初稿）
+7. 服务     service/**（具体类型 + NewService）
+8. 装配     域 module.Init / RegisterRoutes；需要时改 builtinModules
+9. 前端     web/src/api + pages，envelope 对齐 {code,msg,data}
+10. 验收    ./script/check.sh   （WEB=1 可带前端 build）
+11. 文档    更新 AGENTS/skill 中与该变更相关的约定；spec 标 delivered
 ```
 
 顺序约束：
@@ -204,11 +189,11 @@ CRUD 样板         templates/*.tmpl     script/codegen（仅新文件）
 
 ---
 
-## 七、流程与技能文档
+## 七、技能与 feature 文档
 
-- 需求闭环：`docs/process/requirements.md`
-- 设计/编码/测试：`docs/patterns/*.md`
-- 技能：`.agents/skills/gosilite-dev/SKILL.md`（`.mimocode/skills/` 同步副本）
+- 后端/全栈：`.agents/skills/gosilite-dev/SKILL.md` + `references/`（design / coding / testing / requirements / hertz-api）
+- 前端：`.agents/skills/frontend-dev/SKILL.md` + `references/high-frequency-tasks.md`
+- 同步副本：`.mimocode/skills/`（保持与 `.agents/skills/` 一致）
 - Feature spec：`docs/compose/spec/<feature>.md`
 
 ---

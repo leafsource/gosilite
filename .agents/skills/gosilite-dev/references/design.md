@@ -1,6 +1,6 @@
-# 设计模式（Design Patterns）
+# 架构与设计模式
 
-gosilite 面向 Agent 高频生成与修改 Web 功能，模式刻意收敛到可重复、可校验的一组。**以本仓库实际代码为准**，不要套用其他框架的记忆。
+以本仓库实际代码为准，不套用其他框架记忆。Handler/Service/Repository 细则见 `coding.md`。
 
 ## 1. 分层 + 单向依赖
 
@@ -25,18 +25,19 @@ application.Module (Init + RegisterRoutes) ──► 挂载 api/router 生成物
 ## 2. IDL 契约边界
 
 - 公开 HTTP 契约以 `idl/**/*.thrift` 为源；`api/model`、`api/router` 由 `hz`/`thriftgo` 生成。
-- JSON 字段名使用 **camelCase**（`accessToken`、`expiresIn`），与前端 `web/src/api` 一致。
+- JSON 字段名 **camelCase**（`accessToken`、`expiresIn`），与 `web/src/api` 一致。
 - 生成文件禁止手改；调整字段先改 IDL 再生成。
 - 手写扩展放在 handler / service / repository，不塞进生成目录。
 
-## 1.1 Module 插件
+## 3. Module 插件
 
 - 契约：`application.Module`（`Name` / `Init` / `RegisterRoutes`）。
 - 装配：`Bootstrap` 初始化 infra 并 Init 全部模块；`MountRoutes` 按序挂路由。
-- 模块自己 `InitService` 建具体 Service 并安装包级门面；Handler 不依赖 `I*Service`。
-- 新域 = 新 Module + 注册表一行；路由仍来自 IDL/hz 生成的 `Register`。
+- 模块 `InitService` 建具体 Service 并安装包级门面；Handler 不依赖 `I*Service`。
+- 新域 = 新 Module + `builtinModules()` 一行；路由来自 IDL/hz 生成的 `Register`。
+- 内置：`application/framework`（user/role/menu/system）、`application/agent`。
 
-## 3. 统一错误与响应模型
+## 4. 统一错误与响应
 
 成功：
 
@@ -50,46 +51,46 @@ application.Module (Init + RegisterRoutes) ──► 挂载 api/router 生成物
 { "code": 700000003, "msg": "invalid username or password..." }
 ```
 
-- 全系统业务错误只用 `errorx.New` / `errorx.WrapByCode`，错误码在 `types/errno` 注册。
+- 业务错误只用 `errorx.New` / `errorx.WrapByCode`，错误码在 `types/errno` 注册。
 - 词表按域划分（用户 700 000 000 段），消息模板支持 `{param}`。
-- 401/400 仅用于：未认证、非法参数；其余业务语义用 `code` 表达，便于前端统一处理。
-- Handler 只使用 `pkg/utils/response` 的 `SuccessWithData` / `Error` / `Unauthorized` / `InvalidParamRequestResponse`。
+- 401/400 仅用于未认证、非法参数；其余业务语义用 `code` 表达。
+- Handler 只用 `pkg/utils/response`：`SuccessWithData` / `Error` / `Unauthorized` / `InvalidParamRequestResponse`。
 
-## 4. 会话（OAuth2 风格）
+## 5. 会话（OAuth2 风格）
 
-- 登录 / 刷新返回 `SessionTokenResponse`：`accessToken`、`tokenType`、`expiresIn`、`refreshToken`。
-- **禁止**再使用 `token` + `expire` 旧字段对。
-- Access token = Hertz JWT（`Authorization: Bearer`）；Refresh token = Redis，支持 rotation 与按用户 generation 吊销。
+- 登录/刷新返回 `SessionTokenResponse`：`accessToken`、`tokenType`、`expiresIn`、`refreshToken`。
+- **禁止** `token` + `expire` 旧字段对。
+- Access = Hertz JWT（`Authorization: Bearer`）；Refresh = Redis，rotation + 按用户 generation 吊销。
 - 登出：吊销 refresh + access denylist（TTL ≤ 24h）。
-- 改密成功后必须吊销该用户全部 refresh token。
+- 改密成功后吊销该用户全部 refresh token。
 - 前端 `useUserStore` 对并发 401 做单飞 refresh，避免轮换竞态。
+- 刷新是独立业务路由 `/user/refresh`，不是 JWT 库默认 token 延长。
 
-## 5. Repository + GORM Gen
+## 6. Repository + GORM Gen
 
 - 模型与 query 在 `application/<domain>/dal/{model,query}` 由 gen 生成；repository 手写。
 - Repository 接口由 service 包依赖，便于测试替身。
-- `RowsAffected == 0` 或 `gorm.ErrRecordNotFound` 映射为 `errorx` 业务错误（如 `ErrUserResourceNotFound`）。
+- `RowsAffected == 0` 或 `gorm.ErrRecordNotFound` 映射 `errorx` 业务错误。
 - 列表强制 `page`/`pageSize`，禁止无边界全量查询。
-- DDL/模型字段结构化；禁止用 JSON blob 顶替业务列。
+- 字段结构化；禁止 JSON blob 顶替业务列。
 
-## 6. 中间件链（入口固定）
+## 7. 中间件链（入口固定）
 
 顺序：`ContextCache → pprof(可选) → gzip(可选) → RequestID → AccessLog → Recovery → CORS → route`。
 
 - Recovery：panic → `R.Error`，打 stack。
 - RequestID：`x-request-id`。
-- 权限中间件在路由 `middleware.go` 按需挂载：`permission.Default()` / `permission.New(条件...)`。
-- 业务模块不得调用 `h.Spin()`；组装只在 `main.go`。
+- 权限在路由 `middleware.go` 按需挂：`permission.Default()` / `permission.New(条件...)`。
+- 业务模块不得调用 `h.Spin()`；组装只在 `main.go`（本项目 `server.New` + 显式 Recovery）。
 
-## 7. 构造器与生命周期
+## 8. 构造器与生命周期
 
 - `NewXxxRepository(db)`、`InitService(ctx, db, oss, cache)`。
-- 全局仅保留框架级单例（`conf`、`permission.Security`、SVC 门面）；新代码优先显式注入。
-- 进程入口负责配置加载、infra 初始化、优雅退出；库内不泄漏裸 goroutine。
+- 全局仅保留框架级单例（`conf`、`permission.Security`、SVC 门面）；新代码显式注入。
+- 入口负责配置、infra、优雅退出；库内不泄漏裸 goroutine。
 
-## 8. 前端契约
+## 9. 前端契约
 
-- API 封装：`web/src/utils/request`（Axios）+ `web/src/api/*.ts`。
-- 类型与后端 IDL 字段一致；envelope 解包按 `{code,msg,data}`。
-- 登录态：Pinia `user` store，persist `token`/`refreshToken`。
-- 页面路由权限由 `store/modules/permission` 控制；业务页放 `web/src/pages/<feature>/`。
+- API：`web/src/utils/request` + `web/src/api/*.ts`。
+- 类型与 IDL 字段一致；envelope 按 `{code,msg,data}` 解包。
+- 登录态：Pinia `user` store；路由权限 `store/modules/permission`；业务页 `web/src/pages/<feature>/`。

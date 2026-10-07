@@ -1,7 +1,7 @@
-# Hertz / hz API 索引（gosilite 实用子集）
+# Hertz / hz API 速查（gosilite 实用子集）
 
 官方文档：https://cloudwego.cn/zh/docs/hertz/  
-下列条目已与本仓库用法对齐；不确定的 API **先查官方文档**，不要凭 Gin 记忆编写。
+不确定的 API **先查官方文档**，不要凭 Gin 记忆编写。
 
 ## Handler
 
@@ -11,8 +11,8 @@ func(ctx context.Context, c *app.RequestContext) {
 }
 ```
 
-- 第一参数是 `context.Context`，第二参数是 `*app.RequestContext`。
-- 需要写业务响应时统一用 `pkg/utils/response`。
+- 第一参数 `context.Context`，第二参数 `*app.RequestContext`。
+- 业务响应统一用 `pkg/utils/response`。
 
 ## 路由
 
@@ -23,7 +23,7 @@ g := r.Group("/user")
 g.GET("/info", append(mw, user.GetInfo)...)
 ```
 
-常用方法：`GET/POST/PUT/PATCH/DELETE/HEAD/OPTIONS/Handle/Any/Group/Use`。
+常用：`GET/POST/PUT/PATCH/DELETE/HEAD/OPTIONS/Handle/Any/Group/Use`。
 
 ## 绑定与校验
 
@@ -54,13 +54,13 @@ h.Use(func(ctx context.Context, c *app.RequestContext) {
 })
 ```
 
-本项目入口顺序见 `docs/patterns/design.md` §6。
+本项目入口顺序见 `references/design.md` §7。
 
 ## Engine
 
 - `server.Default()`：默认带 Recovery。
-- `server.New(server.WithHostPorts(addr))`：完全控制（本项目 `main.go` 使用），须自装 Recovery。
-- `h.Spin()`：推荐启动方式，支持优雅退出。
+- `server.New(server.WithHostPorts(addr))`：完全控制（本项目 `main.go`），须自装 Recovery。
+- `h.Spin()`：推荐启动，支持优雅退出；本项目由入口统一组装，业务模块不调 `Spin()`。
 - `Run()` 不提供默认优雅退出。
 
 配置项：`WithHostPorts`、Read/Write/IdleTimeout、MaxRequestBodySize、KeepAlive、TLS、H2C 等。
@@ -89,9 +89,9 @@ R.InvalidParamRequestResponse(c, m) // 400
 ## JWT 会话
 
 - 中间件：`github.com/hertz-contrib/jwt`
-- 登录回调 `LoginResponse` 输出 `SessionTokenResponse`（camelCase）
+- 登录 `LoginResponse` 输出 `SessionTokenResponse`（camelCase）
 - 受保护路由：`Authorization: Bearer <accessToken>`
-- 刷新是**独立业务路由** `/user/refresh`（refresh token 在 Redis），不是 JWT 库默认 `RefreshHandler` 的 token 延长。
+- 刷新是独立业务路由 `/user/refresh`（refresh token 在 Redis），不是 JWT 库默认 `RefreshHandler`。
 
 ## 启动
 
