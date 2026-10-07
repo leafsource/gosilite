@@ -87,7 +87,7 @@
             <template #content>
               <div class="s-table__column-panel">
                 <div
-                  v-for="k in columnOrder"
+                  v-for="k in panelKeys"
                   :key="k"
                   class="s-table__column-item"
                   :class="{
@@ -104,7 +104,7 @@
                   <t-checkbox :checked="columnVisible.includes(k)" @change="(v: any) => toggleColumn(k, Boolean(v))" />
                   <span class="s-table__column-name">{{ colTitle(k) }}</span>
                 </div>
-                <div v-if="!columnOrder.length" class="s-table__column-name" style="padding: 8px 12px">无列可配置</div>
+                <div v-if="!panelKeys.length" class="s-table__column-name" style="padding: 8px 12px">无列可配置</div>
               </div>
             </template>
           </t-popup>
@@ -112,13 +112,16 @@
       </div>
     </div>
 
-    <t-table
+    <!-- 内层表格：tree 模式需 EnhancedTable（t-table 不含 tree 能力），否则保持 t-table -->
+    <component
+      :is="innerTable"
       :row-key="rowKey"
       :data="data as any"
       :columns="visibleColumns as any"
       :loading="loading"
-      :pagination="pagination as TableProps['pagination']"
+      :pagination="(paginated ? pagination : undefined) as TableProps['pagination']"
       :selected-row-keys="selectedRowKeys"
+      :tree="tree"
       hover
       @page-change="onPageChange"
       @select-change="onSelectChange"
@@ -126,19 +129,20 @@
       <template v-for="(_, name) in $slots" #[name]="slotData">
         <slot :name="name" v-bind="slotData || {}" />
       </template>
-    </t-table>
+    </component>
   </div>
 </template>
 <script setup lang="ts">
 import './s-table.css';
 
 import { MoveIcon, RefreshIcon, SettingIcon } from 'tdesign-icons-vue-next';
+import { EnhancedTable, Table } from 'tdesign-vue-next';
 import type { TableProps } from 'tdesign-vue-next';
 import { computed, ref, watch } from 'vue';
 
 import { useConfigStore } from '@/store';
 
-import type { STableColumn, STableSearchField } from './sTable';
+import type { STableColumn, STableSearchField, STableTreeConfig } from './sTable';
 
 defineOptions({ name: 'STable' });
 
@@ -155,6 +159,8 @@ const props = withDefaults(
     searchFields?: STableSearchField[];
     defaultVisibleKeys?: string[];
     selectable?: boolean;
+    tree?: STableTreeConfig;
+    paginated?: boolean;
   }>(),
   {
     rowKey: 'id',
@@ -165,6 +171,8 @@ const props = withDefaults(
     searchFields: () => [],
     defaultVisibleKeys: undefined,
     selectable: true,
+    tree: undefined,
+    paginated: true,
   },
 );
 
@@ -177,6 +185,8 @@ const emit = defineEmits<{
 }>();
 
 const configStore = useConfigStore();
+
+const innerTable = computed(() => (props.tree ? EnhancedTable : Table));
 
 const keyword = ref('');
 const extraParams = ref<Record<string, unknown>>({});
@@ -196,6 +206,15 @@ const colTitle = (k: string): string => {
   const hit = props.columns.find((c) => colKey(c) === k) as { title?: unknown } | undefined;
   return String(hit?.title || k);
 };
+
+// 树节点列不可在列设置中隐藏，否则树展开入口丢失（treeNodeColumnIndex 默认取第 0 列）
+const treeColKey = computed(() => {
+  if (!props.tree) return '';
+  const col = props.columns[props.tree.treeNodeColumnIndex ?? 0];
+  return col ? colKey(col) : '';
+});
+
+const panelKeys = computed(() => columnOrder.value.filter((k) => k !== treeColKey.value));
 
 // 模板中避免写 `as string | number`（`|` 会被 vue/no-deprecated-filter 误判为过滤器）
 function fieldModelValue(name: string): string | number | undefined {
@@ -223,10 +242,11 @@ const selectionColumn: STableColumn = { colKey: 'row-select', type: 'multiple', 
 const visibleColumns = computed(() => {
   const cols = columnOrder.value
     .map((k) => props.columns.find((c) => colKey(c) === k))
-    .filter(
-      (c): c is STableColumn =>
-        Boolean(c) && (!colKey(c as STableColumn) || columnVisible.value.includes(colKey(c as STableColumn))),
-    );
+    .filter((c): c is STableColumn => {
+      if (!c) return false;
+      const k = colKey(c);
+      return !k || columnVisible.value.includes(k) || k === treeColKey.value;
+    });
   return props.selectable ? [selectionColumn, ...cols] : cols;
 });
 

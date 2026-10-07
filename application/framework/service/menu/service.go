@@ -40,17 +40,17 @@ func InitService(ctx context.Context, db *gorm.DB) *Service {
 
 // TreeNode 管理用菜单树
 type TreeNode struct {
-	ID        int64      `json:"id"`
-	ParentID  int64      `json:"parentId"`
-	Label     string     `json:"label"`
-	MenuType  string     `json:"menuType"`
-	Perms     string     `json:"perms"`
-	OrderNum  int32      `json:"orderNum"`
-	Visible   bool       `json:"visible"`
-	Status    int16      `json:"status"`
-	Path      string     `json:"path"`
-	Component string     `json:"component"`
-	Icon      string     `json:"icon"`
+	ID        int64       `json:"id"`
+	ParentID  int64       `json:"parentId"`
+	Label     string      `json:"label"`
+	MenuType  string      `json:"menuType"`
+	Perms     string      `json:"perms"`
+	OrderNum  int32       `json:"orderNum"`
+	Visible   bool        `json:"visible"`
+	Status    int16       `json:"status"`
+	Path      string      `json:"path"`
+	Component string      `json:"component"`
+	Icon      string      `json:"icon"`
 	Children  []*TreeNode `json:"children,omitempty"`
 }
 
@@ -65,12 +65,7 @@ func (s *Service) Tree(ctx context.Context) ([]*TreeNode, error) {
 		if m.IsRemove == 1 {
 			continue
 		}
-		nodes[m.ID] = &TreeNode{
-			ID: m.ID, ParentID: m.ParentID, Label: m.Title,
-			MenuType: m.MenuType, Perms: m.Perms, OrderNum: m.Sort,
-			Visible: m.Visible != "hide" && m.Visible != "0", Status: m.Status,
-			Path: m.Path, Component: m.Component, Icon: m.Icon,
-		}
+		nodes[m.ID] = toTreeNode(m)
 	}
 	var roots []*TreeNode
 	for id, n := range nodes {

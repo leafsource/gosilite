@@ -17,6 +17,15 @@ struct DictTypeDTO {
     4: i32 status
     5: i32 orderNum
     6: string remark
+    7: i64 groupId
+}
+
+struct DictTypeListRequest {
+    1: i32 page = 1
+    2: i32 pageSize = 10
+    3: string keyword
+    // 缺省=全部；0=未分组；>0=指定分组
+    4: optional i64 groupId
 }
 
 struct DictTypeListResponse {
@@ -31,6 +40,25 @@ struct DictTypeSaveRequest {
     4: i32 status
     5: i32 orderNum
     6: optional string remark
+    7: i64 groupId
+}
+
+struct DictGroupDTO {
+    1: i64 id
+    2: string groupName
+    3: i32 orderNum
+    4: string remark
+}
+
+struct DictGroupListResponse {
+    1: list<DictGroupDTO> list
+}
+
+struct DictGroupSaveRequest {
+    1: optional i64 id
+    2: string groupName
+    3: i32 orderNum
+    4: optional string remark
 }
 
 struct DictDataDTO {
@@ -109,10 +137,15 @@ struct ConfigKeyRequest {
 }
 
 service SystemDictController {
-    DictTypeListResponse TypeList(1: PageQuery req)(api.get = "/system/dict/type/list")
+    DictTypeListResponse TypeList(1: DictTypeListRequest req)(api.get = "/system/dict/type/list")
     DictTypeDTO TypeCreate(1: DictTypeSaveRequest req)(api.post = "/system/dict/type")
     DictTypeDTO TypeUpdate(1: DictTypeSaveRequest req)(api.put = "/system/dict/type")
     i32 TypeRemove(1: IdRequest req)(api.delete = "/system/dict/type")
+
+    DictGroupListResponse GroupList(1: PageQuery req)(api.get = "/system/dict/group/list")
+    DictGroupDTO GroupCreate(1: DictGroupSaveRequest req)(api.post = "/system/dict/group")
+    DictGroupDTO GroupUpdate(1: DictGroupSaveRequest req)(api.put = "/system/dict/group")
+    i32 GroupRemove(1: IdRequest req)(api.delete = "/system/dict/group")
 
     DictDataListResponse DataList(1: DictDataListRequest req)(api.get = "/system/dict/data/list")
     DictDataDTO DataCreate(1: DictDataSaveRequest req)(api.post = "/system/dict/data")

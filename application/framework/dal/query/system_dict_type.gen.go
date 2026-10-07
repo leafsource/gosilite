@@ -37,6 +37,7 @@ func newSystemDictType(db *gorm.DB, opts ...gen.DOOption) systemDictType {
 	_systemDictType.DelFlag = field.NewInt16(tableName, "del_flag")
 	_systemDictType.CreatedAt = field.NewTime(tableName, "created_at")
 	_systemDictType.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_systemDictType.GroupID = field.NewInt64(tableName, "group_id")
 
 	_systemDictType.fillFieldMap()
 
@@ -56,6 +57,7 @@ type systemDictType struct {
 	DelFlag   field.Int16
 	CreatedAt field.Time
 	UpdatedAt field.Time
+	GroupID   field.Int64
 
 	fieldMap map[string]field.Expr
 }
@@ -81,6 +83,7 @@ func (s *systemDictType) updateTableName(table string) *systemDictType {
 	s.DelFlag = field.NewInt16(table, "del_flag")
 	s.CreatedAt = field.NewTime(table, "created_at")
 	s.UpdatedAt = field.NewTime(table, "updated_at")
+	s.GroupID = field.NewInt64(table, "group_id")
 
 	s.fillFieldMap()
 
@@ -97,7 +100,7 @@ func (s *systemDictType) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (s *systemDictType) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 9)
+	s.fieldMap = make(map[string]field.Expr, 10)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["dict_name"] = s.DictName
 	s.fieldMap["dict_type"] = s.DictType
@@ -107,6 +110,7 @@ func (s *systemDictType) fillFieldMap() {
 	s.fieldMap["del_flag"] = s.DelFlag
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["updated_at"] = s.UpdatedAt
+	s.fieldMap["group_id"] = s.GroupID
 }
 
 func (s systemDictType) clone(db *gorm.DB) systemDictType {

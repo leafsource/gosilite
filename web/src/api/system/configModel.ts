@@ -1,6 +1,6 @@
 // 参数配置类型
 export type ConfigDTO = {
-  id: number;
+  id: string;
   configName: string;
   configKey: string;
   configValue: string;
@@ -9,4 +9,4 @@ export type ConfigDTO = {
   status: number;
 };
 
-export type ConfigSaveParams = Omit<ConfigDTO, 'id'> & { id?: number };
+export type ConfigSaveParams = Omit<ConfigDTO, 'id'> & { id?: string };

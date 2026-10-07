@@ -35,12 +35,19 @@ func Register(r *server.Hertz) {
 			_data.GET("/options", append(_dataoptionsMw(), syscfg.DataOptions)...)
 			_dict.POST("/data", append(_datacreateMw(), syscfg.DataCreate)...)
 			_dict.PUT("/data", append(_dataupdateMw(), syscfg.DataUpdate)...)
+			_dict.DELETE("/group", append(_groupremoveMw(), syscfg.GroupRemove)...)
+			_dict.POST("/group", append(_groupcreateMw(), syscfg.GroupCreate)...)
+			_dict.PUT("/group", append(_groupupdateMw(), syscfg.GroupUpdate)...)
 			_dict.DELETE("/type", append(_typeremoveMw(), syscfg.TypeRemove)...)
 			_dict.POST("/type", append(_typecreateMw(), syscfg.TypeCreate)...)
 			_dict.PUT("/type", append(_typeupdateMw(), syscfg.TypeUpdate)...)
 			{
 				_data0 := _dict.Group("/data", _data0Mw()...)
 				_data0.GET("/list", append(_datalistMw(), syscfg.DataList)...)
+			}
+			{
+				_group := _dict.Group("/group", _groupMw()...)
+				_group.GET("/list", append(_grouplistMw(), syscfg.GroupList)...)
 			}
 			{
 				_type := _dict.Group("/type", _typeMw()...)

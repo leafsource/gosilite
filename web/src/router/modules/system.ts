@@ -10,7 +10,7 @@ export default [
     path: '/system',
     name: 'system',
     component: LAYOUT,
-    redirect: '/system/dept',
+    redirect: '/system/contacts',
     meta: {
       title: { zh_CN: '系统管理', en_US: 'System' },
       icon: shallowRef(SettingIcon),
@@ -18,16 +18,10 @@ export default [
     },
     children: [
       {
-        path: 'dept',
-        name: 'SystemDept',
-        component: () => import('@/pages/system/dept/index.vue'),
-        meta: { title: { zh_CN: '部门管理', en_US: 'Department' } },
-      },
-      {
-        path: 'user',
-        name: 'SystemUser',
-        component: () => import('@/pages/system/user/index.vue'),
-        meta: { title: { zh_CN: '用户管理', en_US: 'User' } },
+        path: 'contacts',
+        name: 'SystemContacts',
+        component: () => import('@/pages/system/organization/index.vue'),
+        meta: { title: { zh_CN: '组织架构', en_US: 'Organization' } },
       },
       {
         path: 'role',

@@ -6,7 +6,6 @@ import (
 	R "gosilite/pkg/utils/response"
 
 	menu "gosilite/api/model/framework/menu"
-	"gosilite/api/utils"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -24,7 +23,7 @@ func GetRoutes(ctx context.Context, c *app.RequestContext) {
 		R.Failed(ctx, c, consts.StatusOK, err)
 		return
 	}
-	resp.Routes = utils.ConvertToRoutes(menus)
+	resp.Routes = toRoutes(menus)
 
 	R.SuccessWithData(ctx, c, resp)
 }

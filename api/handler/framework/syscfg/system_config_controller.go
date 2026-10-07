@@ -5,18 +5,9 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	syscfg "gosilite/api/model/framework/syscfg"
-	"gosilite/application/framework/dal/model"
 	"gosilite/application/framework/service/config"
 	R "gosilite/pkg/utils/response"
 )
-
-func configDTO(m *model.SystemConfig) *syscfg.ConfigDTO {
-	return &syscfg.ConfigDTO{
-		ID: m.ID, ConfigName: m.ConfigName, ConfigKey: m.ConfigKey,
-		ConfigValue: m.ConfigValue, ConfigType: m.ConfigType,
-		Remark: m.Remark, Status: int32(m.Status),
-	}
-}
 
 // List .
 // @router /system/config/list [GET]
@@ -31,10 +22,7 @@ func List(ctx context.Context, c *app.RequestContext) {
 		R.Error(ctx, c, err)
 		return
 	}
-	resp := &syscfg.ConfigListResponse{List: make([]*syscfg.ConfigDTO, 0, len(list)), Total: total}
-	for _, m := range list {
-		resp.List = append(resp.List, configDTO(m))
-	}
+	resp := &syscfg.ConfigListResponse{List: toConfigDTOs(list), Total: total}
 	R.SuccessWithData(ctx, c, resp)
 }
 
@@ -46,21 +34,12 @@ func Create(ctx context.Context, c *app.RequestContext) {
 		R.InvalidParamRequestResponse(c, err.Error())
 		return
 	}
-	m := &model.SystemConfig{
-		ConfigName: req.ConfigName, ConfigKey: req.ConfigKey,
-		ConfigValue: req.ConfigValue, Status: int16(req.Status),
-	}
-	if req.ConfigType != nil {
-		m.ConfigType = *req.ConfigType
-	}
-	if req.Remark != nil {
-		m.Remark = *req.Remark
-	}
+	m := fromConfigSaveRequest(&req)
 	if err := config.SystemConfigSVC.Create(ctx, m); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
-	R.SuccessWithData(ctx, c, configDTO(m))
+	R.SuccessWithData(ctx, c, toConfigDTO(m))
 }
 
 // Update .
@@ -75,21 +54,13 @@ func Update(ctx context.Context, c *app.RequestContext) {
 		R.InvalidParamRequestResponse(c, "id required")
 		return
 	}
-	m := &model.SystemConfig{
-		ID: *req.ID, ConfigName: req.ConfigName, ConfigKey: req.ConfigKey,
-		ConfigValue: req.ConfigValue, Status: int16(req.Status),
-	}
-	if req.ConfigType != nil {
-		m.ConfigType = *req.ConfigType
-	}
-	if req.Remark != nil {
-		m.Remark = *req.Remark
-	}
+	m := fromConfigSaveRequest(&req)
+	m.ID = *req.ID
 	if err := config.SystemConfigSVC.Update(ctx, m); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
-	R.SuccessWithData(ctx, c, configDTO(m))
+	R.SuccessWithData(ctx, c, toConfigDTO(m))
 }
 
 // Remove .
@@ -120,5 +91,5 @@ func GetByKey(ctx context.Context, c *app.RequestContext) {
 		R.Error(ctx, c, err)
 		return
 	}
-	R.SuccessWithData(ctx, c, configDTO(m))
+	R.SuccessWithData(ctx, c, toConfigDTO(m))
 }

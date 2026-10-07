@@ -3,6 +3,13 @@ import type { TableProps, TreeOptionData } from 'tdesign-vue-next';
 
 export type STableColumn = NonNullable<TableProps['columns']>[number];
 
+/** 树形表格配置，结构对齐 TdEnhancedTableProps['tree'] */
+export interface STableTreeConfig {
+  childrenKey?: string;
+  treeNodeColumnIndex?: number;
+  defaultExpandAll?: boolean;
+}
+
 export interface STableSearchField {
   /** 字段名，对应 searchParams 的 key */
   name: string;
@@ -36,6 +43,10 @@ export interface STableProps {
   defaultVisibleKeys?: string[];
   /** 是否显示选择框（默认显示，配合 #batch 插槽做批量操作） */
   selectable?: boolean;
+  /** 树形表格配置；传入时内层表格切换为 EnhancedTable */
+  tree?: STableTreeConfig;
+  /** 是否显示分页条（全量数据页可关），默认 true */
+  paginated?: boolean;
 }
 
 export interface STableEmits {

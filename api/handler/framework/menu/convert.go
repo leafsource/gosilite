@@ -1,13 +1,13 @@
-package utils
+package menu
 
 import (
-	"gosilite/api/model/framework/menu"
+	menu "gosilite/api/model/framework/menu"
 	"gosilite/application/framework/dal/model"
 	"sort"
 )
 
-// ConvertToRoutes 将菜单列表转换为路由树（根：parent_id 为 0 或 -1）
-func ConvertToRoutes(menus []*model.SystemMenu) []*menu.Route {
+// toRoutes 将菜单列表转换为路由树（根：parent_id 为 0 或 -1）
+func toRoutes(menus []*model.SystemMenu) []*menu.Route {
 	menuMap := make(map[int64]*model.SystemMenu)
 	for _, m := range menus {
 		menuMap[m.ID] = m
@@ -139,15 +139,4 @@ func getChildMenus(menus []*model.SystemMenu, parentID int64) []*model.SystemMen
 		}
 	}
 	return children
-}
-
-// 辅助方法：过滤有效菜单
-func FilterValid(menus []*model.SystemMenu) []*model.SystemMenu {
-	var validMenus []*model.SystemMenu
-	for _, menu := range menus {
-		if menu.State == "enabled" && menu.IsRemove == 0 && menu.Visible == "show" {
-			validMenus = append(validMenus, menu)
-		}
-	}
-	return validMenus
 }

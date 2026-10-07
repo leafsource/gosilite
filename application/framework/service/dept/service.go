@@ -35,21 +35,64 @@ func InitService(ctx context.Context, db *gorm.DB) *Service {
 
 // Node 树节点
 type Node struct {
-	ID       int64   `json:"id"`
-	ParentID int64   `json:"parentId"`
-	Label    string  `json:"label"`
-	OrderNum int32   `json:"orderNum"`
-	Status   int16   `json:"status"`
-	Children []*Node `json:"children,omitempty"`
+	ID         int64   `json:"id"`
+	ParentID   int64   `json:"parentId"`
+	Label      string  `json:"label"`
+	OrderNum   int32   `json:"orderNum"`
+	Status     int16   `json:"status"`
+	LeaderID   int64   `json:"leaderId"`
+	LeaderName string  `json:"leaderName"`
+	Children   []*Node `json:"children,omitempty"`
 }
 
-// Tree 返回部门树
+// Tree 返回部门树（附带负责人）
 func (s *Service) Tree(ctx context.Context) ([]*Node, error) {
 	list, err := s.repo.ListAll(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return buildTree(list), nil
+	leaders, err := s.repo.LeaderInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+	leaderMap := make(map[int64]repository.DeptLeader, len(leaders))
+	for _, l := range leaders {
+		leaderMap[l.DeptID] = l
+	}
+	return attachLeaders(buildTree(list), leaderMap), nil
+}
+
+func attachLeaders(nodes []*Node, leaders map[int64]repository.DeptLeader) []*Node {
+	for _, n := range nodes {
+		if l, ok := leaders[n.ID]; ok {
+			n.LeaderID = l.LeaderID
+			n.LeaderName = l.LeaderName
+		}
+		if len(n.Children) > 0 {
+			attachLeaders(n.Children, leaders)
+		}
+	}
+	return nodes
+}
+
+// UpdateLeader 设置/清除部门负责人（leaderUserID=0 清除）
+func (s *Service) UpdateLeader(ctx context.Context, deptID, leaderUserID int64) error {
+	if deptID <= 0 {
+		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "部门不能为空"))
+	}
+	if _, err := s.repo.GetByID(ctx, deptID); err != nil {
+		return errorx.New(errno.ErrSystemDeptNotFound, errorx.KV("id", itoa(deptID)))
+	}
+	if leaderUserID > 0 {
+		ok, err := s.repo.UserExists(ctx, leaderUserID)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			return errorx.New(errno.ErrSystemUserNotFound, errorx.KV("id", itoa(leaderUserID)))
+		}
+	}
+	return s.repo.UpdateLeader(ctx, deptID, leaderUserID)
 }
 
 // List 扁平列表
@@ -87,23 +130,25 @@ func (s *Service) Update(ctx context.Context, d *model.SystemDept) error {
 	if d.ParentID == d.ID {
 		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "不能将部门移动到自身"))
 	}
-	// 环检测：基于 DB 中的 ancestors，不信任客户端 payload
-	if isDescendant(d.ParentID, old.Ancestors) || d.ParentID == d.ID {
-		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "不能移动到子部门"))
-	}
-	if strings.TrimSpace(d.DeptName) == "" {
-		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "部门名称不能为空"))
-	}
-
-	// 计算新 ancestors
 	newParentAncestors := "0"
 	if d.ParentID > 0 {
 		parent, err := s.repo.GetByID(ctx, d.ParentID)
 		if err != nil {
 			return errorx.New(errno.ErrSystemDeptNotFound, errorx.KV("id", itoa(d.ParentID)))
 		}
+		// 环检测：新父级的祖先链含本部门 id ⇒ 父级在本部门子树内 ⇒ 成环。
+		// 未换父时 parent.Ancestors == old.Ancestors（不含本部门自身）→ 正常放行。
+		// 基于 DB 中的 ancestors，不信任客户端 payload。
+		if isDescendant(d.ID, parent.Ancestors) {
+			return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "不能移动到子部门"))
+		}
 		newParentAncestors = parent.Ancestors
 	}
+	if strings.TrimSpace(d.DeptName) == "" {
+		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "部门名称不能为空"))
+	}
+
+	// 计算新 ancestors
 	oldAncestors := old.Ancestors
 	newAncestors := "0"
 	if d.ParentID > 0 {
@@ -203,10 +248,7 @@ func (s *Service) VisibleDeptIDs(ctx context.Context, dataScope int16, userDeptI
 func buildTree(list []*model.SystemDept) []*Node {
 	nodes := map[int64]*Node{}
 	for _, d := range list {
-		nodes[d.ID] = &Node{
-			ID: d.ID, ParentID: d.ParentID, Label: d.DeptName,
-			OrderNum: d.OrderNum, Status: d.Status,
-		}
+		nodes[d.ID] = toNode(d)
 	}
 	var roots []*Node
 	for id, n := range nodes {

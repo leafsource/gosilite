@@ -20,6 +20,7 @@ var (
 	SystemConfig         *systemConfig
 	SystemDept           *systemDept
 	SystemDictData       *systemDictData
+	SystemDictGroup      *systemDictGroup
 	SystemDictType       *systemDictType
 	SystemMenu           *systemMenu
 	SystemPost           *systemPost
@@ -37,6 +38,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	SystemConfig = &Q.SystemConfig
 	SystemDept = &Q.SystemDept
 	SystemDictData = &Q.SystemDictData
+	SystemDictGroup = &Q.SystemDictGroup
 	SystemDictType = &Q.SystemDictType
 	SystemMenu = &Q.SystemMenu
 	SystemPost = &Q.SystemPost
@@ -55,6 +57,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		SystemConfig:         newSystemConfig(db, opts...),
 		SystemDept:           newSystemDept(db, opts...),
 		SystemDictData:       newSystemDictData(db, opts...),
+		SystemDictGroup:      newSystemDictGroup(db, opts...),
 		SystemDictType:       newSystemDictType(db, opts...),
 		SystemMenu:           newSystemMenu(db, opts...),
 		SystemPost:           newSystemPost(db, opts...),
@@ -74,6 +77,7 @@ type Query struct {
 	SystemConfig         systemConfig
 	SystemDept           systemDept
 	SystemDictData       systemDictData
+	SystemDictGroup      systemDictGroup
 	SystemDictType       systemDictType
 	SystemMenu           systemMenu
 	SystemPost           systemPost
@@ -94,6 +98,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		SystemConfig:         q.SystemConfig.clone(db),
 		SystemDept:           q.SystemDept.clone(db),
 		SystemDictData:       q.SystemDictData.clone(db),
+		SystemDictGroup:      q.SystemDictGroup.clone(db),
 		SystemDictType:       q.SystemDictType.clone(db),
 		SystemMenu:           q.SystemMenu.clone(db),
 		SystemPost:           q.SystemPost.clone(db),
@@ -121,6 +126,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		SystemConfig:         q.SystemConfig.replaceDB(db),
 		SystemDept:           q.SystemDept.replaceDB(db),
 		SystemDictData:       q.SystemDictData.replaceDB(db),
+		SystemDictGroup:      q.SystemDictGroup.replaceDB(db),
 		SystemDictType:       q.SystemDictType.replaceDB(db),
 		SystemMenu:           q.SystemMenu.replaceDB(db),
 		SystemPost:           q.SystemPost.replaceDB(db),
@@ -138,6 +144,7 @@ type queryCtx struct {
 	SystemConfig         ISystemConfigDo
 	SystemDept           ISystemDeptDo
 	SystemDictData       ISystemDictDataDo
+	SystemDictGroup      ISystemDictGroupDo
 	SystemDictType       ISystemDictTypeDo
 	SystemMenu           ISystemMenuDo
 	SystemPost           ISystemPostDo
@@ -155,6 +162,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		SystemConfig:         q.SystemConfig.WithContext(ctx),
 		SystemDept:           q.SystemDept.WithContext(ctx),
 		SystemDictData:       q.SystemDictData.WithContext(ctx),
+		SystemDictGroup:      q.SystemDictGroup.WithContext(ctx),
 		SystemDictType:       q.SystemDictType.WithContext(ctx),
 		SystemMenu:           q.SystemMenu.WithContext(ctx),
 		SystemPost:           q.SystemPost.WithContext(ctx),

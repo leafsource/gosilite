@@ -16,10 +16,10 @@ import (
 
 // AdminListItem 管理端用户行
 type AdminListItem struct {
-	User       *model.SystemUser
-	DeptName   string
-	RoleIDs    []int64
-	PostIDs    []int64
+	User     *model.SystemUser
+	DeptName string
+	RoleIDs  []int64
+	PostIDs  []int64
 }
 
 // AdminPage 管理端分页（按登录者数据范围过滤部门；默认 fail-closed）
@@ -126,10 +126,7 @@ func (s *Service) fillAdminItems(ctx context.Context, users []*model.SystemUser,
 		if s.posts != nil {
 			postIDs, _ = s.posts.ListPostIDsByUser(ctx, u.ID)
 		}
-		out = append(out, &AdminListItem{
-			User: u, DeptName: deptNames[u.DeptID],
-			RoleIDs: roleIDs, PostIDs: postIDs,
-		})
+		out = append(out, toAdminListItem(u, deptNames[u.DeptID], roleIDs, postIDs))
 	}
 	return out, total, nil
 }

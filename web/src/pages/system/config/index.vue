@@ -72,7 +72,7 @@
       </template>
     </s-table>
 
-    <t-dialog v-model:visible="dialog" :header="form.id ? '编辑参数' : '新增参数'" @confirm="save">
+    <s-form-dialog v-model:visible="dialog" :title="form.id ? '编辑参数' : '新增参数'" @confirm="save">
       <t-form :data="form" label-width="90px">
         <t-form-item label="参数名称"><t-input v-model="form.configName" /></t-form-item>
         <t-form-item label="参数键"><t-input v-model="form.configKey" :disabled="!!form.id" /></t-form-item>
@@ -85,7 +85,7 @@
         </t-form-item>
         <t-form-item label="备注"><t-textarea v-model="form.remark" /></t-form-item>
       </t-form>
-    </t-dialog>
+    </s-form-dialog>
   </div>
 </template>
 <script setup lang="ts">
@@ -94,6 +94,7 @@ import { computed, onMounted, ref } from 'vue';
 
 import { createConfig, listConfigs, removeConfig, updateConfig } from '@/api/system/config';
 import type { ConfigDTO } from '@/api/system/configModel';
+import SFormDialog from '@/components/s-form-dialog/index.vue';
 import STable from '@/components/s-table/index.vue';
 import { useConfigStore, useDict } from '@/store';
 

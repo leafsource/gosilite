@@ -37,6 +37,7 @@ func newSystemDept(db *gorm.DB, opts ...gen.DOOption) systemDept {
 	_systemDept.DelFlag = field.NewInt16(tableName, "del_flag")
 	_systemDept.CreatedAt = field.NewTime(tableName, "created_at")
 	_systemDept.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_systemDept.LeaderUserID = field.NewInt64(tableName, "leader_user_id")
 
 	_systemDept.fillFieldMap()
 
@@ -46,16 +47,17 @@ func newSystemDept(db *gorm.DB, opts ...gen.DOOption) systemDept {
 type systemDept struct {
 	systemDeptDo
 
-	ALL       field.Asterisk
-	ID        field.Int64
-	ParentID  field.Int64
-	Ancestors field.String
-	DeptName  field.String
-	OrderNum  field.Int32
-	Status    field.Int16
-	DelFlag   field.Int16
-	CreatedAt field.Time
-	UpdatedAt field.Time
+	ALL          field.Asterisk
+	ID           field.Int64
+	ParentID     field.Int64
+	Ancestors    field.String
+	DeptName     field.String
+	OrderNum     field.Int32
+	Status       field.Int16
+	DelFlag      field.Int16
+	CreatedAt    field.Time
+	UpdatedAt    field.Time
+	LeaderUserID field.Int64
 
 	fieldMap map[string]field.Expr
 }
@@ -81,6 +83,7 @@ func (s *systemDept) updateTableName(table string) *systemDept {
 	s.DelFlag = field.NewInt16(table, "del_flag")
 	s.CreatedAt = field.NewTime(table, "created_at")
 	s.UpdatedAt = field.NewTime(table, "updated_at")
+	s.LeaderUserID = field.NewInt64(table, "leader_user_id")
 
 	s.fillFieldMap()
 
@@ -97,7 +100,7 @@ func (s *systemDept) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *systemDept) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 9)
+	s.fieldMap = make(map[string]field.Expr, 10)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["parent_id"] = s.ParentID
 	s.fieldMap["ancestors"] = s.Ancestors
@@ -107,6 +110,7 @@ func (s *systemDept) fillFieldMap() {
 	s.fieldMap["del_flag"] = s.DelFlag
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["updated_at"] = s.UpdatedAt
+	s.fieldMap["leader_user_id"] = s.LeaderUserID
 }
 
 func (s systemDept) clone(db *gorm.DB) systemDept {

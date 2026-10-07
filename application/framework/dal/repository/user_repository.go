@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"strconv"
+
 	"gosilite/application/framework/dal/model"
 	"gosilite/application/framework/dal/query"
 
@@ -161,7 +163,12 @@ func (r *SystemUserRepositoryImpl) AdminList(ctx context.Context, page, pageSize
 		q = q.Where("account LIKE ? OR username LIKE ?", kw, kw)
 	}
 	if deptID > 0 {
-		q = q.Where("dept_id = ?", deptID)
+		// 组织架构树选择：含子部门（ancestors 链匹配）
+		deptStr := strconv.FormatInt(deptID, 10)
+		q = q.Where(
+			"dept_id IN (SELECT id FROM public.system_dept WHERE del_flag = 0 AND (id = ? OR ancestors LIKE ? OR ancestors LIKE ?))",
+			deptID, "%,"+deptStr+",%", "%,"+deptStr,
+		)
 	}
 	if state != "" {
 		q = q.Where("state = ?", state)

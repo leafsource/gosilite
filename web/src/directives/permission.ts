@@ -5,7 +5,7 @@ import { useUserStore } from '@/store';
 // 超管角色：与后端 ctxutil.IsSuperRole 保持一致
 const SUPER_ROLES = ['admin', 'system'];
 
-function hasPerm(value: string | string[]): boolean {
+export function hasPerm(value: string | string[]): boolean {
   const userStore = useUserStore();
   if ((userStore.roles ?? []).some((role) => SUPER_ROLES.includes(role))) {
     return true;

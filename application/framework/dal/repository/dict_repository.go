@@ -10,13 +10,22 @@ import (
 
 // IDictRepository 字典仓储
 type IDictRepository interface {
-	PageTypes(ctx context.Context, page, pageSize int, keyword string) ([]*model.SystemDictType, int64, error)
+	// PageTypes groupID：nil=全部，0=未分组，>0=指定分组
+	PageTypes(ctx context.Context, page, pageSize int, keyword string, groupID *int64) ([]*model.SystemDictType, int64, error)
 	GetTypeByID(ctx context.Context, id int64) (*model.SystemDictType, error)
 	ExistsType(ctx context.Context, dictType string, excludeID int64) (bool, error)
 	CountDataByType(ctx context.Context, dictType string) (int64, error)
 	CreateType(ctx context.Context, m *model.SystemDictType) error
 	SaveType(ctx context.Context, m *model.SystemDictType) error
 	SoftDeleteType(ctx context.Context, id int64) error
+
+	ListGroups(ctx context.Context) ([]*model.SystemDictGroup, error)
+	GetGroupByID(ctx context.Context, id int64) (*model.SystemDictGroup, error)
+	ExistsGroupName(ctx context.Context, groupName string, excludeID int64) (bool, error)
+	CountTypesByGroup(ctx context.Context, groupID int64) (int64, error)
+	CreateGroup(ctx context.Context, m *model.SystemDictGroup) error
+	SaveGroup(ctx context.Context, m *model.SystemDictGroup) error
+	SoftDeleteGroup(ctx context.Context, id int64) error
 
 	PageData(ctx context.Context, dictType string, page, pageSize int) ([]*model.SystemDictData, int64, error)
 	Options(ctx context.Context, dictType string) ([]*model.SystemDictData, error)
@@ -33,7 +42,7 @@ func NewDictRepository(db *gorm.DB) IDictRepository {
 	return &dictRepository{db: db}
 }
 
-func (r *dictRepository) PageTypes(ctx context.Context, page, pageSize int, keyword string) ([]*model.SystemDictType, int64, error) {
+func (r *dictRepository) PageTypes(ctx context.Context, page, pageSize int, keyword string, groupID *int64) ([]*model.SystemDictType, int64, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -44,6 +53,9 @@ func (r *dictRepository) PageTypes(ctx context.Context, page, pageSize int, keyw
 	if keyword != "" {
 		kw := "%" + keyword + "%"
 		q = q.Where("dict_name LIKE ? OR dict_type LIKE ?", kw, kw)
+	}
+	if groupID != nil {
+		q = q.Where("group_id = ?", *groupID)
 	}
 	var total int64
 	if err := q.Count(&total).Error; err != nil {
@@ -87,6 +99,49 @@ func (r *dictRepository) SaveType(ctx context.Context, m *model.SystemDictType) 
 
 func (r *dictRepository) SoftDeleteType(ctx context.Context, id int64) error {
 	return r.db.WithContext(ctx).Model(&model.SystemDictType{}).
+		Where("id = ?", id).Update("del_flag", 2).Error
+}
+
+func (r *dictRepository) ListGroups(ctx context.Context) ([]*model.SystemDictGroup, error) {
+	var list []*model.SystemDictGroup
+	err := r.db.WithContext(ctx).Where("del_flag = 0").
+		Order("order_num, id").Find(&list).Error
+	return list, err
+}
+
+func (r *dictRepository) GetGroupByID(ctx context.Context, id int64) (*model.SystemDictGroup, error) {
+	var m model.SystemDictGroup
+	err := r.db.WithContext(ctx).Where("id = ? AND del_flag = 0", id).First(&m).Error
+	if err != nil {
+		return nil, err
+	}
+	return &m, nil
+}
+
+func (r *dictRepository) ExistsGroupName(ctx context.Context, groupName string, excludeID int64) (bool, error) {
+	var n int64
+	err := r.db.WithContext(ctx).Model(&model.SystemDictGroup{}).
+		Where("group_name = ? AND del_flag = 0 AND id <> ?", groupName, excludeID).Count(&n).Error
+	return n > 0, err
+}
+
+func (r *dictRepository) CountTypesByGroup(ctx context.Context, groupID int64) (int64, error) {
+	var n int64
+	err := r.db.WithContext(ctx).Model(&model.SystemDictType{}).
+		Where("group_id = ? AND del_flag = 0", groupID).Count(&n).Error
+	return n, err
+}
+
+func (r *dictRepository) CreateGroup(ctx context.Context, m *model.SystemDictGroup) error {
+	return r.db.WithContext(ctx).Create(m).Error
+}
+
+func (r *dictRepository) SaveGroup(ctx context.Context, m *model.SystemDictGroup) error {
+	return r.db.WithContext(ctx).Save(m).Error
+}
+
+func (r *dictRepository) SoftDeleteGroup(ctx context.Context, id int64) error {
+	return r.db.WithContext(ctx).Model(&model.SystemDictGroup{}).
 		Where("id = ?", id).Update("del_flag", 2).Error
 }
 

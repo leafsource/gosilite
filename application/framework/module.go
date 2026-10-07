@@ -50,6 +50,7 @@ func (m *Module) RegisterRoutes(r *server.Hertz) {
 	frameworkUserRouter.Register(r)
 	frameworkMenuRouter.Register(r)
 	frameworkSystemRouter.Register(r)
+	frameworkSystemRouter.RegisterLeader(r)
 	frameworkSyscfgRouter.Register(r)
 	frameworkSyscfgRouter.RegisterGlobal(r)
 }

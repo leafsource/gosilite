@@ -30,12 +30,12 @@
       </template>
     </s-table>
 
-    <t-dialog
+    <s-form-dialog
       v-model:visible="dialogVisible"
-      :header="isEdit ? '编辑岗位' : '新增岗位'"
+      :title="isEdit ? '编辑岗位' : '新增岗位'"
       :width="520"
-      :footer="false"
-      destroy-on-close
+      :loading="saving"
+      @confirm="onSave"
     >
       <t-form :data="form" label-width="90px">
         <t-form-item label="岗位编码" required>
@@ -50,12 +50,8 @@
         <t-form-item label="状态">
           <t-radio-group v-model="form.status" :options="statusOptions" />
         </t-form-item>
-        <t-form-item class="post-page__form-actions">
-          <t-button variant="outline" @click="dialogVisible = false">取消</t-button>
-          <t-button theme="primary" :loading="saving" @click="onSave">保存</t-button>
-        </t-form-item>
       </t-form>
-    </t-dialog>
+    </s-form-dialog>
 
     <t-dialog
       v-model:visible="confirmVisible"
@@ -73,6 +69,7 @@ import { computed, onMounted, ref } from 'vue';
 
 import type { PostDTO, PostSaveParams } from '@/api/system/post';
 import { createPost, fetchPostList, removePost, updatePost } from '@/api/system/post';
+import SFormDialog from '@/components/s-form-dialog/index.vue';
 import STable from '@/components/s-table/index.vue';
 import { useConfigStore, useDict } from '@/store';
 
@@ -209,11 +206,5 @@ onMounted(() => {
   background-color: var(--td-bg-color-container);
   border-radius: var(--td-radius-medium);
   padding: var(--td-comp-paddingTB-xl) var(--td-comp-paddingLR-xl);
-}
-
-.post-page__form-actions {
-  :deep(.t-form__controls) {
-    justify-content: flex-end;
-  }
 }
 </style>

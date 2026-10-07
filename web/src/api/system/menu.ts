@@ -2,8 +2,8 @@ import { request } from '@/utils/request';
 
 // 菜单 DTO（MenuDTO）
 export type MenuDTO = {
-  id: number;
-  parentId: number;
+  id: string;
+  parentId: string;
   menuName: string;
   menuType: string;
   path: string;
@@ -17,8 +17,8 @@ export type MenuDTO = {
 
 // 菜单树节点（MenuNode）
 export type MenuNode = {
-  id: number;
-  parentId: number;
+  id: string;
+  parentId: string;
   label: string;
   menuType: string;
   perms: string;
@@ -32,8 +32,8 @@ export type MenuNode = {
 };
 
 export type MenuSaveParams = {
-  id?: number;
-  parentId: number;
+  id?: string;
+  parentId: string;
   menuName: string;
   menuType: string;
   path?: string;
@@ -47,7 +47,7 @@ export type MenuSaveParams = {
 
 // 树选择 / 树勾选统一结构
 export type MenuTreeItem = {
-  value: number;
+  value: string;
   label: string;
   menuType?: string;
   children?: MenuTreeItem[];
@@ -75,6 +75,6 @@ export function updateMenu(data: MenuSaveParams) {
   return request.put<MenuDTO>({ url: Api.Base, data });
 }
 
-export function removeMenu(id: number) {
+export function removeMenu(id: string) {
   return request.delete<number>({ url: Api.Base, data: { id }, params: { id } });
 }

@@ -40,6 +40,9 @@ const (
 	ErrSystemDictHasData    = 701000022
 	ErrSystemConfigNotFound = 701000023
 	ErrSystemConfigKeyExists = 701000024
+	ErrSystemDictGroupExists = 701000025
+	ErrSystemDictGroupNotFound = 701000026
+	ErrSystemDictGroupHasTypes = 701000027
 )
 
 func init() {
@@ -48,4 +51,7 @@ func init() {
 	code.Register(ErrSystemDictHasData, "cannot delete dict type with data: {type}", code.WithAffectStability(false))
 	code.Register(ErrSystemConfigNotFound, "config not found: {id}", code.WithAffectStability(false))
 	code.Register(ErrSystemConfigKeyExists, "config key already exists: {key}", code.WithAffectStability(false))
+	code.Register(ErrSystemDictGroupExists, "dict group already exists: {name}", code.WithAffectStability(false))
+	code.Register(ErrSystemDictGroupNotFound, "dict group not found: {id}", code.WithAffectStability(false))
+	code.Register(ErrSystemDictGroupHasTypes, "cannot delete dict group with types: {id}", code.WithAffectStability(false))
 }

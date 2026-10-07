@@ -13,7 +13,7 @@ export function updateConfig(data: ConfigSaveParams) {
   return request.put({ url: '/system/config', data });
 }
 
-export function removeConfig(id: number) {
+export function removeConfig(id: string) {
   return request.delete({ url: '/system/config', data: { id }, params: { id } });
 }
 

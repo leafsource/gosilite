@@ -36,12 +36,12 @@
     </s-table>
 
     <!-- 新增 / 编辑角色 -->
-    <t-dialog
+    <s-form-dialog
       v-model:visible="dialogVisible"
-      :header="isEdit ? '编辑角色' : '新增角色'"
+      :title="isEdit ? '编辑角色' : '新增角色'"
       :width="600"
-      :footer="false"
-      destroy-on-close
+      :loading="saving"
+      @confirm="onSave"
     >
       <t-form :data="form" label-width="96px">
         <t-form-item label="角色名称" required>
@@ -62,12 +62,8 @@
         <t-form-item label="排序">
           <t-input-number v-model="form.orderNum" :min="0" theme="column" style="width: 100%" />
         </t-form-item>
-        <t-form-item class="role-page__form-actions">
-          <t-button variant="outline" @click="dialogVisible = false">取消</t-button>
-          <t-button theme="primary" :loading="saving" @click="onSave">保存</t-button>
-        </t-form-item>
       </t-form>
-    </t-dialog>
+    </s-form-dialog>
 
     <!-- 分配菜单 -->
     <t-drawer
@@ -156,6 +152,7 @@ import {
   removeRole,
   updateRole,
 } from '@/api/system/role';
+import SFormDialog from '@/components/s-form-dialog/index.vue';
 import STable from '@/components/s-table/index.vue';
 import { useConfigStore, useDict } from '@/store';
 
@@ -167,7 +164,7 @@ const dataScopeOptions = computed(() =>
 );
 
 interface TreeNode {
-  value: number;
+  value: string;
   label: string;
   children?: TreeNode[];
 }
@@ -306,7 +303,7 @@ async function onConfirmDelete() {
 }
 
 // ===== 通用树工具 =====
-function collectIds(nodes: TreeNode[], acc: number[] = []): number[] {
+function collectIds(nodes: TreeNode[], acc: string[] = []): string[] {
   nodes.forEach((node) => {
     acc.push(node.value);
     if (node.children) collectIds(node.children, acc);
@@ -314,7 +311,7 @@ function collectIds(nodes: TreeNode[], acc: number[] = []): number[] {
   return acc;
 }
 
-function collectAllIds(nodes: TreeNode[]): number[] {
+function collectAllIds(nodes: TreeNode[]): string[] {
   return collectIds(nodes, []);
 }
 
@@ -333,8 +330,8 @@ const menuDrawerVisible = ref(false);
 const menuDrawerRole = ref<RoleDTO | null>(null);
 const menuSaving = ref(false);
 const menuTreeData = ref<MenuTreeItem[]>([]);
-const menuCheckedIds = ref<number[]>([]);
-const menuExpanded = ref<number[]>([]);
+const menuCheckedIds = ref<string[]>([]);
+const menuExpanded = ref<string[]>([]);
 const menuFilter = ref('');
 const menuLoaded = ref(false);
 
@@ -350,11 +347,11 @@ function menuNodesToTree(nodes: MenuNode[]): MenuTreeItem[] {
 }
 
 function onMenuExpand(value: Array<string | number>) {
-  menuExpanded.value = value.map((item) => Number(item));
+  menuExpanded.value = value.map((item) => String(item));
 }
 
 function onMenuCheck(value: Array<string | number>) {
-  menuCheckedIds.value = value.map((item) => Number(item));
+  menuCheckedIds.value = value.map((item) => String(item));
 }
 
 async function openMenuAssign(row: RoleDTO) {
@@ -395,8 +392,8 @@ const deptDrawerVisible = ref(false);
 const deptDrawerRole = ref<RoleDTO | null>(null);
 const deptSaving = ref(false);
 const deptTreeData = ref<DeptTreeItem[]>([]);
-const deptCheckedIds = ref<number[]>([]);
-const deptExpanded = ref<number[]>([]);
+const deptCheckedIds = ref<string[]>([]);
+const deptExpanded = ref<string[]>([]);
 const deptFilter = ref('');
 const deptLoaded = ref(false);
 
@@ -411,11 +408,11 @@ function deptNodesToTree(nodes: DeptNode[]): DeptTreeItem[] {
 }
 
 function onDeptExpand(value: Array<string | number>) {
-  deptExpanded.value = value.map((item) => Number(item));
+  deptExpanded.value = value.map((item) => String(item));
 }
 
 function onDeptCheck(value: Array<string | number>) {
-  deptCheckedIds.value = value.map((item) => Number(item));
+  deptCheckedIds.value = value.map((item) => String(item));
 }
 
 async function openDeptAssign(row: RoleDTO) {
@@ -480,11 +477,5 @@ onMounted(() => {
   margin-top: var(--td-comp-margin-xl);
   padding-top: var(--td-comp-margin-m);
   border-top: 1px solid var(--td-border-level-1-color);
-}
-
-.role-page__form-actions {
-  :deep(.t-form__controls) {
-    justify-content: flex-end;
-  }
 }
 </style>

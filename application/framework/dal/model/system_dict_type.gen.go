@@ -21,6 +21,7 @@ type SystemDictType struct {
 	DelFlag   int16     `gorm:"column:del_flag;not null" json:"del_flag"`
 	CreatedAt time.Time `gorm:"column:created_at;not null;default:now();autoCreateTime:milli" json:"created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at;not null;default:now();autoUpdateTime:milli" json:"updated_at"`
+	GroupID   int64     `gorm:"column:group_id;not null" json:"group_id"`
 }
 
 // TableName SystemDictType's table name

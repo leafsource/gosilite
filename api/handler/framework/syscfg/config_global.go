@@ -19,9 +19,6 @@ func GlobalList(ctx context.Context, c *app.RequestContext) {
 		R.Error(ctx, c, err)
 		return
 	}
-	resp := &syscfg.ConfigListResponse{List: make([]*syscfg.ConfigDTO, 0, len(list)), Total: int64(len(list))}
-	for _, m := range list {
-		resp.List = append(resp.List, configDTO(m))
-	}
+	resp := &syscfg.ConfigListResponse{List: toConfigDTOs(list), Total: int64(len(list))}
 	R.SuccessWithData(ctx, c, resp)
 }

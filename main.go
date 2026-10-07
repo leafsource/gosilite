@@ -8,6 +8,7 @@ import (
 	"gosilite/api/middleware"
 	"gosilite/api/middleware/permission"
 	"gosilite/pkg/genid"
+	"gosilite/pkg/jsonid"
 	"gosilite/pkg/logger"
 	R "gosilite/pkg/utils/response"
 	"io"
@@ -109,6 +110,9 @@ func main() {
 func registerMiddleware(h *server.Hertz) {
 	//ctx-cache
 	h.Use(middleware.ContextCacheMW())
+
+	// JSON id 边界转换：请求体 id 字符串 → 数字（雪花 id 精度）
+	h.Use(jsonid.Middleware())
 
 	// pprof
 	if conf.GetConf().Server.EnablePprof {

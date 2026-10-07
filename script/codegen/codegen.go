@@ -61,6 +61,10 @@ var generateConfig = map[string]map[string]map[string]any{
 			"repository": false,
 			"service":    false,
 		},
+		"system_dict_group": {
+			"repository": false,
+			"service":    false,
+		},
 		"system_config": {
 			"repository": false,
 			"service":    false,

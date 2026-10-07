@@ -2,7 +2,7 @@ import { request } from '@/utils/request';
 
 // 角色 DTO（RoleDTO）
 export type RoleDTO = {
-  id: number;
+  id: string;
   name: string;
   code: string;
   description: string;
@@ -18,7 +18,7 @@ export type RoleQuery = {
 };
 
 export type RoleSaveParams = {
-  id?: number;
+  id?: string;
   name: string;
   code: string;
   description?: string;
@@ -28,13 +28,13 @@ export type RoleSaveParams = {
 };
 
 export type RoleMenuParams = {
-  roleId: number;
-  menuIds: number[];
+  roleId: string;
+  menuIds: string[];
 };
 
 export type RoleDeptParams = {
-  roleId: number;
-  deptIds: number[];
+  roleId: string;
+  deptIds: string[];
 };
 
 const Api = {
@@ -58,7 +58,7 @@ export function updateRole(data: RoleSaveParams) {
   return request.put<RoleDTO>({ url: Api.Base, data });
 }
 
-export function removeRole(id: number) {
+export function removeRole(id: string) {
   return request.delete<number>({ url: Api.Base, data: { id }, params: { id } });
 }
 
@@ -70,10 +70,10 @@ export function assignRoleDept(data: RoleDeptParams) {
   return request.put<number>({ url: Api.Dept, data });
 }
 
-export function fetchRoleMenus(roleId: number) {
-  return request.get<{ ids: number[] }>({ url: Api.Menus, params: { id: roleId } });
+export function fetchRoleMenus(roleId: string) {
+  return request.get<{ ids: string[] }>({ url: Api.Menus, params: { id: roleId } });
 }
 
-export function fetchRoleDepts(roleId: number) {
-  return request.get<{ ids: number[] }>({ url: Api.Depts, params: { id: roleId } });
+export function fetchRoleDepts(roleId: string) {
+  return request.get<{ ids: string[] }>({ url: Api.Depts, params: { id: roleId } });
 }

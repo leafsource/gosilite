@@ -33,7 +33,7 @@
 
 ## 前端 TDesign MCP（强制）
 
-配置见仓库根 `.mcp.json`：
+配置见仓库根 `.mcp.json`，连接命令：`npx -y tdesign-mcp-server@latest`：
 
 ```json
 {
@@ -45,6 +45,8 @@
   }
 }
 ```
+
+**MCP 必须开启使用**：未连接成功不得开始前端开发，禁止绕过 MCP 凭记忆写 `t-*` 代码（配置改动需重启引擎或新开会话才加载）。
 
 Tools：`get-component-docs`（写代码前必查）、`get-component-list`（选型）、`get-component-dom`（DOM/样式）、`get-component-changelog`（升级前）。
 

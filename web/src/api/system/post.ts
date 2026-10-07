@@ -1,7 +1,7 @@
 import { request } from '@/utils/request';
 
 export type PostDTO = {
-  id: number;
+  id: string;
   postCode: string;
   postName: string;
   orderNum: number;
@@ -15,7 +15,7 @@ export type PostQuery = {
 };
 
 export type PostSaveParams = {
-  id?: number;
+  id?: string;
   postCode: string;
   postName: string;
   orderNum: number;
@@ -39,6 +39,6 @@ export function updatePost(data: PostSaveParams) {
   return request.put<PostDTO>({ url: Api.Base, data });
 }
 
-export function removePost(id: number) {
+export function removePost(id: string) {
   return request.delete<number>({ url: Api.Base, data: { id }, params: { id } });
 }

@@ -13,7 +13,7 @@ export interface SessionTokenResponse {
 }
 
 export interface UserProfile {
-  id: number;
+  id: string;
   account: string;
   username: string;
   avatarURL: string;

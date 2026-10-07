@@ -18,6 +18,19 @@ type IDepartmentRepository interface {
 	CountChildren(ctx context.Context, parentID int64) (int64, error)
 	CountUsers(ctx context.Context, deptID int64) (int64, error)
 	SaveAll(ctx context.Context, depts []*model.SystemDept) error
+	// UpdateLeader 设置/清除负责人（leaderUserID=0 清除）
+	UpdateLeader(ctx context.Context, deptID, leaderUserID int64) error
+	// UserExists 校验负责人用户存在
+	UserExists(ctx context.Context, userID int64) (bool, error)
+	// LeaderInfo 全量负责人映射（dept_id → leader 信息）
+	LeaderInfo(ctx context.Context) ([]DeptLeader, error)
+}
+
+// DeptLeader 部门负责人信息（含用户名，join system_user）
+type DeptLeader struct {
+	DeptID     int64  `gorm:"column:dept_id"`
+	LeaderID   int64  `gorm:"column:leader_user_id"`
+	LeaderName string `gorm:"column:leader_name"`
 }
 
 type departmentRepository struct {
@@ -89,4 +102,35 @@ func (r *departmentRepository) SaveAll(ctx context.Context, depts []*model.Syste
 		}
 	}
 	return nil
+}
+
+// UpdateLeader 设置/清除部门负责人（leaderUserID=0 清除）
+func (r *departmentRepository) UpdateLeader(ctx context.Context, deptID, leaderUserID int64) error {
+	return r.db.WithContext(ctx).
+		Model(&model.SystemDept{}).
+		Where("id = ?", deptID).
+		Update("leader_user_id", leaderUserID).Error
+}
+
+// UserExists 校验负责人用户存在
+func (r *departmentRepository) UserExists(ctx context.Context, userID int64) (bool, error) {
+	var n int64
+	err := r.db.WithContext(ctx).
+		Model(&model.SystemUser{}).
+		Where("id = ?", userID).
+		Count(&n).Error
+	return n > 0, err
+}
+
+// LeaderInfo 全量负责人映射数据（dept → leader 用户名）
+// 注：裸表名 system_user 在本环境解析异常，必须 public. 限定（与迁移同因，见 spec journey）
+func (r *departmentRepository) LeaderInfo(ctx context.Context) ([]DeptLeader, error) {
+	var rows []DeptLeader
+	err := r.db.WithContext(ctx).
+		Raw(`SELECT d.id AS dept_id, d.leader_user_id, COALESCE(u.username, '') AS leader_name
+FROM public.system_dept d
+LEFT JOIN public.system_user u ON u.id = d.leader_user_id
+WHERE d.del_flag = 0`).
+		Scan(&rows).Error
+	return rows, err
 }

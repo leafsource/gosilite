@@ -1,47 +1,114 @@
 <template>
-  <div class="content-card">
-    <s-table
-      row-key="id"
-      :columns="typeColumns as any"
-      :data="types as any"
-      :total="typeTotal"
-      :page="typePage"
-      :page-size="typePageSize"
-      :loading="loading"
-      keyword-placeholder="字典名称/类型"
-      @search="onTypeSearch"
-      @reset="
-        () => {
-          typeKeyword = '';
-          typePage = 1;
-          loadTypes();
-        }
-      "
-      @refresh="loadTypes"
-      @page-change="
-        (p, ps) => {
-          typePage = p;
-          typePageSize = ps;
-          loadTypes();
-        }
-      "
-    >
-      <template #toolbar>
-        <t-button v-permission="'system:dict:add'" theme="primary" @click="openType()">新增字典类型</t-button>
-      </template>
-      <template #status="{ row }">
-        <t-tag :theme="row.status === 0 ? 'success' : 'danger'" variant="light">
-          {{ statusDict.labelOf(row.status) }}
-        </t-tag>
-      </template>
-      <template #ops="{ row }">
-        <t-space>
-          <t-link theme="primary" @click="onSelectType(row as DictTypeDTO)">数据项</t-link>
-          <t-link v-permission="'system:dict:edit'" theme="primary" @click="openType(row as DictTypeDTO)">编辑</t-link>
-          <t-link v-permission="'system:dict:remove'" theme="danger" @click="delType(row as DictTypeDTO)">删除</t-link>
-        </t-space>
-      </template>
-    </s-table>
+  <div class="content-card dict-page">
+    <!-- 左：字典分组 -->
+    <div class="dict-page__groups">
+      <div class="dict-page__groups-toolbar">
+        <span class="dict-page__groups-title">字典分组</span>
+        <t-tooltip content="新增分组">
+          <t-button v-permission="'system:dict:add'" variant="outline" shape="square" size="small" @click="openGroup()">
+            <add-icon />
+          </t-button>
+        </t-tooltip>
+      </div>
+      <div
+        class="dict-page__group-item dict-page__group-item--static"
+        :class="{ 'is-active': activeGroupId === null }"
+        @click="selectGroup(null)"
+      >
+        <span class="dict-page__group-name">全部分组</span>
+      </div>
+      <div
+        v-for="g in groups"
+        :key="g.id"
+        class="dict-page__group-item"
+        :class="{
+          'is-active': activeGroupId === Number(g.id),
+          'is-dragging': dragGroupId === g.id,
+          'is-drop-target': dragOverGroupId === g.id && dragGroupId !== g.id,
+        }"
+        draggable="true"
+        @click="selectGroup(Number(g.id))"
+        @dragstart="onGroupDragStart(g)"
+        @dragover.prevent="onGroupDragOver(g)"
+        @drop.prevent="onGroupDrop(g)"
+        @dragend="onGroupDragEnd"
+      >
+        <span class="dict-page__group-grip"><move-icon size="16" /></span>
+        <span class="dict-page__group-body">
+          <span class="dict-page__group-name">{{ g.groupName }}</span>
+          <t-typography-text v-if="g.remark" theme="secondary" class="dict-page__group-remark">
+            {{ g.remark }}
+          </t-typography-text>
+        </span>
+        <span v-if="groupMenuVisible()" class="dict-page__group-ops" @click.stop>
+          <t-dropdown trigger="click" :options="groupMenuOptions()" @click="(opt) => onGroupMenu(opt, g)">
+            <t-button variant="text" shape="square" size="small">
+              <more-icon />
+            </t-button>
+          </t-dropdown>
+        </span>
+      </div>
+      <div
+        class="dict-page__group-item dict-page__group-item--static"
+        :class="{ 'is-active': activeGroupId === 0 }"
+        @click="selectGroup(0)"
+      >
+        <span class="dict-page__group-name">未分组</span>
+      </div>
+    </div>
+
+    <!-- 右：字典类型 -->
+    <div class="dict-page__main">
+      <s-table
+        row-key="id"
+        :columns="typeColumns as any"
+        :data="types as any"
+        :total="typeTotal"
+        :page="typePage"
+        :page-size="typePageSize"
+        :loading="loading"
+        keyword-placeholder="字典名称/类型"
+        @search="onTypeSearch"
+        @reset="
+          () => {
+            typeKeyword = '';
+            typePage = 1;
+            loadTypes();
+          }
+        "
+        @refresh="loadTypes"
+        @page-change="
+          (p, ps) => {
+            typePage = p;
+            typePageSize = ps;
+            loadTypes();
+          }
+        "
+      >
+        <template #toolbar>
+          <t-button v-permission="'system:dict:add'" theme="primary" @click="openType()">新增字典类型</t-button>
+        </template>
+        <template #groupName="{ row }">
+          {{ groupOf(row.groupId) }}
+        </template>
+        <template #status="{ row }">
+          <t-tag :theme="row.status === 0 ? 'success' : 'danger'" variant="light">
+            {{ statusDict.labelOf(row.status) }}
+          </t-tag>
+        </template>
+        <template #ops="{ row }">
+          <t-space>
+            <t-link theme="primary" @click="onSelectType(row as DictTypeDTO)">数据项</t-link>
+            <t-link v-permission="'system:dict:edit'" theme="primary" @click="openType(row as DictTypeDTO)"
+              >编辑</t-link
+            >
+            <t-link v-permission="'system:dict:remove'" theme="danger" @click="delType(row as DictTypeDTO)"
+              >删除</t-link
+            >
+          </t-space>
+        </template>
+      </s-table>
+    </div>
 
     <t-drawer
       v-model:visible="dataDrawerVisible"
@@ -102,19 +169,31 @@
       </s-table>
     </t-drawer>
 
-    <t-dialog v-model:visible="typeDialog" :header="typeForm.id ? '编辑字典类型' : '新增字典类型'" @confirm="saveType">
+    <!-- 字典类型表单 6 字段 >5 → 抽屉 -->
+    <s-form-drawer
+      v-model:visible="typeDialog"
+      :title="typeForm.id ? '编辑字典类型' : '新增字典类型'"
+      @confirm="saveType"
+    >
       <t-form :data="typeForm" label-width="90px">
         <t-form-item label="字典名称"><t-input v-model="typeForm.dictName" /></t-form-item>
         <t-form-item label="字典类型"><t-input v-model="typeForm.dictType" :disabled="!!typeForm.id" /></t-form-item>
+        <t-form-item label="分组">
+          <t-select v-model="typeForm.groupId" :options="groupSelectOptions" placeholder="选择分组（可未分组）" />
+        </t-form-item>
         <t-form-item label="排序"><t-input-number v-model="typeForm.orderNum" theme="column" /></t-form-item>
         <t-form-item label="状态">
           <t-radio-group v-model="typeForm.status" :options="statusOptions" />
         </t-form-item>
         <t-form-item label="备注"><t-textarea v-model="typeForm.remark" /></t-form-item>
       </t-form>
-    </t-dialog>
+    </s-form-drawer>
 
-    <t-dialog v-model:visible="dataDialog" :header="dataForm.id ? '编辑字典数据' : '新增字典数据'" @confirm="saveData">
+    <s-form-dialog
+      v-model:visible="dataDialog"
+      :title="dataForm.id ? '编辑字典数据' : '新增字典数据'"
+      @confirm="saveData"
+    >
       <t-form :data="dataForm" label-width="90px">
         <t-form-item label="标签"><t-input v-model="dataForm.dictLabel" /></t-form-item>
         <t-form-item label="值"><t-input v-model="dataForm.dictValue" /></t-form-item>
@@ -129,25 +208,43 @@
           </t-radio-group>
         </t-form-item>
       </t-form>
-    </t-dialog>
+    </s-form-dialog>
+
+    <s-form-dialog v-model:visible="groupDialog" :title="groupForm.id ? '编辑分组' : '新增分组'" @confirm="saveGroup">
+      <t-form ref="groupFormRef" :data="groupForm" :rules="groupRules" label-width="90px">
+        <t-form-item label="分组名称" required>
+          <t-input v-model="groupForm.groupName" placeholder="请输入分组名称" />
+        </t-form-item>
+        <t-form-item label="备注"><t-textarea v-model="groupForm.remark" /></t-form-item>
+      </t-form>
+    </s-form-dialog>
   </div>
 </template>
 <script setup lang="ts">
+import { AddIcon, MoreIcon, MoveIcon } from 'tdesign-icons-vue-next';
+import type { DropdownOption, FormInstanceFunctions, FormRule } from 'tdesign-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
 import {
   createDictData,
+  createDictGroup,
   createDictType,
   listDictData,
+  listDictGroups,
   listDictTypes,
   removeDictData,
+  removeDictGroup,
   removeDictType,
   updateDictData,
+  updateDictGroup,
   updateDictType,
 } from '@/api/system/dict';
-import type { DictDataDTO, DictTypeDTO } from '@/api/system/dictModel';
+import type { DictDataDTO, DictGroupDTO, DictTypeDTO } from '@/api/system/dictModel';
+import SFormDialog from '@/components/s-form-dialog/index.vue';
+import SFormDrawer from '@/components/s-form-drawer/index.vue';
 import STable from '@/components/s-table/index.vue';
+import { hasPerm } from '@/directives/permission';
 import { useConfigStore, useDict, useDictStore } from '@/store';
 
 const statusDict = useDict('sys_status');
@@ -161,6 +258,10 @@ const typePage = ref(1);
 const typePageSize = ref(useConfigStore().pageDefault);
 const typeKeyword = ref('');
 
+const groups = ref<DictGroupDTO[]>([]);
+/** null=全部分组；0=未分组；>0=指定分组 */
+const activeGroupId = ref<number | null>(null);
+
 const selectedType = ref<DictTypeDTO | null>(null);
 const dataList = ref<DictDataDTO[]>([]);
 const dataTotal = ref(0);
@@ -172,10 +273,20 @@ const typeDialog = ref(false);
 const typeForm = ref<Partial<DictTypeDTO>>({});
 const dataDialog = ref(false);
 const dataForm = ref<Partial<DictDataDTO>>({});
+const groupDialog = ref(false);
+const groupForm = ref<Partial<DictGroupDTO>>({});
+const groupFormRef = ref<FormInstanceFunctions>();
+const groupRules: Record<string, FormRule[]> = {
+  groupName: [{ required: true, message: '请输入分组名称', type: 'error' }],
+};
+const dragGroupId = ref<string | null>(null);
+const dragOverGroupId = ref<string | null>(null);
+const groupSorting = ref(false);
 
 const typeColumns = [
   { colKey: 'dictName', title: '字典名称', cell: 'dictName' },
   { colKey: 'dictType', title: '字典类型' },
+  { colKey: 'groupName', title: '分组', width: 110, cell: 'groupName' },
   { colKey: 'orderNum', title: '排序', width: 80 },
   { colKey: 'status', title: '状态', width: 90, cell: 'status' },
   { colKey: 'ops', title: '操作', width: 180, fixed: 'right', cell: 'ops' },
@@ -189,6 +300,75 @@ const dataColumns = [
   { colKey: 'ops', title: '操作', width: 180, fixed: 'right', cell: 'ops' },
 ];
 
+const groupSelectOptions = computed(() => [
+  { label: '未分组', value: 0 },
+  ...groups.value.map((g) => ({ label: g.groupName, value: Number(g.id) })),
+]);
+
+function groupOf(groupId: number | undefined): string {
+  const id = Number(groupId ?? 0);
+  if (!id) return '未分组';
+  const hit = groups.value.find((g) => Number(g.id) === id);
+  return hit ? hit.groupName : String(id);
+}
+
+async function loadGroups() {
+  try {
+    const res = await listDictGroups();
+    groups.value = res.list || [];
+  } catch (e) {
+    MessagePlugin.error((e as Error).message || '加载分组失败');
+  }
+}
+
+// ===== 分组拖拽排序（move-icon 手柄，drop 后持久化 orderNum） =====
+function onGroupDragStart(g: DictGroupDTO) {
+  dragGroupId.value = g.id;
+}
+
+function onGroupDragOver(g: DictGroupDTO) {
+  dragOverGroupId.value = g.id;
+}
+
+function onGroupDragEnd() {
+  dragGroupId.value = null;
+  dragOverGroupId.value = null;
+}
+
+async function onGroupDrop(target: DictGroupDTO) {
+  const from = dragGroupId.value;
+  dragGroupId.value = null;
+  dragOverGroupId.value = null;
+  if (!from || from === target.id || groupSorting.value) return;
+  const list = [...groups.value];
+  const fi = list.findIndex((g) => g.id === from);
+  const ti = list.findIndex((g) => g.id === target.id);
+  if (fi < 0 || ti < 0) return;
+  const [moved] = list.splice(fi, 1);
+  list.splice(ti, 0, moved);
+  groupSorting.value = true;
+  try {
+    for (let i = 0; i < list.length; i += 1) {
+      const g = list[i];
+      if (g.orderNum === i + 1) continue;
+      await updateDictGroup({ ...g, orderNum: i + 1 });
+    }
+    await loadGroups();
+  } catch (e) {
+    MessagePlugin.error((e as Error).message || '保存分组顺序失败');
+    await loadGroups();
+  } finally {
+    groupSorting.value = false;
+  }
+}
+
+function selectGroup(id: number | null) {
+  if (activeGroupId.value === id) return;
+  activeGroupId.value = id;
+  typePage.value = 1;
+  loadTypes();
+}
+
 async function loadTypes() {
   loading.value = true;
   try {
@@ -196,6 +376,8 @@ async function loadTypes() {
       page: typePage.value,
       pageSize: typePageSize.value,
       keyword: typeKeyword.value || undefined,
+      // null=全部不传；0 保留（未分组）
+      groupId: activeGroupId.value === null ? undefined : activeGroupId.value,
     });
     types.value = res.list || [];
     typeTotal.value = res.total || 0;
@@ -242,7 +424,10 @@ function onSelectType(row: DictTypeDTO) {
 }
 
 function openType(row?: DictTypeDTO) {
-  typeForm.value = row ? { ...row } : { status: 0, orderNum: 0, dictName: '', dictType: '', remark: '' };
+  const defaultGroup = activeGroupId.value !== null && activeGroupId.value > 0 ? activeGroupId.value : 0;
+  typeForm.value = row
+    ? { ...row }
+    : { status: 0, orderNum: 0, dictName: '', dictType: '', remark: '', groupId: defaultGroup };
   typeDialog.value = true;
 }
 
@@ -271,6 +456,69 @@ async function delType(row: DictTypeDTO) {
     await loadTypes();
   } catch (e) {
     MessagePlugin.error((e as Error).message || '删除失败');
+  }
+}
+
+function openGroup(row?: DictGroupDTO) {
+  groupForm.value = row ? { ...row } : { groupName: '', orderNum: groups.value.length + 1, remark: '' };
+  groupDialog.value = true;
+}
+
+async function saveGroup() {
+  const validateResult = await groupFormRef.value?.validate();
+  if (validateResult !== true) return;
+  try {
+    if (groupForm.value.id) await updateDictGroup(groupForm.value as DictGroupDTO);
+    else await createDictGroup(groupForm.value as DictGroupDTO);
+    MessagePlugin.success('保存成功');
+    groupDialog.value = false;
+    await loadGroups();
+  } catch (e) {
+    MessagePlugin.error((e as Error).message || '保存分组失败');
+  }
+}
+
+async function delGroup(row: DictGroupDTO) {
+  try {
+    await removeDictGroup(row.id);
+    MessagePlugin.success('已删除');
+    if (activeGroupId.value === Number(row.id)) {
+      activeGroupId.value = null;
+      typePage.value = 1;
+      await loadTypes();
+    }
+    await loadGroups();
+  } catch (e) {
+    MessagePlugin.error((e as Error).message || '删除分组失败');
+  }
+}
+
+// ===== 分组行 more 菜单（编辑 / 删除） =====
+function groupMenuVisible(): boolean {
+  return hasPerm('system:dict:edit') || hasPerm('system:dict:remove');
+}
+
+function groupMenuOptions(): DropdownOption[] {
+  const options: DropdownOption[] = [];
+  if (hasPerm('system:dict:edit')) {
+    options.push({ content: '编辑', value: 'edit' });
+  }
+  if (hasPerm('system:dict:remove')) {
+    options.push({ content: '删除', value: 'delete', theme: 'error' });
+  }
+  return options;
+}
+
+function onGroupMenu(option: DropdownOption, row: DictGroupDTO) {
+  switch (String(option.value)) {
+    case 'edit':
+      openGroup(row);
+      break;
+    case 'delete':
+      delGroup(row);
+      break;
+    default:
+      break;
   }
 }
 
@@ -314,6 +562,120 @@ async function delData(row: DictDataDTO) {
 }
 
 onMounted(() => {
+  loadGroups();
   loadTypes();
 });
 </script>
+<style lang="less" scoped>
+.dict-page {
+  display: flex;
+  gap: var(--td-comp-margin-xl);
+  min-height: 480px;
+}
+
+.dict-page__groups {
+  width: 200px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--td-border-level-1-color);
+  padding-right: var(--td-comp-margin-m);
+}
+
+.dict-page__groups-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--td-comp-margin-m);
+}
+
+.dict-page__groups-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--td-text-color-primary);
+}
+
+.dict-page__group-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--td-comp-margin-s);
+  padding: 8px 12px;
+  border-radius: var(--td-radius-medium);
+  cursor: pointer;
+  color: var(--td-text-color-primary);
+  font-size: 13px;
+
+  &:hover {
+    background-color: var(--td-bg-color-container-hover);
+  }
+
+  &.is-active {
+    background-color: var(--td-brand-color-light);
+    color: var(--td-brand-color);
+    font-weight: 600;
+  }
+
+  &.is-dragging {
+    opacity: 0.55;
+  }
+
+  &.is-drop-target {
+    outline: 1px dashed var(--td-brand-color);
+    outline-offset: -1px;
+  }
+}
+
+// 静态项（全部分组/未分组）让开 grip 宽度，与分组名称左对齐
+.dict-page__group-item--static {
+  padding-left: 36px;
+}
+
+.dict-page__group-grip {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--td-text-color-placeholder);
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.dict-page__group-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dict-page__group-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dict-page__group-remark {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.dict-page__group-ops {
+  display: none;
+  flex-shrink: 0;
+}
+
+.dict-page__group-item:hover .dict-page__group-ops,
+.dict-page__group-item.is-active .dict-page__group-ops {
+  display: inline-flex;
+}
+
+.dict-page__main {
+  flex: 1;
+  min-width: 0;
+}
+</style>

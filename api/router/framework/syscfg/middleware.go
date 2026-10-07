@@ -107,3 +107,24 @@ func _typeMw() []app.HandlerFunc {
 func _typelistMw() []app.HandlerFunc {
 	return permission.HPermissions("system:dict:list")
 }
+
+func _groupremoveMw() []app.HandlerFunc {
+	return permission.HPermissions("system:dict:remove")
+}
+
+func _groupcreateMw() []app.HandlerFunc {
+	return permission.HPermissions("system:dict:add")
+}
+
+func _groupupdateMw() []app.HandlerFunc {
+	return permission.HPermissions("system:dict:edit")
+}
+
+func _groupMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _grouplistMw() []app.HandlerFunc {
+	return permission.HPermissions("system:dict:list")
+}

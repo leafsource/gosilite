@@ -5,42 +5,24 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	syscfg "gosilite/api/model/framework/syscfg"
-	"gosilite/application/framework/dal/model"
 	"gosilite/application/framework/service/dict"
 	R "gosilite/pkg/utils/response"
 )
 
-func typeDTO(m *model.SystemDictType) *syscfg.DictTypeDTO {
-	return &syscfg.DictTypeDTO{
-		ID: m.ID, DictName: m.DictName, DictType: m.DictType,
-		Status: int32(m.Status), OrderNum: m.OrderNum, Remark: m.Remark,
-	}
-}
-
-func dataDTO(m *model.SystemDictData) *syscfg.DictDataDTO {
-	return &syscfg.DictDataDTO{
-		ID: m.ID, DictType: m.DictType, DictLabel: m.DictLabel, DictValue: m.DictValue,
-		CssClass: m.CSSClass, ListOrder: m.ListOrder, Status: int32(m.Status), IsDefault: int32(m.IsDefault),
-	}
-}
-
 // TypeList .
 // @router /system/dict/type/list [GET]
 func TypeList(ctx context.Context, c *app.RequestContext) {
-	var req syscfg.PageQuery
+	var req syscfg.DictTypeListRequest
 	if err := c.BindAndValidate(&req); err != nil {
 		R.InvalidParamRequestResponse(c, err.Error())
 		return
 	}
-	list, total, err := dict.SystemDictTypeSVC.PageType(ctx, int(req.Page), int(req.PageSize), req.Keyword)
+	list, total, err := dict.SystemDictTypeSVC.PageType(ctx, int(req.Page), int(req.PageSize), req.Keyword, req.GroupId)
 	if err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
-	resp := &syscfg.DictTypeListResponse{List: make([]*syscfg.DictTypeDTO, 0, len(list)), Total: total}
-	for _, m := range list {
-		resp.List = append(resp.List, typeDTO(m))
-	}
+	resp := &syscfg.DictTypeListResponse{List: toDictTypeDTOs(list), Total: total}
 	R.SuccessWithData(ctx, c, resp)
 }
 
@@ -52,18 +34,12 @@ func TypeCreate(ctx context.Context, c *app.RequestContext) {
 		R.InvalidParamRequestResponse(c, err.Error())
 		return
 	}
-	m := &model.SystemDictType{
-		DictName: req.DictName, DictType: req.DictType,
-		Status: int16(req.Status), OrderNum: req.OrderNum,
-	}
-	if req.Remark != nil {
-		m.Remark = *req.Remark
-	}
+	m := fromDictTypeSaveRequest(&req)
 	if err := dict.SystemDictTypeSVC.CreateType(ctx, m); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
-	R.SuccessWithData(ctx, c, typeDTO(m))
+	R.SuccessWithData(ctx, c, toDictTypeDTO(m))
 }
 
 // TypeUpdate .
@@ -78,18 +54,13 @@ func TypeUpdate(ctx context.Context, c *app.RequestContext) {
 		R.InvalidParamRequestResponse(c, "id required")
 		return
 	}
-	m := &model.SystemDictType{
-		ID: *req.ID, DictName: req.DictName, DictType: req.DictType,
-		Status: int16(req.Status), OrderNum: req.OrderNum,
-	}
-	if req.Remark != nil {
-		m.Remark = *req.Remark
-	}
+	m := fromDictTypeSaveRequest(&req)
+	m.ID = *req.ID
 	if err := dict.SystemDictTypeSVC.UpdateType(ctx, m); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
-	R.SuccessWithData(ctx, c, typeDTO(m))
+	R.SuccessWithData(ctx, c, toDictTypeDTO(m))
 }
 
 // TypeRemove .
@@ -124,10 +95,7 @@ func DataList(ctx context.Context, c *app.RequestContext) {
 		R.Error(ctx, c, err)
 		return
 	}
-	resp := &syscfg.DictDataListResponse{List: make([]*syscfg.DictDataDTO, 0, len(list)), Total: total}
-	for _, m := range list {
-		resp.List = append(resp.List, dataDTO(m))
-	}
+	resp := &syscfg.DictDataListResponse{List: toDictDataDTOs(list), Total: total}
 	R.SuccessWithData(ctx, c, resp)
 }
 
@@ -139,18 +107,12 @@ func DataCreate(ctx context.Context, c *app.RequestContext) {
 		R.InvalidParamRequestResponse(c, err.Error())
 		return
 	}
-	m := &model.SystemDictData{
-		DictType: req.DictType, DictLabel: req.DictLabel, DictValue: req.DictValue,
-		ListOrder: req.ListOrder, Status: int16(req.Status), IsDefault: int16(req.IsDefault),
-	}
-	if req.CssClass != nil {
-		m.CSSClass = *req.CssClass
-	}
+	m := fromDictDataSaveRequest(&req)
 	if err := dict.SystemDictDataSVC.CreateData(ctx, m); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
-	R.SuccessWithData(ctx, c, dataDTO(m))
+	R.SuccessWithData(ctx, c, toDictDataDTO(m))
 }
 
 // DataUpdate .
@@ -165,18 +127,13 @@ func DataUpdate(ctx context.Context, c *app.RequestContext) {
 		R.InvalidParamRequestResponse(c, "id required")
 		return
 	}
-	m := &model.SystemDictData{
-		ID: *req.ID, DictType: req.DictType, DictLabel: req.DictLabel, DictValue: req.DictValue,
-		ListOrder: req.ListOrder, Status: int16(req.Status), IsDefault: int16(req.IsDefault),
-	}
-	if req.CssClass != nil {
-		m.CSSClass = *req.CssClass
-	}
+	m := fromDictDataSaveRequest(&req)
+	m.ID = *req.ID
 	if err := dict.SystemDictDataSVC.UpdateData(ctx, m); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
-	R.SuccessWithData(ctx, c, dataDTO(m))
+	R.SuccessWithData(ctx, c, toDictDataDTO(m))
 }
 
 // DataRemove .
@@ -207,9 +164,75 @@ func DataOptions(ctx context.Context, c *app.RequestContext) {
 		R.Error(ctx, c, err)
 		return
 	}
-	resp := &syscfg.DictOptionsResponse{List: make([]*syscfg.DictOptionDTO, 0, len(list))}
-	for _, m := range list {
-		resp.List = append(resp.List, &syscfg.DictOptionDTO{Label: m.DictLabel, Value: m.DictValue})
-	}
+	resp := &syscfg.DictOptionsResponse{List: toDictOptionDTOs(list)}
 	R.SuccessWithData(ctx, c, resp)
+}
+
+// GroupList .
+// @router /system/dict/group/list [GET]
+func GroupList(ctx context.Context, c *app.RequestContext) {
+	var req syscfg.PageQuery
+	if err := c.BindAndValidate(&req); err != nil {
+		R.InvalidParamRequestResponse(c, err.Error())
+		return
+	}
+	list, err := dict.SystemDictGroupSVC.List(ctx)
+	if err != nil {
+		R.Error(ctx, c, err)
+		return
+	}
+	resp := &syscfg.DictGroupListResponse{List: toDictGroupDTOs(list)}
+	R.SuccessWithData(ctx, c, resp)
+}
+
+// GroupCreate .
+// @router /system/dict/group [POST]
+func GroupCreate(ctx context.Context, c *app.RequestContext) {
+	var req syscfg.DictGroupSaveRequest
+	if err := c.BindAndValidate(&req); err != nil {
+		R.InvalidParamRequestResponse(c, err.Error())
+		return
+	}
+	m := fromDictGroupSaveRequest(&req)
+	if err := dict.SystemDictGroupSVC.Create(ctx, m); err != nil {
+		R.Error(ctx, c, err)
+		return
+	}
+	R.SuccessWithData(ctx, c, toDictGroupDTO(m))
+}
+
+// GroupUpdate .
+// @router /system/dict/group [PUT]
+func GroupUpdate(ctx context.Context, c *app.RequestContext) {
+	var req syscfg.DictGroupSaveRequest
+	if err := c.BindAndValidate(&req); err != nil {
+		R.InvalidParamRequestResponse(c, err.Error())
+		return
+	}
+	if req.ID == nil {
+		R.InvalidParamRequestResponse(c, "id required")
+		return
+	}
+	m := fromDictGroupSaveRequest(&req)
+	m.ID = *req.ID
+	if err := dict.SystemDictGroupSVC.Update(ctx, m); err != nil {
+		R.Error(ctx, c, err)
+		return
+	}
+	R.SuccessWithData(ctx, c, toDictGroupDTO(m))
+}
+
+// GroupRemove .
+// @router /system/dict/group [DELETE]
+func GroupRemove(ctx context.Context, c *app.RequestContext) {
+	var req syscfg.IdRequest
+	if err := c.BindAndValidate(&req); err != nil {
+		R.InvalidParamRequestResponse(c, err.Error())
+		return
+	}
+	if err := dict.SystemDictGroupSVC.Delete(ctx, req.ID); err != nil {
+		R.Error(ctx, c, err)
+		return
+	}
+	R.SuccessWithData(ctx, c, int32(1))
 }

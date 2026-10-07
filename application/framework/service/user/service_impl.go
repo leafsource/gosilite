@@ -38,15 +38,10 @@ func (s *Service) Authorizator(ctx context.Context, userId int64) (*ctxutil.Logi
 	if err != nil {
 		return nil, err
 	}
-	return &ctxutil.LoginUser{
-		ID:          user.ID,
-		Username:    user.Username,
-		Account:     user.Account,
-		AvatarURL:   resource.URL,
-		Roles:       s.repo.FindRoleCodes(ctx, user.ID),
-		Permissions: s.repo.FindPermissionCodes(ctx, user.ID),
-		DeptID:      user.DeptID,
-	}, nil
+	return toLoginUser(user, resource.URL,
+		s.repo.FindRoleCodes(ctx, user.ID),
+		s.repo.FindPermissionCodes(ctx, user.ID),
+	), nil
 }
 
 func (s *Service) GetProfile(ctx context.Context) (*model.SystemUser, error) {

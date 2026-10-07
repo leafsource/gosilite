@@ -48,16 +48,7 @@ func GetInfo(ctx context.Context, c *app.RequestContext) {
 		R.Error(ctx, c, errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "session is required")))
 		return
 	}
-	resp := &user.LoginUserResponse{
-		User: &user.UserProfile{
-			ID:          loginUser.ID,
-			Account:     loginUser.Account,
-			Username:    loginUser.Username,
-			AvatarURL:   loginUser.AvatarURL,
-		},
-		Roles:       loginUser.Roles,
-		Permissions: loginUser.Permissions,
-	}
+	resp := toLoginUserResponse(loginUser)
 	R.SuccessWithData(ctx, c, resp)
 }
 
@@ -65,18 +56,7 @@ func GetInfo(ctx context.Context, c *app.RequestContext) {
 // @router user/profile [GET]
 func GetProfile(ctx context.Context, c *app.RequestContext) {
 	loginUser := ctxutil.GetLoginUser(ctx)
-	resp := &user.LoginUserResponse{
-		User: &user.UserProfile{
-			ID:        loginUser.ID,
-			Account:   loginUser.Account,
-			Username:  loginUser.Username,
-			AvatarURL: loginUser.AvatarURL,
-		},
-		Roles:       loginUser.Roles,
-		Permissions: loginUser.Permissions,
-	}
-
-	R.SuccessWithData(ctx, c, resp)
+	R.SuccessWithData(ctx, c, toLoginUserResponse(loginUser))
 }
 
 // UpdateAvatar .
@@ -151,12 +131,7 @@ func Refresh(ctx context.Context, c *app.RequestContext) {
 		expiresIn = 0
 	}
 
-	R.SuccessWithData(ctx, c, &user.SessionTokenResponse{
-		AccessToken:  accessToken,
-		TokenType:    "Bearer",
-		ExpiresIn:    expiresIn,
-		RefreshToken: tokens.RefreshToken,
-	})
+	R.SuccessWithData(ctx, c, toSessionTokenResponse(accessToken, tokens.RefreshToken, expiresIn))
 }
 
 // Logout .
