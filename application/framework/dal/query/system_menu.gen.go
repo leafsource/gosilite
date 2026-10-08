@@ -56,6 +56,7 @@ func newSystemMenu(db *gorm.DB, opts ...gen.DOOption) systemMenu {
 	_systemMenu.HiddenBreadcrumb = field.NewBool(tableName, "hidden_breadcrumb")
 	_systemMenu.Perms = field.NewString(tableName, "perms")
 	_systemMenu.Status = field.NewInt16(tableName, "status")
+	_systemMenu.ActionType = field.NewString(tableName, "action_type")
 
 	_systemMenu.fillFieldMap()
 
@@ -94,6 +95,7 @@ type systemMenu struct {
 	HiddenBreadcrumb field.Bool   // 面包屑中是否隐藏
 	Perms            field.String // 权限标识 e.g. system:user:list
 	Status           field.Int16
+	ActionType       field.String // 按钮操作类型（sys_action_type），仅 menu_type=F 使用
 
 	fieldMap map[string]field.Expr
 }
@@ -138,6 +140,7 @@ func (s *systemMenu) updateTableName(table string) *systemMenu {
 	s.HiddenBreadcrumb = field.NewBool(table, "hidden_breadcrumb")
 	s.Perms = field.NewString(table, "perms")
 	s.Status = field.NewInt16(table, "status")
+	s.ActionType = field.NewString(table, "action_type")
 
 	s.fillFieldMap()
 
@@ -154,7 +157,7 @@ func (s *systemMenu) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *systemMenu) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 28)
+	s.fieldMap = make(map[string]field.Expr, 29)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["parent_id"] = s.ParentID
 	s.fieldMap["permission_code"] = s.PermissionCode
@@ -183,6 +186,7 @@ func (s *systemMenu) fillFieldMap() {
 	s.fieldMap["hidden_breadcrumb"] = s.HiddenBreadcrumb
 	s.fieldMap["perms"] = s.Perms
 	s.fieldMap["status"] = s.Status
+	s.fieldMap["action_type"] = s.ActionType
 }
 
 func (s systemMenu) clone(db *gorm.DB) systemMenu {

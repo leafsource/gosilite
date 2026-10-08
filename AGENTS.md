@@ -35,11 +35,17 @@
 
 ## 前端 TDesign MCP（强制）
 
-配置见仓库根 `.mcp.json`，连接命令：`npx -y tdesign-mcp-server@latest`。
+**本环境引擎 MCP 挂载不可用**（重启/新会话无效）。一律用技能脚本手动连接并调用：
 
-**MCP 必须开启使用**：未连接成功不得开始前端开发，禁止绕过 MCP 凭记忆写 `t-*`（配置改动需重启引擎或新开会话）。
+```bash
+python3 .agents/skills/frontend-dev/scripts/tdesign_mcp.py list-tools
+python3 .agents/skills/frontend-dev/scripts/tdesign_mcp.py call get-component-docs \
+  '{"framework":"vue-next","names":["table","select"]}'
+```
 
-Tools：`get-component-docs`（写码前必查）、`get-component-list`（选型）、`get-component-dom`（DOM/样式）、`get-component-changelog`（升级前）。
+**未查到 API 不得写 `t-*`**，禁止凭记忆写组件属性。**不要 `sudo npx` 长期挂 server**（stdio 管道接不上）。
+
+Tools：`get-component-docs`（写码前必查，`framework: "vue-next"`）、`get-component-list`（选型）、`get-component-dom`（DOM/样式）、`get-component-changelog`（升级前）、`search-icon`（图标名）。步骤、契约与示例见 `.agents/skills/frontend-dev/references/tdesign-mcp.md`。
 
 ---
 

@@ -141,6 +141,7 @@ struct MenuDTO {
     9: i32 orderNum
     10: bool visible
     11: i32 status
+    12: string actionType
 }
 
 struct MenuNode {
@@ -156,6 +157,7 @@ struct MenuNode {
     10: string component
     11: string icon
     12: list<MenuNode> children
+    13: string actionType
 }
 
 struct MenuTreeResponse {
@@ -179,6 +181,7 @@ struct MenuSaveRequest {
     9: i32 orderNum
     10: bool visible
     11: i32 status
+    12: optional string actionType
 }
 
 // ========== 角色 ==========

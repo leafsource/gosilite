@@ -66,6 +66,19 @@ const DEFAULT_FALLBACK: Record<string, DictOption[]> = {
     { label: '业务', value: 'business' },
     { label: '全局', value: 'global' },
   ],
+  sys_action_type: [
+    { label: '添加', value: 'add' },
+    { label: '修改', value: 'edit' },
+    { label: '删除', value: 'delete' },
+    { label: '下载', value: 'download' },
+    { label: '上传', value: 'upload' },
+    { label: '查询', value: 'query' },
+    { label: '导入', value: 'import' },
+    { label: '导出', value: 'export' },
+    { label: '审批', value: 'approve' },
+    { label: '分配', value: 'assign' },
+    { label: '其他', value: 'other' },
+  ],
 };
 
 /**

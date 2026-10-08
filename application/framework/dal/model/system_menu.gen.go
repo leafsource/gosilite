@@ -40,6 +40,7 @@ type SystemMenu struct {
 	HiddenBreadcrumb bool      `gorm:"column:hidden_breadcrumb;not null;comment:面包屑中是否隐藏" json:"hidden_breadcrumb"` // 面包屑中是否隐藏
 	Perms            string    `gorm:"column:perms;not null;comment:权限标识 e.g. system:user:list" json:"perms"`       // 权限标识 e.g. system:user:list
 	Status           int16     `gorm:"column:status;not null" json:"status"`
+	ActionType       string    `gorm:"column:action_type;not null;comment:按钮操作类型（sys_action_type），仅 menu_type=F 使用" json:"action_type"` // 按钮操作类型（sys_action_type），仅 menu_type=F 使用
 }
 
 // TableName SystemMenu's table name

@@ -20,6 +20,9 @@
       <template #menuType="{ row }">
         <s-tag-dict dict-type="sys_menu_type" :value="row.menuType" />
       </template>
+      <template #actionType="{ row }">
+        <s-tag-dict v-if="row.menuType === 'F'" dict-type="sys_action_type" :value="row.actionType" />
+      </template>
       <template #visible="{ row }">
         <t-tag :theme="row.visible ? 'success' : 'default'" variant="light">
           {{ row.visible ? '显示' : '隐藏' }}
@@ -37,50 +40,54 @@
       </template>
     </s-table>
 
-    <!-- 10 字段 >5 → 抽屉 -->
+    <!-- 11 字段 >5 → 抽屉 -->
     <s-form-drawer
       v-model:visible="dialogVisible"
       :title="isEdit ? '编辑菜单' : '新增菜单'"
       :loading="saving"
       @confirm="onSave"
     >
-      <t-form :data="form" label-width="90px">
-        <t-form-item label="上级菜单">
+      <t-form ref="formRef" :data="form" :rules="rules" label-width="90px">
+        <t-form-item label="上级菜单" name="parentId">
           <t-tree-select
             v-model="form.parentId"
             :data="parentOptions"
             clearable
-            placeholder="选择上级菜单（根目录留空）"
+            placeholder="选择上级菜单"
             style="width: 100%"
           />
         </t-form-item>
-        <t-form-item label="菜单类型">
+        <t-form-item label="菜单类型" name="menuType">
           <s-radio-dict v-model="form.menuType" dict-type="sys_menu_type" />
         </t-form-item>
-        <t-form-item label="菜单名称" required>
+        <t-form-item label="菜单名称" name="menuName">
           <t-input v-model="form.menuName" placeholder="请输入菜单名称" />
         </t-form-item>
-        <t-form-item label="路由路径">
-          <t-input v-model="form.path" placeholder="如 /system/user（按钮可留空）" />
+        <!-- 字段显隐按类型：M/C 需路由+组件；F 不进路由，必填权限标识+操作类型 -->
+        <t-form-item v-if="form.menuType !== 'F'" label="路由路径" name="path">
+          <t-input v-model="form.path" :placeholder="pathPlaceholder" />
         </t-form-item>
-        <t-form-item label="组件路径">
-          <t-input v-model="form.component" placeholder="如 system/organization/index（目录/按钮可留空）" />
+        <t-form-item v-if="form.menuType !== 'F'" label="组件路径" name="component">
+          <t-input v-model="form.component" :placeholder="componentPlaceholder" />
         </t-form-item>
-        <t-form-item label="权限标识">
-          <t-input v-model="form.perms" placeholder="如 system:user:list" />
+        <t-form-item v-if="form.menuType !== 'M'" label="权限标识" name="perms">
+          <t-input v-model="form.perms" :placeholder="permsPlaceholder" />
         </t-form-item>
-        <t-form-item label="图标">
-          <t-input v-model="form.icon" placeholder="图标名称，如 organization" />
+        <t-form-item v-if="form.menuType === 'F'" label="操作类型" name="actionType">
+          <s-select-dict v-model="form.actionType" dict-type="sys_action_type" placeholder="请选择操作类型" />
         </t-form-item>
-        <t-form-item label="排序">
+        <t-form-item v-if="form.menuType !== 'F'" label="图标" name="icon">
+          <s-select-icon v-model="form.icon" />
+        </t-form-item>
+        <t-form-item label="排序" name="orderNum">
           <t-input-number v-model="form.orderNum" :min="0" theme="column" style="width: 100%" />
         </t-form-item>
-        <t-form-item label="是否可见">
+        <t-form-item v-if="form.menuType !== 'F'" label="是否可见" name="visible">
           <t-switch v-model="form.visible">
             <template #label>{{ form.visible ? '显示' : '隐藏' }}</template>
           </t-switch>
         </t-form-item>
-        <t-form-item label="状态">
+        <t-form-item label="状态" name="status">
           <s-radio-dict v-model="form.status" dict-type="sys_status" />
         </t-form-item>
       </t-form>
@@ -96,7 +103,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import type { PrimaryTableCol } from 'tdesign-vue-next';
+import type { FormInstanceFunctions, FormRule, PrimaryTableCol } from 'tdesign-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
@@ -104,12 +111,15 @@ import type { MenuNode, MenuSaveParams, MenuTreeItem } from '@/api/system/menu';
 import { createMenu, fetchMenuTree, removeMenu, updateMenu } from '@/api/system/menu';
 import SFormDrawer from '@/components/s-form-drawer/index.vue';
 import SRadioDict from '@/components/s-radio-dict/index.vue';
+import SSelectDict from '@/components/s-select-dict/index.vue';
+import SSelectIcon from '@/components/s-select-icon/index.vue';
 import STable from '@/components/s-table/index.vue';
 import STagDict from '@/components/s-tag-dict/index.vue';
 
 const columns: PrimaryTableCol[] = [
   { title: '菜单名称', colKey: 'label', minWidth: 220 },
   { title: '类型', colKey: 'menuType', width: 90 },
+  { title: '操作类型', colKey: 'actionType', width: 100 },
   { title: '权限标识', colKey: 'perms', width: 180 },
   { title: '路径', colKey: 'path', width: 160 },
   { title: '组件', colKey: 'component', width: 180 },
@@ -176,16 +186,40 @@ const INITIAL_FORM: MenuSaveParams = {
   orderNum: 0,
   visible: true,
   status: 0,
+  actionType: '',
 };
 const dialogVisible = ref(false);
 const form = ref<MenuSaveParams>({ ...INITIAL_FORM });
+const formRef = ref<FormInstanceFunctions>();
 const isEdit = computed(() => form.value.id != null);
 
+// 必填规则随类型变：M/C 要路由+组件；F 要权限标识+操作类型（与后端 validateMenu 同规则）
+const rules = computed<Record<string, FormRule[]>>(() => {
+  const isButton = form.value.menuType === 'F';
+  return {
+    menuName: [{ required: true, whitespace: true, message: '请输入菜单名称' }],
+    path: [{ required: true, whitespace: true, message: '请输入路由路径' }],
+    component: [{ required: true, whitespace: true, message: '请输入组件路径' }],
+    perms: isButton ? [{ required: true, whitespace: true, message: '请输入权限标识' }] : [],
+    actionType: isButton ? [{ required: true, message: '请选择操作类型' }] : [],
+  };
+});
+
+// 根目录显式成项（value='0'），避免 t-tree-select 回显原始值 0
 const parentOptions = computed<MenuTreeItem[]>(() => {
-  const source = toTreeItems(rows.value);
+  const root: MenuTreeItem = { value: '0', label: '根目录' };
+  const source = [root, ...toTreeItems(rows.value)];
   if (form.value.id == null) return source;
   return pruneNode(source, form.value.id);
 });
+
+const pathPlaceholder = computed(() => (form.value.menuType === 'M' ? '如 /system（目录）' : '如 /system/user'));
+const componentPlaceholder = computed(() =>
+  form.value.menuType === 'M' ? '目录固定填 layout' : '如 system/user/index',
+);
+const permsPlaceholder = computed(() =>
+  form.value.menuType === 'F' ? '如 system:user:add（按钮必填）' : '如 system:user:list（选填）',
+);
 
 function toTreeItems(nodes: MenuNode[]): MenuTreeItem[] {
   return nodes.map((node) => ({
@@ -220,18 +254,31 @@ function openEdit(row: MenuNode) {
     orderNum: row.orderNum,
     visible: row.visible,
     status: row.status,
+    actionType: row.actionType ?? '',
   };
   dialogVisible.value = true;
 }
 
 async function onSave() {
-  if (!form.value.menuName.trim()) {
-    MessagePlugin.warning('请输入菜单名称');
-    return;
-  }
+  // t-form rules 校验（含必填星号），失败时错误文案内联展示
+  const validateResult = await formRef.value?.validate();
+  if (validateResult !== true) return;
   saving.value = true;
   try {
     const payload: MenuSaveParams = { ...form.value, parentId: form.value.parentId || '0' };
+    // 归一不适用字段，与后端校验保持一致
+    if (payload.menuType === 'M') {
+      payload.perms = '';
+      payload.actionType = '';
+    }
+    if (payload.menuType === 'C') {
+      payload.actionType = '';
+    }
+    if (payload.menuType === 'F') {
+      payload.path = '';
+      payload.component = '';
+      payload.icon = '';
+    }
     if (payload.id != null) {
       await updateMenu(payload);
     } else {

@@ -5069,17 +5069,18 @@ func (p *UserStatusRequest) String() string {
 
 // ========== 菜单 ==========
 type MenuDTO struct {
-	ID        int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
-	ParentId  int64  `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
-	MenuName  string `thrift:"menuName,3" form:"menuName" json:"menuName" query:"menuName"`
-	MenuType  string `thrift:"menuType,4" form:"menuType" json:"menuType" query:"menuType"`
-	Path      string `thrift:"path,5" form:"path" json:"path" query:"path"`
-	Component string `thrift:"component,6" form:"component" json:"component" query:"component"`
-	Perms     string `thrift:"perms,7" form:"perms" json:"perms" query:"perms"`
-	Icon      string `thrift:"icon,8" form:"icon" json:"icon" query:"icon"`
-	OrderNum  int32  `thrift:"orderNum,9" form:"orderNum" json:"orderNum" query:"orderNum"`
-	Visible   bool   `thrift:"visible,10" form:"visible" json:"visible" query:"visible"`
-	Status    int32  `thrift:"status,11" form:"status" json:"status" query:"status"`
+	ID         int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ParentId   int64  `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
+	MenuName   string `thrift:"menuName,3" form:"menuName" json:"menuName" query:"menuName"`
+	MenuType   string `thrift:"menuType,4" form:"menuType" json:"menuType" query:"menuType"`
+	Path       string `thrift:"path,5" form:"path" json:"path" query:"path"`
+	Component  string `thrift:"component,6" form:"component" json:"component" query:"component"`
+	Perms      string `thrift:"perms,7" form:"perms" json:"perms" query:"perms"`
+	Icon       string `thrift:"icon,8" form:"icon" json:"icon" query:"icon"`
+	OrderNum   int32  `thrift:"orderNum,9" form:"orderNum" json:"orderNum" query:"orderNum"`
+	Visible    bool   `thrift:"visible,10" form:"visible" json:"visible" query:"visible"`
+	Status     int32  `thrift:"status,11" form:"status" json:"status" query:"status"`
+	ActionType string `thrift:"actionType,12" form:"actionType" json:"actionType" query:"actionType"`
 }
 
 func NewMenuDTO() *MenuDTO {
@@ -5133,6 +5134,10 @@ func (p *MenuDTO) GetStatus() (v int32) {
 	return p.Status
 }
 
+func (p *MenuDTO) GetActionType() (v string) {
+	return p.ActionType
+}
+
 var fieldIDToName_MenuDTO = map[int16]string{
 	1:  "id",
 	2:  "parentId",
@@ -5145,6 +5150,7 @@ var fieldIDToName_MenuDTO = map[int16]string{
 	9:  "orderNum",
 	10: "visible",
 	11: "status",
+	12: "actionType",
 }
 
 func (p *MenuDTO) Read(iprot thrift.TProtocol) (err error) {
@@ -5249,6 +5255,14 @@ func (p *MenuDTO) Read(iprot thrift.TProtocol) (err error) {
 		case 11:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField11(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 12:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField12(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -5404,6 +5418,17 @@ func (p *MenuDTO) ReadField11(iprot thrift.TProtocol) error {
 	p.Status = _field
 	return nil
 }
+func (p *MenuDTO) ReadField12(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ActionType = _field
+	return nil
+}
 
 func (p *MenuDTO) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -5453,6 +5478,10 @@ func (p *MenuDTO) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField11(oprot); err != nil {
 			fieldId = 11
+			goto WriteFieldError
+		}
+		if err = p.writeField12(oprot); err != nil {
+			fieldId = 12
 			goto WriteFieldError
 		}
 	}
@@ -5660,6 +5689,23 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
 }
 
+func (p *MenuDTO) writeField12(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("actionType", thrift.STRING, 12); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.ActionType); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
+}
+
 func (p *MenuDTO) String() string {
 	if p == nil {
 		return "<nil>"
@@ -5669,18 +5715,19 @@ func (p *MenuDTO) String() string {
 }
 
 type MenuNode struct {
-	ID        int64       `thrift:"id,1" form:"id" json:"id" query:"id"`
-	ParentId  int64       `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
-	Label     string      `thrift:"label,3" form:"label" json:"label" query:"label"`
-	MenuType  string      `thrift:"menuType,4" form:"menuType" json:"menuType" query:"menuType"`
-	Perms     string      `thrift:"perms,5" form:"perms" json:"perms" query:"perms"`
-	OrderNum  int32       `thrift:"orderNum,6" form:"orderNum" json:"orderNum" query:"orderNum"`
-	Visible   bool        `thrift:"visible,7" form:"visible" json:"visible" query:"visible"`
-	Status    int32       `thrift:"status,8" form:"status" json:"status" query:"status"`
-	Path      string      `thrift:"path,9" form:"path" json:"path" query:"path"`
-	Component string      `thrift:"component,10" form:"component" json:"component" query:"component"`
-	Icon      string      `thrift:"icon,11" form:"icon" json:"icon" query:"icon"`
-	Children  []*MenuNode `thrift:"children,12,default,list<MenuNode>" form:"children" json:"children" query:"children"`
+	ID         int64       `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ParentId   int64       `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
+	Label      string      `thrift:"label,3" form:"label" json:"label" query:"label"`
+	MenuType   string      `thrift:"menuType,4" form:"menuType" json:"menuType" query:"menuType"`
+	Perms      string      `thrift:"perms,5" form:"perms" json:"perms" query:"perms"`
+	OrderNum   int32       `thrift:"orderNum,6" form:"orderNum" json:"orderNum" query:"orderNum"`
+	Visible    bool        `thrift:"visible,7" form:"visible" json:"visible" query:"visible"`
+	Status     int32       `thrift:"status,8" form:"status" json:"status" query:"status"`
+	Path       string      `thrift:"path,9" form:"path" json:"path" query:"path"`
+	Component  string      `thrift:"component,10" form:"component" json:"component" query:"component"`
+	Icon       string      `thrift:"icon,11" form:"icon" json:"icon" query:"icon"`
+	Children   []*MenuNode `thrift:"children,12,default,list<MenuNode>" form:"children" json:"children" query:"children"`
+	ActionType string      `thrift:"actionType,13" form:"actionType" json:"actionType" query:"actionType"`
 }
 
 func NewMenuNode() *MenuNode {
@@ -5738,6 +5785,10 @@ func (p *MenuNode) GetChildren() (v []*MenuNode) {
 	return p.Children
 }
 
+func (p *MenuNode) GetActionType() (v string) {
+	return p.ActionType
+}
+
 var fieldIDToName_MenuNode = map[int16]string{
 	1:  "id",
 	2:  "parentId",
@@ -5751,6 +5802,7 @@ var fieldIDToName_MenuNode = map[int16]string{
 	10: "component",
 	11: "icon",
 	12: "children",
+	13: "actionType",
 }
 
 func (p *MenuNode) Read(iprot thrift.TProtocol) (err error) {
@@ -5863,6 +5915,14 @@ func (p *MenuNode) Read(iprot thrift.TProtocol) (err error) {
 		case 12:
 			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField12(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 13:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField13(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -6041,6 +6101,17 @@ func (p *MenuNode) ReadField12(iprot thrift.TProtocol) error {
 	p.Children = _field
 	return nil
 }
+func (p *MenuNode) ReadField13(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ActionType = _field
+	return nil
+}
 
 func (p *MenuNode) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -6094,6 +6165,10 @@ func (p *MenuNode) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField12(oprot); err != nil {
 			fieldId = 12
+			goto WriteFieldError
+		}
+		if err = p.writeField13(oprot); err != nil {
+			fieldId = 13
 			goto WriteFieldError
 		}
 	}
@@ -6324,6 +6399,23 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
+}
+
+func (p *MenuNode) writeField13(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("actionType", thrift.STRING, 13); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.ActionType); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
 }
 
 func (p *MenuNode) String() string {
@@ -6701,17 +6793,18 @@ func (p *MenuListResponse) String() string {
 }
 
 type MenuSaveRequest struct {
-	ID        *int64  `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
-	ParentId  int64   `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
-	MenuName  string  `thrift:"menuName,3" form:"menuName" json:"menuName" query:"menuName"`
-	MenuType  string  `thrift:"menuType,4" form:"menuType" json:"menuType" query:"menuType"`
-	Path      *string `thrift:"path,5,optional" form:"path" json:"path,omitempty" query:"path"`
-	Component *string `thrift:"component,6,optional" form:"component" json:"component,omitempty" query:"component"`
-	Perms     *string `thrift:"perms,7,optional" form:"perms" json:"perms,omitempty" query:"perms"`
-	Icon      *string `thrift:"icon,8,optional" form:"icon" json:"icon,omitempty" query:"icon"`
-	OrderNum  int32   `thrift:"orderNum,9" form:"orderNum" json:"orderNum" query:"orderNum"`
-	Visible   bool    `thrift:"visible,10" form:"visible" json:"visible" query:"visible"`
-	Status    int32   `thrift:"status,11" form:"status" json:"status" query:"status"`
+	ID         *int64  `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	ParentId   int64   `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
+	MenuName   string  `thrift:"menuName,3" form:"menuName" json:"menuName" query:"menuName"`
+	MenuType   string  `thrift:"menuType,4" form:"menuType" json:"menuType" query:"menuType"`
+	Path       *string `thrift:"path,5,optional" form:"path" json:"path,omitempty" query:"path"`
+	Component  *string `thrift:"component,6,optional" form:"component" json:"component,omitempty" query:"component"`
+	Perms      *string `thrift:"perms,7,optional" form:"perms" json:"perms,omitempty" query:"perms"`
+	Icon       *string `thrift:"icon,8,optional" form:"icon" json:"icon,omitempty" query:"icon"`
+	OrderNum   int32   `thrift:"orderNum,9" form:"orderNum" json:"orderNum" query:"orderNum"`
+	Visible    bool    `thrift:"visible,10" form:"visible" json:"visible" query:"visible"`
+	Status     int32   `thrift:"status,11" form:"status" json:"status" query:"status"`
+	ActionType *string `thrift:"actionType,12,optional" form:"actionType" json:"actionType,omitempty" query:"actionType"`
 }
 
 func NewMenuSaveRequest() *MenuSaveRequest {
@@ -6790,6 +6883,15 @@ func (p *MenuSaveRequest) GetStatus() (v int32) {
 	return p.Status
 }
 
+var MenuSaveRequest_ActionType_DEFAULT string
+
+func (p *MenuSaveRequest) GetActionType() (v string) {
+	if !p.IsSetActionType() {
+		return MenuSaveRequest_ActionType_DEFAULT
+	}
+	return *p.ActionType
+}
+
 var fieldIDToName_MenuSaveRequest = map[int16]string{
 	1:  "id",
 	2:  "parentId",
@@ -6802,6 +6904,7 @@ var fieldIDToName_MenuSaveRequest = map[int16]string{
 	9:  "orderNum",
 	10: "visible",
 	11: "status",
+	12: "actionType",
 }
 
 func (p *MenuSaveRequest) IsSetID() bool {
@@ -6822,6 +6925,10 @@ func (p *MenuSaveRequest) IsSetPerms() bool {
 
 func (p *MenuSaveRequest) IsSetIcon() bool {
 	return p.Icon != nil
+}
+
+func (p *MenuSaveRequest) IsSetActionType() bool {
+	return p.ActionType != nil
 }
 
 func (p *MenuSaveRequest) Read(iprot thrift.TProtocol) (err error) {
@@ -6926,6 +7033,14 @@ func (p *MenuSaveRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 11:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField11(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 12:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField12(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -7081,6 +7196,17 @@ func (p *MenuSaveRequest) ReadField11(iprot thrift.TProtocol) error {
 	p.Status = _field
 	return nil
 }
+func (p *MenuSaveRequest) ReadField12(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.ActionType = _field
+	return nil
+}
 
 func (p *MenuSaveRequest) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -7130,6 +7256,10 @@ func (p *MenuSaveRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField11(oprot); err != nil {
 			fieldId = 11
+			goto WriteFieldError
+		}
+		if err = p.writeField12(oprot); err != nil {
+			fieldId = 12
 			goto WriteFieldError
 		}
 	}
@@ -7345,6 +7475,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
+}
+
+func (p *MenuSaveRequest) writeField12(oprot thrift.TProtocol) (err error) {
+	if p.IsSetActionType() {
+		if err = oprot.WriteFieldBegin("actionType", thrift.STRING, 12); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.ActionType); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
 }
 
 func (p *MenuSaveRequest) String() string {

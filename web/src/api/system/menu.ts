@@ -1,7 +1,7 @@
 import { request } from '@/utils/request';
 
 // 菜单 DTO（MenuDTO）
-export type MenuDTO = {
+export interface MenuDTO {
   id: string;
   parentId: string;
   menuName: string;
@@ -13,10 +13,12 @@ export type MenuDTO = {
   orderNum: number;
   visible: boolean;
   status: number;
-};
+  /** 按钮操作类型（sys_action_type），仅 menuType=F */
+  actionType: string;
+}
 
 // 菜单树节点（MenuNode）
-export type MenuNode = {
+export interface MenuNode {
   id: string;
   parentId: string;
   label: string;
@@ -28,10 +30,12 @@ export type MenuNode = {
   path: string;
   component: string;
   icon: string;
+  /** 按钮操作类型（sys_action_type），仅 menuType=F */
+  actionType: string;
   children?: MenuNode[];
-};
+}
 
-export type MenuSaveParams = {
+export interface MenuSaveParams {
   id?: string;
   parentId: string;
   menuName: string;
@@ -43,15 +47,17 @@ export type MenuSaveParams = {
   orderNum: number;
   visible: boolean;
   status: number;
-};
+  /** 按钮操作类型（sys_action_type），仅 menuType=F 必填 */
+  actionType?: string;
+}
 
 // 树选择 / 树勾选统一结构
-export type MenuTreeItem = {
+export interface MenuTreeItem {
   value: string;
   label: string;
   menuType?: string;
   children?: MenuTreeItem[];
-};
+}
 
 const Api = {
   Tree: '/system/menu/tree',

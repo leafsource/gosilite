@@ -111,3 +111,136 @@ func TestVisibleMenusRequiresLogin(t *testing.T) {
 		t.Fatalf("want auth failed, got %v", err)
 	}
 }
+
+func TestValidateMenuPerType(t *testing.T) {
+	cases := []struct {
+		name    string
+		in      *model.SystemMenu
+		wantErr bool
+		check   func(t *testing.T, m *model.SystemMenu)
+	}{
+		{
+			name:    "目录缺路由路径",
+			in:      &model.SystemMenu{Title: "系统", MenuType: "M", Component: "layout"},
+			wantErr: true,
+		},
+		{
+			name:    "目录缺组件路径",
+			in:      &model.SystemMenu{Title: "系统", MenuType: "M", Path: "/system"},
+			wantErr: true,
+		},
+		{
+			name: "目录合法并清空权限标识",
+			in: &model.SystemMenu{
+				Title: " 系统 ", MenuType: "M", Path: " /system ", Component: "layout",
+				Perms: "system:all", PermissionCode: "system:all",
+			},
+			check: func(t *testing.T, m *model.SystemMenu) {
+				if m.Title != "系统" || m.Path != "/system" {
+					t.Fatalf("want trimmed title/path, got title=%q path=%q", m.Title, m.Path)
+				}
+				if m.Perms != "" || m.PermissionCode != "" {
+					t.Fatalf("directory perms should be cleared, got %q/%q", m.Perms, m.PermissionCode)
+				}
+			},
+		},
+		{
+			name:    "菜单缺组件路径",
+			in:      &model.SystemMenu{Title: "用户管理", MenuType: "C", Path: "/system/user"},
+			wantErr: true,
+		},
+		{
+			name: "菜单合法且权限标识选填",
+			in: &model.SystemMenu{
+				Title: "用户管理", MenuType: "C", Path: "/system/user",
+				Component: "system/user/index", Perms: "system:user:list",
+			},
+			check: func(t *testing.T, m *model.SystemMenu) {
+				if m.Perms != "system:user:list" {
+					t.Fatalf("menu perms should be kept, got %q", m.Perms)
+				}
+			},
+		},
+		{
+			name:    "按钮缺权限标识",
+			in:      &model.SystemMenu{Title: "新增用户", MenuType: "F"},
+			wantErr: true,
+		},
+		{
+			name: "按钮缺操作类型被拒绝",
+			in: &model.SystemMenu{
+				Title: "新增用户", MenuType: "F", Perms: "system:user:add",
+			},
+			wantErr: true,
+		},
+		{
+			name: "按钮合法并归零路由字段",
+			in: &model.SystemMenu{
+				Title: "新增用户", MenuType: "F", Perms: "system:user:add", ActionType: " add ",
+				Path: "/system/user", Component: "system/user/index", Icon: "add",
+			},
+			check: func(t *testing.T, m *model.SystemMenu) {
+				if m.Path != "" || m.Component != "" || m.Icon != "" {
+					t.Fatalf("button route fields should be cleared, got %q/%q/%q", m.Path, m.Component, m.Icon)
+				}
+				if m.PermissionCode != "system:user:add" {
+					t.Fatalf("permission code should sync perms, got %q", m.PermissionCode)
+				}
+				if m.ActionType != "add" {
+					t.Fatalf("action type should be trimmed, got %q", m.ActionType)
+				}
+			},
+		},
+		{
+			name: "非按钮类型清空操作类型",
+			in: &model.SystemMenu{
+				Title: "用户管理", MenuType: "C", Path: "/system/user",
+				Component: "system/user/index", ActionType: "add",
+			},
+			check: func(t *testing.T, m *model.SystemMenu) {
+				if m.ActionType != "" {
+					t.Fatalf("action type should be cleared for non-button, got %q", m.ActionType)
+				}
+			},
+		},
+		{
+			name:    "空名称被拒绝",
+			in:      &model.SystemMenu{Title: "  ", MenuType: "C", Path: "/a", Component: "a/index"},
+			wantErr: true,
+		},
+		{
+			name:    "非法类型被拒绝",
+			in:      &model.SystemMenu{Title: "X", MenuType: "X", Path: "/a", Component: "a/index"},
+			wantErr: true,
+		},
+		{
+			name: "空类型默认菜单并按 C 校验",
+			in:   &model.SystemMenu{Title: "用户管理", Path: "/system/user", Component: "system/user/index"},
+			check: func(t *testing.T, m *model.SystemMenu) {
+				if m.MenuType != "C" {
+					t.Fatalf("want default type C, got %q", m.MenuType)
+				}
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateMenu(tc.in)
+			if tc.wantErr {
+				if err == nil {
+					t.Fatal("want error, got nil")
+				}
+				if errCode(err) != errno.ErrSystemInvalidParam {
+					t.Fatalf("want invalid param code, got %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected err: %v", err)
+			}
+			if tc.check != nil {
+				tc.check(t, tc.in)
+			}
+		})
+	}
+}

@@ -113,7 +113,7 @@ func toMenuDTO(m *model.SystemMenu) *system.MenuDTO {
 		ID: m.ID, ParentId: m.ParentID, MenuName: m.Title, MenuType: m.MenuType,
 		Path: m.Path, Component: m.Component, Perms: m.Perms, Icon: m.Icon,
 		OrderNum: m.Sort, Visible: m.Visible != "hide" && m.Visible != "0",
-		Status: int32(m.Status),
+		Status: int32(m.Status), ActionType: m.ActionType,
 	}
 }
 
@@ -129,7 +129,7 @@ func toMenuNode(n *menu.TreeNode) *system.MenuNode {
 	node := &system.MenuNode{
 		ID: n.ID, ParentId: n.ParentID, Label: n.Label, MenuType: n.MenuType,
 		Perms: n.Perms, OrderNum: n.OrderNum, Visible: n.Visible, Status: int32(n.Status),
-		Path: n.Path, Component: n.Component, Icon: n.Icon,
+		Path: n.Path, Component: n.Component, Icon: n.Icon, ActionType: n.ActionType,
 	}
 	for _, ch := range n.Children {
 		node.Children = append(node.Children, toMenuNode(ch))
@@ -162,6 +162,9 @@ func fromMenuSaveRequest(req *system.MenuSaveRequest) *model.SystemMenu {
 	}
 	if req.Icon != nil {
 		m.Icon = *req.Icon
+	}
+	if req.ActionType != nil {
+		m.ActionType = *req.ActionType
 	}
 	if req.Visible {
 		m.Visible = "show"

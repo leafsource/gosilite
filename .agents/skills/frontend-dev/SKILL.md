@@ -1,6 +1,6 @@
 ---
 name: frontend-dev
-description: Use for ANY frontend development in this repo (web/ Vue3 + TypeScript + TDesign) — new pages, features, components, bug fixes, styles, or UI changes. Loads on any mention of 前端开发, web 页面, 新增/修改 .vue, Vue3 组件, 页面/组件开发, 样式调整. Covers s-* shared components (survey web/src/components/s-* before building; extract on 3rd UI repeat and refactor all existing copies), file naming, TDesign MCP (get-component-docs before any t-*), and high-frequency task UX (列表筛选/查询, 批量操作, 表单弹窗/抽屉选择, 效果预览, 新手引导, 数据导入, 状态流转, 任务引导). Also triggers on t-* widgets, 通用组件/s-组件/s-table/pro-table, TDesign MCP 开启/连接, tdesign-mcp-server.
+description: Use for ANY frontend development in this repo (web/ Vue3 + TypeScript + TDesign) — new pages, features, components, bug fixes, styles, or UI changes. Loads on any mention of 前端开发, web 页面, 新增/修改 .vue, Vue3 组件, 页面/组件开发, 样式调整. Covers s-* shared components (survey web/src/components/s-* before building; extract on 3rd UI repeat and refactor all existing copies), file naming, TDesign MCP via scripts/tdesign_mcp.py (manual stdio connect; get-component-docs before any t-*; framework vue-next; get-component-list/dom/changelog; search-icon), and high-frequency task UX (列表筛选/查询, 批量操作, 表单弹窗/抽屉选择, 效果预览, 新手引导, 数据导入, 状态流转, 任务引导). Also triggers on t-* widgets, 通用组件/s-组件/s-table/pro-table, TDesign MCP 手动连接/调用示例/tdesign_mcp.py, tdesign-mcp-server, search-icon.
 ---
 
 # 前端开发（frontend-dev）
@@ -11,7 +11,7 @@ description: Use for ANY frontend development in this repo (web/ Vue3 + TypeScri
 
 1. **第 3 处重复 UI → 抽 `s-*`，禁止继续复制**：同一 UI 结构第 3 次出现时，必须抽出 `s-*` 通用组件，**并把已存在的 3 处全部改为引用该 `s-*`**，之后一律复用；不得只抽新的、留下旧拷贝。
 2. **开发新功能前先盘点通用组件**：先浏览 `web/src/components/s-*`（现成 `s-table` 等），有匹配就优先使用，禁止自建同类 UI。
-3. **前端开发必须开启 TDesign MCP 并优先使用**（Step 1）：写任何 `t-*` 之前先 `get-component-docs` 核对 API，禁止凭记忆。
+3. **前端开发必须通过 TDesign MCP 查文档**（Step 1）：用 `scripts/tdesign_mcp.py` 调用；写任何 `t-*` 之前先 `get-component-docs`（`framework: "vue-next"`）核对 API，禁止凭记忆。细则见 `references/tdesign-mcp.md`。
 4. 交付前 `WEB=1 ./script/check.sh`。
 5. **弹出表单容器由字段数决定**：按 `t-form-item` 计数（不含底部按钮行），**字段 >5 → `t-drawer`**，**字段 ≤5 → `t-dialog`**；禁止把多字段表单塞进对话框拉宽拉高。
 6. **契约与后端对齐**：`web/src/api/*.ts` 字段名 camelCase，envelope `{code,msg,data}`；会话字段 `accessToken`/`tokenType`/`expiresIn`/`refreshToken`，禁止 `token`/`expire`。
@@ -31,29 +31,30 @@ description: Use for ANY frontend development in this repo (web/ Vue3 + TypeScri
 
 ## Instructions
 
-### Step 1: TDesign MCP（强制开启，先于一切编码）
+### Step 1: TDesign MCP（强制，先于一切 `t-*` 编码）
 
-**未连接成功不得动手**：`npx -y tdesign-mcp-server@latest`。仓库根 `.mcp.json` 已内置；**配置改动需重启引擎或新开会话才加载**。
+完整契约、场景与排障见 **`references/tdesign-mcp.md`**。本环境**引擎 MCP 挂载不可用**（重启/新会话无效），必须走 **脚本手动连接**。
 
-```json
-{
-  "mcpServers": {
-    "tdesign-mcp-server": {
-      "command": "npx",
-      "args": ["-y", "tdesign-mcp-server@latest"]
-    }
-  }
-}
+**未查到 API 不得写 `t-*` 业务代码。** 连接与调用：
+
+```bash
+MCP=.agents/skills/frontend-dev/scripts/tdesign_mcp.py
+python3 "$MCP" list-tools
+python3 "$MCP" call get-component-docs '{"framework":"vue-next","names":["table","select","form"]}'
 ```
 
-| Tool | 何时用 | 典型场景 |
-|------|--------|----------|
-| `get-component-docs` | 写/改任何 `t-*` **之前** | 核对 props/events/slots |
-| `get-component-list` | 选型不确定 | 「该用哪个组件」、能力对比 |
-| `get-component-dom` | 样式/DOM/选择器问题 | 真实类名与 DOM 结构 |
-| `get-component-changelog` | 升级 `tdesign-vue-next` 前 | 破坏性变更核查 |
+| Tool | 参数（必填加粗） | 何时用 |
+|------|------------------|--------|
+| `get-component-list` | **`framework`** | 选型、「有没有现成组件」 |
+| `get-component-docs` | **`names[]` + `framework`** | 写/改任何 `t-*` **之前**（强制） |
+| `get-component-dom` | **`names[]` + `framework`** | 自定义 CSS / 类名 / DOM |
+| `get-component-changelog` | **`names[]` + `framework`**，可选 `version` | 升级 `tdesign-vue-next` 前 |
+| `search-icon` | **`keywords[]`**，可选 `limit`（默认 20） | 图标完整名（**单数 icon**） |
 
-标准顺序：**选型 `get-component-list` → 查文档 `get-component-docs` → 写码**；样式走 `get-component-dom`；升级前必查 changelog。
+- 本仓库固定 `"framework": "vue-next"`；`names` 可批量。
+- 脚本自拉 stdio server（newline JSON-RPC），用完退出。**不要 `sudo npx` 长期挂在终端**（管道接不上）。
+- 若会话工具列表恰好有原生 `get-component-*`，可直接调原生工具，参数同上；没有就一律跑脚本。
+- 标准顺序：**选型 `get-component-list` → `get-component-docs` → 写码**；样式 `get-component-dom`；图标 `search-icon`；升级前 changelog。
 
 ### Step 2: 组件分层
 
@@ -123,7 +124,7 @@ WEB=1 ./script/check.sh   # 含 go 侧；或 cd web && npm run build（vue-tsc +
 
 ## Examples
 
-**用户说「列表页加个状态筛选」** → 落在 `s-table` 的 `searchFields`（`select`），不自建筛选条；选「查询后生效」→ `get-component-docs` 核对 props → 写码 → `WEB=1 ./script/check.sh` 绿。
+**用户说「列表页加个状态筛选」** → 落在 `s-table` 的 `searchFields`（`select`），不自建筛选条；选「查询后生效」→ `python3 .agents/skills/frontend-dev/scripts/tdesign_mcp.py call get-component-docs '{"framework":"vue-next","names":["select"]}'` 核对 props → 写码 → `WEB=1 ./script/check.sh` 绿。更多示例见 `references/tdesign-mcp.md` §4。
 
 **同一表格工具条结构第 3 次出现** → 停止复制，抽 `s-<name>`，**已有 3 处全部改为引用**，再继续写新代码。
 
@@ -131,7 +132,9 @@ WEB=1 ./script/check.sh   # 含 go 侧；或 cd web && npm run build（vue-tsc +
 
 ## Troubleshooting
 
-- **MCP 未开启 / 调用失败**：`npx -y tdesign-mcp-server@latest` 重连；配置变更需重启引擎或新会话；**连接恢复前不得开始前端编码**。
+- **引擎/会话里没有 MCP 工具**：本环境**不要靠重启/新会话**；用 `scripts/tdesign_mcp.py` 手动连接。**禁止 `sudo npx` 挂空进程**。详见 `references/tdesign-mcp.md` §6。
+- **脚本 timeout / 连不上**：优先已安装包入口（脚本自动找）；或设 `TDESIGN_MCP_CMD="node <...>/dist/stdio.js"`；失败看 stderr。
+- **工具名搜不到 / 调不通**：图标是 **`search-icon`**（不是 `search-icons`）；组件类必须 `"framework": "vue-next"`。
 - **`t-*` 属性不生效 / 报错**：先 `get-component-docs`（样式用 `get-component-dom`），再改代码。
 - **弹窗表单过高过挤**：按 Important 第 5 条改 `t-drawer`。
 - **与后端字段对不上**：核对 IDL camelCase 与 envelope；会话四字段；不要本地改名绕过。
@@ -141,7 +144,8 @@ WEB=1 ./script/check.sh   # 含 go 侧；或 cd web && npm run build（vue-tsc +
 - [ ] 开发前已盘点 `web/src/components/s-*`，有匹配即复用
 - [ ] 第 3 处重复已抽 `s-*`，原有拷贝已全部改为引用（或 spec 写明暂不抽）
 - [ ] 通用在 `components/s-*`，业务在模块 `components/`
-- [ ] TDesign MCP 已开启；`t-*` 已查 `get-component-docs`
+- [ ] 已用 `scripts/tdesign_mcp.py` 连接并 `list-tools` 成功
+- [ ] 写 `t-*` 前已 `get-component-docs`（`framework: "vue-next"`）；样式问题已查 `get-component-dom`
 - [ ] 命名四条；类型不内联重复；文案走 locales
 - [ ] 请求/envelope/会话字段与后端一致
 - [ ] 高频任务模式与 `references/high-frequency-tasks.md` 一致

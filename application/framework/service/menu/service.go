@@ -40,18 +40,19 @@ func InitService(ctx context.Context, db *gorm.DB) *Service {
 
 // TreeNode 管理用菜单树
 type TreeNode struct {
-	ID        int64       `json:"id"`
-	ParentID  int64       `json:"parentId"`
-	Label     string      `json:"label"`
-	MenuType  string      `json:"menuType"`
-	Perms     string      `json:"perms"`
-	OrderNum  int32       `json:"orderNum"`
-	Visible   bool        `json:"visible"`
-	Status    int16       `json:"status"`
-	Path      string      `json:"path"`
-	Component string      `json:"component"`
-	Icon      string      `json:"icon"`
-	Children  []*TreeNode `json:"children,omitempty"`
+	ID         int64       `json:"id"`
+	ParentID   int64       `json:"parentId"`
+	Label      string      `json:"label"`
+	MenuType   string      `json:"menuType"`
+	Perms      string      `json:"perms"`
+	OrderNum   int32       `json:"orderNum"`
+	Visible    bool        `json:"visible"`
+	Status     int16       `json:"status"`
+	Path       string      `json:"path"`
+	Component  string      `json:"component"`
+	Icon       string      `json:"icon"`
+	ActionType string      `json:"actionType"`
+	Children   []*TreeNode `json:"children,omitempty"`
 }
 
 // Tree 全量菜单树（管理端）
@@ -80,11 +81,8 @@ func (s *Service) Tree(ctx context.Context) ([]*TreeNode, error) {
 }
 
 func (s *Service) CreateMenu(ctx context.Context, m *model.SystemMenu) error {
-	if strings.TrimSpace(m.Title) == "" {
-		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "菜单名称不能为空"))
-	}
-	if m.MenuType == "" {
-		m.MenuType = "C"
+	if err := validateMenu(m); err != nil {
+		return err
 	}
 	m.IsRemove = 0
 	if m.Visible == "" {
@@ -98,10 +96,62 @@ func (s *Service) CreateMenu(ctx context.Context, m *model.SystemMenu) error {
 
 // UpdateMenu 更新
 func (s *Service) UpdateMenu(ctx context.Context, m *model.SystemMenu) error {
+	if err := validateMenu(m); err != nil {
+		return err
+	}
 	if _, err := s.repo.GetByID(ctx, m.ID); err != nil {
 		return errorx.New(errno.ErrSystemMenuNotFound, errorx.KV("id", formatID(m.ID)))
 	}
 	return s.repo.Update(ctx, m)
+}
+
+// validateMenu 按菜单类型校验必填字段，并归一该类型不适用的字段：
+//   - M 目录：路由路径、组件路径（layout）必填；权限标识无意义，清空
+//   - C 菜单：路由路径、组件路径（页面）必填；权限标识选填
+//   - F 按钮：权限标识、操作类型必填；不参与路由/展示，清空 path/component/icon
+func validateMenu(m *model.SystemMenu) error {
+	if m.MenuType == "" {
+		m.MenuType = "C"
+	}
+	m.Title = strings.TrimSpace(m.Title)
+	if m.Title == "" {
+		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "菜单名称不能为空"))
+	}
+	m.Path = strings.TrimSpace(m.Path)
+	m.Component = strings.TrimSpace(m.Component)
+	m.Perms = strings.TrimSpace(m.Perms)
+	m.Icon = strings.TrimSpace(m.Icon)
+	m.ActionType = strings.TrimSpace(m.ActionType)
+	switch m.MenuType {
+	case "M":
+		if m.Path == "" {
+			return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "目录的路由路径不能为空"))
+		}
+		if m.Component == "" {
+			return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "目录的组件路径不能为空（layout）"))
+		}
+		m.Perms, m.PermissionCode, m.ActionType = "", "", ""
+	case "C":
+		if m.Path == "" {
+			return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "菜单的路由路径不能为空"))
+		}
+		if m.Component == "" {
+			return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "菜单的组件路径不能为空"))
+		}
+		m.ActionType = ""
+	case "F":
+		if m.Perms == "" {
+			return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "按钮的权限标识不能为空"))
+		}
+		if m.ActionType == "" {
+			return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "按钮的操作类型不能为空"))
+		}
+		m.PermissionCode = m.Perms
+		m.Path, m.Component, m.Icon = "", "", ""
+	default:
+		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "菜单类型不合法，仅支持 M/C/F"))
+	}
+	return nil
 }
 
 // RemoveMenu 删除（有子菜单则拒绝）
