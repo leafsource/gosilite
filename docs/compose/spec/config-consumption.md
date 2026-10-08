@@ -37,11 +37,17 @@ commits: a04f9d3a..working-tree
 - 前端 `store/modules/dict.ts` 的 `DEFAULT_FALLBACK.sys_config_type` 同步补 `{label:'全局', value:'global'}`（跨 feature 小改，属参数消费的一部分）；
 - `sys.page.size` 保持 `system` 类型（登录后经 `/system/config/key` 读取）。
 
-### S2.2 后端：免登录全局端点（手写路由，记录方式偏离）
+### S2.2 后端：免登录全局端点（~~手写路由~~ → 已迁移 hz 生成）
 
-- **手写路由** `api/router/framework/syscfg/global.go`：`r.GET("/system/config/global", ...)` **不经过** syscfg 包的 `rootMw`（`permission.Default()`），由 `application/framework/module.go` `RegisterRoutes` 挂载。
-  - **为何不走 hz/IDL**：生成的 Register 整组继承 `rootMw`，无法对单条路由豁免登录；AGENTS 明确允许「纯手写系统管理路由可跳过 hz，直接 handler+router 挂进 Module」。`/system/config/key` 的 IDL 与登录态保持不动。
-- Handler `GlobalList`（`api/handler/framework/syscfg`，手写文件）：调 `SystemConfigSVC.ListGlobal(ctx)` → `{code,msg,data:{list:[ConfigDTO…]}}`（复用既有 `configDTO`）。
+> **2026-10-08 迁移**：AGENTS 已移除「纯手写系统管理路由可跳过 hz」条款（路由必须 hz 生成）。
+> 本端点改为**独立 IDL 文件** `idl/framework/system_config_global.thrift`（namespace
+> `framework.syscfgglobal`）→ hz 生成独立 `Register` 与 `middleware.go`，其中 `rootMw`
+> 保持 `return nil`（不挂登录）——匿名语义不变；原 `syscfg/global.go` 手写路由与
+> `syscfg/config_global.go` 已删除，Handler 迁至 `api/handler/framework/syscfgglobal`。
+
+- ~~**手写路由** `api/router/framework/syscfg/global.go`：`r.GET("/system/config/global", ...)` **不经过** syscfg 包的 `rootMw`（`permission.Default()`），由 `application/framework/module.go` `RegisterRoutes` 挂载。~~
+  - ~~**为何不走 hz/IDL**：生成的 Register 整组继承 `rootMw`，无法对单条路由豁免登录；AGENTS 明确允许「纯手写系统管理路由可跳过 hz，直接 handler+router 挂进 Module」。`/system/config/key` 的 IDL 与登录态保持不动。~~（已由上述独立 IDL 方案取代；`/system/config/key` 的 IDL 与登录态始终未动。）
+- Handler `GlobalList`（现位于 `api/handler/framework/syscfgglobal`）：调 `SystemConfigSVC.ListGlobal(ctx)` → `{code,msg,data:{list:[ConfigGlobalDTO…]}}`（JSON 字段与原 ConfigDTO 一致）。
 - Service `ListGlobal` → Repository `ListByType(ctx, "global")`：`config_type='global' AND status=0 AND del_flag=0`，按 id 升序。
 - 语义约束（记录）：`global` 类参数=匿名可读的前端品牌/展示类配置；业务与敏感参数不得放入 global。
 

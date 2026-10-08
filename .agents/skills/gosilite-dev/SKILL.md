@@ -22,7 +22,7 @@ description: Use when developing, reviewing, or delivering web API features with
    ./script/check.sh          # go test + vet + build
    WEB=1 ./script/check.sh    # 需要前端时
    ```
-10. **需求先闭环再编码**：澄清 → 契约 → 实现 → 测试 → 验收；流程见 `references/requirements.md`。
+10. **需求澄清是强制门禁（Gate）**：任何功能变更在**编码前**必须按 `references/requirements.md` §1.6 输出【我的理解】【我的假设】【需你确认】并**等待用户确认**，未确认不得进入契约与实现（仅当用户显式说「跳过澄清直接做」，或已在对话中给出完整需求与验收标准时可豁免）。闭环：澄清 → 契约 → 实现 → 测试 → 验收；细则 `references/requirements.md` §1.0。
 
 ## 何时使用
 
@@ -53,12 +53,12 @@ description: Use when developing, reviewing, or delivering web API features with
 
 ## Instructions：标准开发流程
 
-1. **澄清需求**：按 `references/requirements.md` 推断→假设→关键提问（≤3）。能推断的不问。
+1. **澄清需求（强制门禁）**：按 `references/requirements.md` §1.6 输出理解/假设/关键提问（≤3）并**等待用户确认**，确认后才进第 2 步；能推断的不问，但假设必须列出。
 2. **定契约**：路由、DTO 字段（camelCase）、错误码、表、权限码（`system:*:xxx`）。
 3. **写 spec**（功能值得成文时）：`docs/compose/spec/<feature>.md`（Problem / Design / Out of Scope / Tasks）。
 4. **迁移** `script/migrations/NNNN_*.sql`（幂等 DDL + 种子）。
 5. **生成**：先改 IDL → `hz update -I idl -idl <file> -customize_package idl/package.yaml`；表模型 `go run ./script/codegen`。
-6. **Repo → Service → Handler → Router**，每层可测；model↔DTO/VO 进 `convert.go`。纯手写系统管理路由可跳过 hz，直接 handler+router 挂进 Module。
+6. **Repo → Service → Handler → Router**，每层可测；model↔DTO/VO 进 `convert.go`。**路由必须 IDL → hz 生成，禁止手写 `Register`**；免登录等特殊分组用独立 IDL 文件生成独立 `Register`/`middleware.go`，生成后仅允许在 `middleware.go` 挂权限。
 7. **前端接入**：`web/src/api/*.ts`、store/页面；`t-*` 先 TDesign MCP `get-component-docs`。
 8. **测试 + `./script/check.sh`**（前端 `WEB=1`），修到全绿。
 9. **评审**（需要时）→ spec `status: delivered` + Report。
@@ -141,6 +141,7 @@ web/src/api/<feature>.ts
 
 ## 检查清单
 
+- [ ] **编码前已完成需求澄清并获用户确认**（或属 §1.0 豁免，已复述理解）
 - [ ] 无 Handler 业务逻辑 / 无 Repository 外泄漏 SQL
 - [ ] model↔DTO/VO 转换集中在 `convert.go`
 - [ ] JSON camelCase，无 `token`/`expire` 旧字段

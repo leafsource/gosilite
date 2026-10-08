@@ -470,3 +470,18 @@ func RoleAuthorizeSave(ctx context.Context, c *app.RequestContext) {
 	}
 	R.SuccessWithData(ctx, c, int32(1))
 }
+
+// DeptLeader 设置/清除部门负责人（userId=0 清除）
+// @router /system/dept/leader [PUT]
+func DeptLeader(ctx context.Context, c *app.RequestContext) {
+	var req system.DeptLeaderRequest
+	if err := c.BindAndValidate(&req); err != nil {
+		R.InvalidParamRequestResponse(c, err.Error())
+		return
+	}
+	if err := dept.SystemDeptSVC.UpdateLeader(ctx, req.DeptId, req.UserId); err != nil {
+		R.Error(ctx, c, err)
+		return
+	}
+	R.SuccessWithData(ctx, c, int32(1))
+}

@@ -4,7 +4,6 @@ import { computed } from 'vue';
 
 import type { SupportedLocale } from '@/locales/index';
 import { i18n, localeConfigKey, supportedLocales } from '@/locales/index';
-import { useNotificationStore } from '@/store/modules/notification';
 
 export function useLocale() {
   const locale = computed({
@@ -19,8 +18,7 @@ export function useLocale() {
     const validLang = supportedLocales.includes(lang as SupportedLocale) ? (lang as SupportedLocale) : 'zh_CN';
     locale.value = validLang;
     storedLocale.value = validLang;
-    // 刷新持久化的翻译数据
-    useNotificationStore().refreshMsgData();
+    // 通知中心为服务端数据（标题原文），语言切换无需再刷新本地 mock 消息
   };
 
   const getComponentsLocale = computed(() => {

@@ -79,6 +79,14 @@ const DEFAULT_FALLBACK: Record<string, DictOption[]> = {
     { label: '分配', value: 'assign' },
     { label: '其他', value: 'other' },
   ],
+  sys_notice_type: [
+    { label: '通知', value: '1' },
+    { label: '公告', value: '2' },
+  ],
+  sys_notice_status: [
+    { label: '已发布', value: '0' },
+    { label: '已撤回', value: '1' },
+  ],
 };
 
 /**

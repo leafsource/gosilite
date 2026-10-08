@@ -253,6 +253,12 @@ struct RoleAuthorizeSaveRequest {
     4: i32 dataScope
 }
 
+// 部门负责人设置（userId=0 清除）
+struct DeptLeaderRequest {
+    1: i64 deptId
+    2: i64 userId
+}
+
 // 服务定义
 service SystemController {
     // 部门
@@ -261,6 +267,7 @@ service SystemController {
     DeptDTO DeptCreate(1: DeptSaveRequest req)(api.post = "/system/dept")
     DeptDTO DeptUpdate(1: DeptSaveRequest req)(api.put = "/system/dept")
     i32 DeptRemove(1: IdRequest req)(api.delete = "/system/dept")
+    i32 DeptLeader(1: DeptLeaderRequest req)(api.put = "/system/dept/leader")
 
     // 岗位
     PostListResponse PostList(1: PageQuery req)(api.get = "/system/post/list")

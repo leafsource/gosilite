@@ -69,6 +69,14 @@ var generateConfig = map[string]map[string]map[string]any{
 			"repository": false,
 			"service":    false,
 		},
+		"system_notice": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_notice_read": {
+			"repository": false,
+			"service":    false,
+		},
 	},
 	"application/agent/dal/query": {
 		"single_agent_draft": {

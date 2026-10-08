@@ -50,18 +50,56 @@
   </div>
 </template>
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
 import EmptyIcon from '@/assets/assets-empty.svg?component';
 import { NOTIFICATION_TYPES } from '@/constants';
 import { t } from '@/locales';
-import { useNotificationStore } from '@/store';
 import type { NotificationItem } from '@/types/interface';
 
 defineOptions({
   name: 'DetailSecondary',
 });
+
+// starter 演示页（无路由注册）：与通知中心解耦，保留本地 mock，不依赖 notification store
+const getMsgData = (): NotificationItem[] => [
+  {
+    id: '123',
+    content: t('pages.notification.msg1'),
+    type: t('pages.notification.contract'),
+    status: true,
+    collected: false,
+    date: '2021-01-01 08:00',
+    quality: 'high',
+  },
+  {
+    id: '124',
+    content: t('pages.notification.msg2'),
+    type: t('pages.notification.invoice'),
+    status: true,
+    collected: false,
+    date: '2021-01-01 08:00',
+    quality: 'low',
+  },
+  {
+    id: '125',
+    content: t('pages.notification.msg3'),
+    type: t('pages.notification.meeting'),
+    status: false,
+    collected: false,
+    date: '2021-01-01 08:00',
+    quality: 'middle',
+  },
+  {
+    id: '126',
+    content: t('pages.notification.msg4'),
+    type: t('pages.notification.invoice'),
+    status: true,
+    collected: false,
+    date: '2021-01-01 08:00',
+    quality: 'low',
+  },
+];
 
 const TAB_LIST = [
   {
@@ -83,8 +121,9 @@ const tabValue = ref('msgData');
 const visible = ref(false);
 const selectedItem = ref<NotificationItem>();
 
-const store = useNotificationStore();
-const { msgData, unreadMsg, readMsg } = storeToRefs(store);
+const msgData = ref<NotificationItem[]>(getMsgData());
+const unreadMsg = computed(() => msgData.value.filter((item) => item.status));
+const readMsg = computed(() => msgData.value.filter((item) => !item.status));
 
 const msgDataList = computed(() => {
   if (tabValue.value === 'msgData') return msgData.value;
@@ -99,25 +138,17 @@ const handleClickDeleteBtn = (item: NotificationItem) => {
 };
 
 const setReadStatus = (item: NotificationItem) => {
-  const changeMsg = msgData.value;
-  changeMsg.forEach((e: NotificationItem) => {
+  msgData.value.forEach((e) => {
     if (e.id === item.id) {
       e.status = !e.status;
     }
   });
-  store.setMsgData(changeMsg);
 };
 
 const deleteMsg = () => {
   const item = selectedItem.value;
-  const changeMsg = msgData.value;
-  changeMsg.forEach((e: NotificationItem, index: number) => {
-    if (e.id === item?.id) {
-      changeMsg.splice(index, 1);
-    }
-  });
+  msgData.value = msgData.value.filter((e) => e.id !== item?.id);
   visible.value = false;
-  store.setMsgData(changeMsg);
 };
 </script>
 <style lang="less" scoped>

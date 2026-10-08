@@ -97,6 +97,7 @@ web → Hertz API
 - `api/router/**/middleware.go` 生成后**允许改**权限挂载（`permission.Default()` 等），但保持函数骨架。
 - `api/router/register.go` 的 `GeneratedRegister` 仅供 hz 追加；**运行时由 Module 的 `RegisterRoutes` 挂载**，不要在 `main` 再调 `GeneratedRegister`。
 - 改路由/DTO：**先改 IDL → 再 hz update → 再改 Handler 实现**。
+- **所有 HTTP 路由必须由 hz 从 IDL 生成，禁止手写 `api/router/**` 的 `Register`**。特殊分组（如免登录端点）用**独立 IDL 文件**生成独立 `Register` 与 `middleware.go`，在该文件内配 `rootMw`，不得以「系统管理」为由手写挂载。
 
 ### 2. gorm gen —— 源：数据库表 + `script/codegen/codegen.go`
 
@@ -164,12 +165,11 @@ CRUD 样板         templates/*.tmpl     script/codegen（仅新文件）
 ## 五、标准开发流程
 
 ```text
-1. 澄清     能推断不问；假设标注；关键问 ≤3（gosilite-dev/references/requirements.md）
+1. 澄清     **强制门禁**：输出理解/假设/关键问(≤3)并获用户确认后才进第 2 步；能推断的不问，但假设必须列出（gosilite-dev/references/requirements.md §1.0）
 2. 定契约   DTO 字段、路由、错误码、表、权限码（system:*:xxx）
 3. （可选） docs/compose/spec/<feature>.md
 4. 迁移     script/migrations/NNNN_*.sql 幂等 DDL + 种子
-5. 生成     表模型 → gorm gen；HTTP → 改 idl 后 hz update
-   （纯手写系统管理路由可跳过 hz，直接 handler+router 挂进 Module）
+5. 生成     表模型 → gorm gen；HTTP → 改 idl 后 hz update（路由必须 hz 生成，禁止手写 Register）
 6. 仓储     dal/repository（手写或 codegen 初稿）
 7. 服务     service/**（具体类型 + NewService）
 8. 装配     域 module.Init / RegisterRoutes；需要时改 builtinModules
@@ -207,7 +207,7 @@ CRUD 样板         templates/*.tmpl     script/codegen（仅新文件）
 ## 八、命令
 
 ```bash
-export PATH="$HOME/.local/go/bin:$PATH"
+export PATH="$HOME/.local/go/bin:$HOME/go/bin:$PATH"   # go + hz/thriftgo（hz update 必需）
 GO_ENV=test go run .
 ./script/check.sh            # go test + vet + build
 WEB=1 ./script/check.sh

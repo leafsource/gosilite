@@ -43,6 +43,7 @@ const (
 	ErrSystemDictGroupExists = 701000025
 	ErrSystemDictGroupNotFound = 701000026
 	ErrSystemDictGroupHasTypes = 701000027
+	ErrSystemNoticeNotFound = 701000028
 )
 
 func init() {
@@ -54,4 +55,5 @@ func init() {
 	code.Register(ErrSystemDictGroupExists, "dict group already exists: {name}", code.WithAffectStability(false))
 	code.Register(ErrSystemDictGroupNotFound, "dict group not found: {id}", code.WithAffectStability(false))
 	code.Register(ErrSystemDictGroupHasTypes, "cannot delete dict group with types: {id}", code.WithAffectStability(false))
+	code.Register(ErrSystemNoticeNotFound, "notice not found: {id}", code.WithAffectStability(false))
 }

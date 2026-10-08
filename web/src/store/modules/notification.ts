@@ -1,63 +1,62 @@
 import { defineStore } from 'pinia';
 
-import { t } from '@/locales';
-import type { NotificationItem } from '@/types/interface';
+import { getNoticeUnreadCount, listNoticeInbox, markNoticeRead } from '@/api/notice';
+import type { NoticeInboxItem } from '@/api/noticeModel';
 
-const getMsgData = () => [
-  {
-    id: '123',
-    content: t('pages.notification.msg1'),
-    type: t('pages.notification.contract'),
-    status: true,
-    collected: false,
-    date: '2021-01-01 08:00',
-    quality: 'high',
-  },
-  {
-    id: '124',
-    content: t('pages.notification.msg2'),
-    type: t('pages.notification.invoice'),
-    status: true,
-    collected: false,
-    date: '2021-01-01 08:00',
-    quality: 'low',
-  },
-  {
-    id: '125',
-    content: t('pages.notification.msg3'),
-    type: t('pages.notification.meeting'),
-    status: true,
-    collected: false,
-    date: '2021-01-01 08:00',
-    quality: 'middle',
-  },
-  {
-    id: '126',
-    content: t('pages.notification.msg4'),
-    type: t('pages.notification.invoice'),
-    status: true,
-    collected: false,
-    date: '2021-01-01 08:00',
-    quality: 'low',
-  },
-];
-
-type MsgDataType = ReturnType<typeof getMsgData>;
-
+/**
+ * 通知中心 store（真实数据，已去 mock）：
+ * - unread：Header 角标未读数（已发布 − 本人已读）
+ * - recent：铃铛下拉最近 10 条（不含 content，正文走 getNoticeDetail）
+ * 失败不写入，保留现值，下次触点可重试。
+ */
 export const useNotificationStore = defineStore('notification', {
   state: () => ({
-    msgData: getMsgData(),
+    unread: 0,
+    recent: [] as NoticeInboxItem[],
+    loading: false,
   }),
-  getters: {
-    unreadMsg: (state) => state.msgData.filter((item: NotificationItem) => item.status),
-    readMsg: (state) => state.msgData.filter((item: NotificationItem) => !item.status),
-  },
   actions: {
-    setMsgData(data: MsgDataType) {
-      this.msgData = data;
+    async loadUnread() {
+      try {
+        const res = await getNoticeUnreadCount();
+        this.unread = res.count ?? 0;
+      } catch {
+        // 保留现值
+      }
     },
-    refreshMsgData() {
-      this.msgData = getMsgData();
+    async loadRecent() {
+      if (this.loading) return;
+      this.loading = true;
+      try {
+        const res = await listNoticeInbox({ page: 1, pageSize: 10 });
+        this.recent = res.list || [];
+        this.unread = res.unread ?? this.unread;
+      } catch {
+        // 保留旧数据
+      } finally {
+        this.loading = false;
+      }
+    },
+    /** 标记单条已读（下拉内「设为已读」） */
+    async markOne(id: string) {
+      await markNoticeRead(id);
+      this.applyRead(id);
+    },
+    /** 全部已读 */
+    async markAll() {
+      await markNoticeRead();
+      this.recent.forEach((item) => {
+        item.read = true;
+      });
+      this.unread = 0;
+    },
+    /** 详情打开后服务端已自动已读，同步本地角标与列表状态 */
+    applyRead(id: string) {
+      const item = this.recent.find((i) => i.id === id);
+      if (item && !item.read) {
+        item.read = true;
+        this.unread = Math.max(0, this.unread - 1);
+      }
     },
   },
   persist: false,

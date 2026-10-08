@@ -1,16 +1,18 @@
-package syscfg
+package syscfgglobal
 
 import (
 	"context"
 
 	"github.com/cloudwego/hertz/pkg/app"
 
-	syscfg "gosilite/api/model/framework/syscfg"
+	syscfgglobal "gosilite/api/model/framework/syscfgglobal"
 	"gosilite/application/framework/service/config"
 	R "gosilite/pkg/utils/response"
 )
 
-// GlobalList 全局参数（config_type=global，免登录）
+// GlobalList 全局参数（config_type=global，免登录）。
+// 本包由独立 IDL 文件 idl/framework/system_config_global.thrift 生成，
+// rootMw 不挂登录（middleware.go 中保持 return nil）——spec: config-consumption S2.2。
 // @router /system/config/global [GET]
 func GlobalList(ctx context.Context, c *app.RequestContext) {
 	list, err := config.SystemConfigSVC.ListGlobal(ctx)
@@ -19,6 +21,5 @@ func GlobalList(ctx context.Context, c *app.RequestContext) {
 		R.Error(ctx, c, err)
 		return
 	}
-	resp := &syscfg.ConfigListResponse{List: toConfigDTOs(list), Total: int64(len(list))}
-	R.SuccessWithData(ctx, c, resp)
+	R.SuccessWithData(ctx, c, &syscfgglobal.ConfigGlobalListResponse{List: toConfigGlobalDTOs(list), Total: int64(len(list))})
 }

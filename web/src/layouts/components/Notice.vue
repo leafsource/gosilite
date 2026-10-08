@@ -1,27 +1,32 @@
 <template>
-  <t-popup expand-animation placement="bottom-right" trigger="click">
+  <t-popup v-model:visible="popupVisible" expand-animation placement="bottom-right" trigger="click">
     <template #content>
       <div class="header-msg">
         <div class="header-msg-top">
           <p>{{ t('layout.notice.title') }}</p>
           <t-button
-            v-if="unreadMsg.length > 0"
+            v-if="unread > 0"
             class="clear-btn"
             variant="text"
             theme="primary"
-            @click="setRead('all')"
-            >{{ t('layout.notice.clear') }}</t-button
+            :loading="marking"
+            @click="onMarkAll"
           >
+            {{ t('layout.notice.clear') }}
+          </t-button>
         </div>
-        <t-list v-if="unreadMsg.length > 0" class="narrow-scrollbar" :split="false">
-          <t-list-item v-for="(item, index) in unreadMsg" :key="index">
+        <t-list v-if="recent.length > 0" class="narrow-scrollbar" :split="false">
+          <t-list-item v-for="item in recent" :key="item.id" @click="openDetail(item.id)">
             <div>
-              <p class="msg-content">{{ item.content }}</p>
-              <p class="msg-type">{{ item.type }}</p>
+              <p class="msg-content">
+                <span v-if="!item.read" class="unread-dot" />
+                {{ item.title }}
+              </p>
+              <p class="msg-type">{{ typeLabel(item.noticeType) }} · {{ item.publisher }}</p>
             </div>
-            <p class="msg-time">{{ item.date }}</p>
+            <p class="msg-time">{{ item.createdAt }}</p>
             <template #action>
-              <t-button size="small" variant="outline" @click="setRead('radio', item)">
+              <t-button v-if="!item.read" size="small" variant="outline" @click.stop="onMarkOne(item.id)">
                 {{ t('layout.notice.setRead') }}
               </t-button>
             </template>
@@ -30,52 +35,88 @@
 
         <div v-else class="empty-list">
           <img src="https://tdesign.gtimg.com/pro-template/personal/nothing.png" alt="空" />
-          <p>{{ t('layout.notice.empty') }}</p>
+          <p>{{ t('layout.notice.emptyNotice') }}</p>
         </div>
-        <div v-if="unreadMsg.length > 0" class="header-msg-bottom">
-          <t-button class="header-msg-bottom-link" variant="text" theme="default" block @click="goDetail">{{
-            t('layout.notice.viewAll')
-          }}</t-button>
+        <div v-if="recent.length > 0" class="header-msg-bottom">
+          <t-button class="header-msg-bottom-link" variant="text" theme="default" block @click="goAll">
+            {{ t('layout.notice.viewAll') }}
+          </t-button>
         </div>
       </div>
     </template>
-    <t-badge :count="unreadMsg.length" :offset="[4, 4]">
+    <t-badge :count="unread" :offset="[4, 4]">
       <t-button theme="default" shape="square" variant="text">
         <t-icon name="mail" />
       </t-button>
     </t-badge>
   </t-popup>
+
+  <!-- 详情（打开即自动已读）：SNoticeDetail 内部 attach=body，脱离 header 裁剪 -->
+  <s-notice-detail v-model:visible="detailVisible" :detail="detail ?? null" />
 </template>
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
+import { MessagePlugin } from 'tdesign-vue-next';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { getNoticeDetail } from '@/api/notice';
+import type { NoticeDetail } from '@/api/noticeModel';
+import SNoticeDetail from '@/components/s-notice-detail/index.vue';
 import { t } from '@/locales';
-import { useNotificationStore } from '@/store';
-import type { NotificationItem } from '@/types/interface';
+import { useDict, useNotificationStore } from '@/store';
 
 const router = useRouter();
 const store = useNotificationStore();
-const { msgData, unreadMsg } = storeToRefs(store);
+const { unread, recent } = storeToRefs(store);
+const typeDict = useDict('sys_notice_type');
 
-const setRead = (type: string, item?: NotificationItem) => {
-  const changeMsg = msgData.value;
-  if (type === 'all') {
-    changeMsg.forEach((e) => {
-      e.status = false;
-    });
-  } else {
-    changeMsg.forEach((e) => {
-      if (e.id === item?.id) {
-        e.status = false;
-      }
-    });
+const popupVisible = ref(false);
+const marking = ref(false);
+const detailVisible = ref(false);
+const detail = ref<NoticeDetail | undefined>();
+
+const typeLabel = (noticeType: number) => typeDict.labelOf(noticeType);
+
+onMounted(() => {
+  store.loadUnread();
+  store.loadRecent();
+});
+
+const openDetail = async (id: string) => {
+  // 先关铃铛浮层：popup z-index(5500) 高于 dialog(2500)，不关会压在详情与页面之上
+  popupVisible.value = false;
+  try {
+    detail.value = await getNoticeDetail(id);
+    detailVisible.value = true;
+    store.applyRead(id);
+  } catch (e) {
+    MessagePlugin.error((e as Error).message || '加载失败');
   }
-  store.setMsgData(changeMsg);
 };
 
-const goDetail = () => {
-  router.push('/detail/secondary');
+const onMarkOne = async (id: string) => {
+  try {
+    await store.markOne(id);
+  } catch (e) {
+    MessagePlugin.error((e as Error).message || '操作失败');
+  }
+};
+
+const onMarkAll = async () => {
+  marking.value = true;
+  try {
+    await store.markAll();
+    MessagePlugin.success('已全部标为已读');
+  } catch (e) {
+    MessagePlugin.error((e as Error).message || '操作失败');
+  } finally {
+    marking.value = false;
+  }
+};
+
+const goAll = () => {
+  router.push('/notice/list');
 };
 </script>
 <style lang="less" scoped>
@@ -164,6 +205,17 @@ const goDetail = () => {
 
     .msg-content {
       margin-bottom: var(--td-comp-margin-s);
+      display: flex;
+      align-items: center;
+      gap: var(--td-comp-margin-xs);
+    }
+
+    .unread-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--td-brand-color);
+      flex: none;
     }
 
     .msg-type {

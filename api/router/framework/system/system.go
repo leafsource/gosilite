@@ -20,6 +20,8 @@ func Register(r *server.Hertz) {
 	{
 		_system := root.Group("/system", _systemMw()...)
 		_system.DELETE("/dept", append(_deptremoveMw(), system.DeptRemove)...)
+		_dept := _system.Group("/dept", _deptMw()...)
+		_dept.PUT("/leader", append(_deptleaderMw(), system.DeptLeader)...)
 		_system.POST("/dept", append(_deptcreateMw(), system.DeptCreate)...)
 		_system.PUT("/dept", append(_deptupdateMw(), system.DeptUpdate)...)
 		_system.DELETE("/menu", append(_menuremoveMw(), system.MenuRemove)...)
@@ -41,9 +43,9 @@ func Register(r *server.Hertz) {
 		_system.POST("/user", append(_usercreateMw(), system.UserCreate)...)
 		_system.PUT("/user", append(_userupdateMw(), system.UserUpdate)...)
 		{
-			_dept := _system.Group("/dept", _deptMw()...)
-			_dept.GET("/list", append(_deptlistMw(), system.DeptList)...)
-			_dept.GET("/tree", append(_depttreeMw(), system.DeptTree)...)
+			_dept0 := _system.Group("/dept", _dept0Mw()...)
+			_dept0.GET("/list", append(_deptlistMw(), system.DeptList)...)
+			_dept0.GET("/tree", append(_depttreeMw(), system.DeptTree)...)
 		}
 		{
 			_menu := _system.Group("/menu", _menuMw()...)

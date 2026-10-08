@@ -53,6 +53,12 @@ export default [
         component: () => import('@/pages/system/config/index.vue'),
         meta: { title: { zh_CN: '参数管理', en_US: 'Config' } },
       },
+      {
+        path: 'notice',
+        name: 'SystemNotice',
+        component: () => import('@/pages/system/notice/index.vue'),
+        meta: { title: { zh_CN: '通知公告', en_US: 'Notice' } },
+      },
     ],
   },
 ] satisfies RouteRecordRaw[];

@@ -162,3 +162,12 @@ func _roleauthorizeMw() []app.HandlerFunc {
 func _roleauthorizesaveMw() []app.HandlerFunc {
 	return permission.HPermissions("system:role:assign")
 }
+
+func _deptleaderMw() []app.HandlerFunc {
+	return permission.HPermissions("system:dept:edit")
+}
+
+func _dept0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
