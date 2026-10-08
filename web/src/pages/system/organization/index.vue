@@ -68,9 +68,8 @@
           {{ row.deptName || '-' }}
         </template>
         <template #state="{ row }">
-          <t-tag :theme="row.state === 'enabled' ? 'success' : 'default'" variant="light">
-            {{ stateDict.labelOf(row.state) || '-' }}
-          </t-tag>
+          <s-tag-dict v-if="row.state" dict-type="sys_state" :value="row.state" />
+          <span v-else>-</span>
         </template>
         <template #op="{ row }">
           <t-dropdown
@@ -129,7 +128,7 @@
             />
           </t-form-item>
           <t-form-item label="状态">
-            <t-radio-group v-model="form.state" :options="stateOptions" />
+            <s-radio-dict v-model="form.state" dict-type="sys_state" />
           </t-form-item>
           <t-form-item label="角色">
             <t-select v-model="form.roleIds" multiple placeholder="选择角色" style="width: 100%">
@@ -231,13 +230,14 @@ import type { AdminUserDTO, AdminUserSaveParams } from '@/api/system/user';
 import { createUser, fetchUserList, removeUser, updateUser, updateUserStatus } from '@/api/system/user';
 import SFormDialog from '@/components/s-form-dialog/index.vue';
 import SFormDrawer from '@/components/s-form-drawer/index.vue';
+import SRadioDict from '@/components/s-radio-dict/index.vue';
 import STable from '@/components/s-table/index.vue';
 import type { STableSearchField } from '@/components/s-table/sTable';
+import STagDict from '@/components/s-tag-dict/index.vue';
 import { hasPerm } from '@/directives/permission';
 import { useConfigStore, useDict } from '@/store';
 
 const stateDict = useDict('sys_state');
-const stateOptions = stateDict.options;
 
 const columns: PrimaryTableCol[] = [
   { title: '账号', colKey: 'account', width: 140 },

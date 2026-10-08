@@ -59,10 +59,11 @@
           批量禁用
         </t-button>
       </template>
+      <template #configType="{ row }">
+        <s-tag-dict dict-type="sys_config_type" :value="row.configType" />
+      </template>
       <template #status="{ row }">
-        <t-tag :theme="row.status === 0 ? 'success' : 'danger'" variant="light">
-          {{ statusDict.labelOf(row.status) }}
-        </t-tag>
+        <s-tag-dict dict-type="sys_status" :value="row.status" />
       </template>
       <template #ops="{ row }">
         <t-space>
@@ -78,10 +79,10 @@
         <t-form-item label="参数键"><t-input v-model="form.configKey" :disabled="!!form.id" /></t-form-item>
         <t-form-item label="参数值"><t-textarea v-model="form.configValue" /></t-form-item>
         <t-form-item label="类型">
-          <t-select v-model="form.configType" :options="configTypeOptions" />
+          <s-select-dict v-model="form.configType" dict-type="sys_config_type" />
         </t-form-item>
         <t-form-item label="状态">
-          <t-radio-group v-model="form.status" :options="statusOptions" />
+          <s-radio-dict v-model="form.status" dict-type="sys_status" />
         </t-form-item>
         <t-form-item label="备注"><t-textarea v-model="form.remark" /></t-form-item>
       </t-form>
@@ -90,18 +91,18 @@
 </template>
 <script setup lang="ts">
 import { MessagePlugin } from 'tdesign-vue-next';
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 import { createConfig, listConfigs, removeConfig, updateConfig } from '@/api/system/config';
 import type { ConfigDTO } from '@/api/system/configModel';
 import SFormDialog from '@/components/s-form-dialog/index.vue';
+import SRadioDict from '@/components/s-radio-dict/index.vue';
+import SSelectDict from '@/components/s-select-dict/index.vue';
 import STable from '@/components/s-table/index.vue';
+import STagDict from '@/components/s-tag-dict/index.vue';
 import { useConfigStore, useDict } from '@/store';
 
 const statusDict = useDict('sys_status');
-const statusOptions = computed(() => statusDict.options.value.map((o) => ({ label: o.label, value: Number(o.value) })));
-const configTypeDict = useDict('sys_config_type');
-const configTypeOptions = configTypeDict.options;
 
 const loading = ref(false);
 const list = ref<ConfigDTO[]>([]);
@@ -117,7 +118,7 @@ const columns = [
   { colKey: 'configName', title: '参数名称', minWidth: 120 },
   { colKey: 'configKey', title: '参数键', minWidth: 140 },
   { colKey: 'configValue', title: '参数值', minWidth: 140, ellipsis: true },
-  { colKey: 'configType', title: '类型', width: 100 },
+  { colKey: 'configType', title: '类型', width: 100, cell: 'configType' },
   { colKey: 'status', title: '状态', width: 90, cell: 'status' },
   { colKey: 'ops', title: '操作', width: 160, fixed: 'right', cell: 'ops' },
 ];

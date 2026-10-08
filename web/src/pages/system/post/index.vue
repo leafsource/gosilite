@@ -18,9 +18,7 @@
         <t-button v-permission="'system:post:add'" theme="primary" @click="openCreate">新增岗位</t-button>
       </template>
       <template #status="{ row }">
-        <t-tag :theme="row.status === 0 ? 'success' : 'danger'" variant="light">
-          {{ statusDict.labelOf(row.status) }}
-        </t-tag>
+        <s-tag-dict dict-type="sys_status" :value="row.status" />
       </template>
       <template #op="{ row }">
         <t-space>
@@ -48,7 +46,7 @@
           <t-input-number v-model="form.orderNum" :min="0" theme="column" style="width: 100%" />
         </t-form-item>
         <t-form-item label="状态">
-          <t-radio-group v-model="form.status" :options="statusOptions" />
+          <s-radio-dict v-model="form.status" dict-type="sys_status" />
         </t-form-item>
       </t-form>
     </s-form-dialog>
@@ -70,11 +68,10 @@ import { computed, onMounted, ref } from 'vue';
 import type { PostDTO, PostSaveParams } from '@/api/system/post';
 import { createPost, fetchPostList, removePost, updatePost } from '@/api/system/post';
 import SFormDialog from '@/components/s-form-dialog/index.vue';
+import SRadioDict from '@/components/s-radio-dict/index.vue';
 import STable from '@/components/s-table/index.vue';
-import { useConfigStore, useDict } from '@/store';
-
-const statusDict = useDict('sys_status');
-const statusOptions = computed(() => statusDict.options.value.map((o) => ({ label: o.label, value: Number(o.value) })));
+import STagDict from '@/components/s-tag-dict/index.vue';
+import { useConfigStore } from '@/store';
 
 const columns: PrimaryTableCol[] = [
   { title: '岗位编码', colKey: 'postCode', width: 160 },

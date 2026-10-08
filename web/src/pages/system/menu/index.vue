@@ -18,7 +18,7 @@
         <t-button v-permission="'system:menu:add'" theme="primary" @click="openCreate()">新增菜单</t-button>
       </template>
       <template #menuType="{ row }">
-        <t-tag :theme="menuTypeTheme(row.menuType)" variant="light">{{ menuTypeLabel(row.menuType) }}</t-tag>
+        <s-tag-dict dict-type="sys_menu_type" :value="row.menuType" />
       </template>
       <template #visible="{ row }">
         <t-tag :theme="row.visible ? 'success' : 'default'" variant="light">
@@ -26,9 +26,7 @@
         </t-tag>
       </template>
       <template #status="{ row }">
-        <t-tag :theme="row.status === 0 ? 'success' : 'danger'" variant="light">
-          {{ statusDict.labelOf(row.status) }}
-        </t-tag>
+        <s-tag-dict dict-type="sys_status" :value="row.status" />
       </template>
       <template #op="{ row }">
         <t-space>
@@ -57,7 +55,7 @@
           />
         </t-form-item>
         <t-form-item label="菜单类型">
-          <t-radio-group v-model="form.menuType" :options="menuTypeOptions" />
+          <s-radio-dict v-model="form.menuType" dict-type="sys_menu_type" />
         </t-form-item>
         <t-form-item label="菜单名称" required>
           <t-input v-model="form.menuName" placeholder="请输入菜单名称" />
@@ -83,7 +81,7 @@
           </t-switch>
         </t-form-item>
         <t-form-item label="状态">
-          <t-radio-group v-model="form.status" :options="statusOptions" />
+          <s-radio-dict v-model="form.status" dict-type="sys_status" />
         </t-form-item>
       </t-form>
     </s-form-drawer>
@@ -105,13 +103,9 @@ import { computed, onMounted, ref } from 'vue';
 import type { MenuNode, MenuSaveParams, MenuTreeItem } from '@/api/system/menu';
 import { createMenu, fetchMenuTree, removeMenu, updateMenu } from '@/api/system/menu';
 import SFormDrawer from '@/components/s-form-drawer/index.vue';
+import SRadioDict from '@/components/s-radio-dict/index.vue';
 import STable from '@/components/s-table/index.vue';
-import { useDict } from '@/store';
-
-const statusDict = useDict('sys_status');
-const statusOptions = computed(() => statusDict.options.value.map((o) => ({ label: o.label, value: Number(o.value) })));
-const menuTypeDict = useDict('sys_menu_type');
-const menuTypeOptions = menuTypeDict.options;
+import STagDict from '@/components/s-tag-dict/index.vue';
 
 const columns: PrimaryTableCol[] = [
   { title: '菜单名称', colKey: 'label', minWidth: 220 },
@@ -157,16 +151,6 @@ const filteredRows = computed<MenuNode[]>(() => {
       );
   return walk(rows.value);
 });
-
-function menuTypeLabel(type: string): string {
-  return menuTypeDict.labelOf(type) || '-';
-}
-
-function menuTypeTheme(type: string): 'primary' | 'default' | 'warning' {
-  if (type === 'M') return 'primary';
-  if (type === 'F') return 'warning';
-  return 'default';
-}
 
 async function loadData() {
   loading.value = true;

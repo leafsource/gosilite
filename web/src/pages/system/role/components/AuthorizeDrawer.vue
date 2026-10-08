@@ -38,7 +38,7 @@
           <menu-perm-table v-show="activeTab === 'menu'" ref="menuTableRef" :menus="menuNodes" @stats="onMenuStats" />
 
           <div v-show="activeTab === 'dept'" class="auth-drawer__scope">
-            <t-radio-group v-model="dataScope" :options="dataScopeOptions" />
+            <s-radio-dict v-model="dataScope" dict-type="sys_data_scope" />
             <template v-if="isCustomScope">
               <div class="auth-drawer__dept-toolbar">
                 <t-input v-model="deptFilter" placeholder="搜索部门" clearable />
@@ -88,6 +88,7 @@ import type { DeptNode, DeptTreeItem } from '@/api/system/dept';
 import { fetchDeptTree } from '@/api/system/dept';
 import type { RoleAuthMenuNode, RoleDTO } from '@/api/system/role';
 import { fetchRoleAuthorize, saveRoleAuthorize } from '@/api/system/role';
+import SRadioDict from '@/components/s-radio-dict/index.vue';
 import { useDict } from '@/store';
 
 import MenuPermTable from './MenuPermTable.vue';
@@ -118,9 +119,6 @@ const menuStats = ref({ menus: 0, perms: 0 });
 // 数据权限：sys_data_scope 字典（1-5），5=自定义部门才展开部门树
 const CUSTOM_DATA_SCOPE = 5;
 const dataScopeDict = useDict('sys_data_scope');
-const dataScopeOptions = computed(() =>
-  dataScopeDict.options.value.map((o) => ({ label: o.label, value: Number(o.value) })),
-);
 const dataScope = ref(1);
 const isCustomScope = computed(() => dataScope.value === CUSTOM_DATA_SCOPE);
 const dataScopeLabel = computed(() => dataScopeDict.labelOf(dataScope.value));

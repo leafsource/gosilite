@@ -59,6 +59,7 @@ func toDictDataDTO(m *model.SystemDictData) *syscfg.DictDataDTO {
 	return &syscfg.DictDataDTO{
 		ID: m.ID, DictType: m.DictType, DictLabel: m.DictLabel, DictValue: m.DictValue,
 		CssClass: m.CSSClass, ListOrder: m.ListOrder, Status: int32(m.Status), IsDefault: int32(m.IsDefault),
+		Theme: m.Theme, Color: m.Color,
 	}
 }
 
@@ -78,13 +79,19 @@ func fromDictDataSaveRequest(req *syscfg.DictDataSaveRequest) *model.SystemDictD
 	if req.CssClass != nil {
 		m.CSSClass = *req.CssClass
 	}
+	if req.Theme != nil {
+		m.Theme = *req.Theme
+	}
+	if req.Color != nil {
+		m.Color = *req.Color
+	}
 	return m
 }
 
 func toDictOptionDTOs(list []*model.SystemDictData) []*syscfg.DictOptionDTO {
 	out := make([]*syscfg.DictOptionDTO, 0, len(list))
 	for _, m := range list {
-		out = append(out, &syscfg.DictOptionDTO{Label: m.DictLabel, Value: m.DictValue})
+		out = append(out, &syscfg.DictOptionDTO{Label: m.DictLabel, Value: m.DictValue, Theme: m.Theme, Color: m.Color})
 	}
 	return out
 }

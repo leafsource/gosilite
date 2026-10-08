@@ -70,6 +70,10 @@ struct DictDataDTO {
     6: i32 listOrder
     7: i32 status
     8: i32 isDefault
+    // 主题令牌：default/primary/success/danger/warning（default=不着色）
+    9: string theme
+    // 自定义色 #RGB/#RRGGBB，非空时优先于 theme
+    10: string color
 }
 
 struct DictDataListRequest {
@@ -92,6 +96,8 @@ struct DictDataSaveRequest {
     6: i32 listOrder
     7: i32 status
     8: i32 isDefault
+    9: optional string theme
+    10: optional string color
 }
 
 struct DictOptionsRequest {
@@ -101,6 +107,8 @@ struct DictOptionsRequest {
 struct DictOptionDTO {
     1: string label
     2: string value
+    3: string theme
+    4: string color
 }
 
 struct DictOptionsResponse {

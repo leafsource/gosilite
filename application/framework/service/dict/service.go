@@ -2,6 +2,7 @@ package dict
 
 import (
 	"context"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -139,6 +140,9 @@ func (s *DataService) CreateData(ctx context.Context, d *model.SystemDictData) e
 	if strings.TrimSpace(d.DictLabel) == "" || strings.TrimSpace(d.DictValue) == "" || strings.TrimSpace(d.DictType) == "" {
 		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "标签/值/类型不能为空"))
 	}
+	if err := validateThemeColor(d.Theme, d.Color); err != nil {
+		return err
+	}
 	d.DelFlag = 0
 	return s.repo.CreateData(ctx, d)
 }
@@ -148,7 +152,30 @@ func (s *DataService) UpdateData(ctx context.Context, d *model.SystemDictData) e
 	if _, err := s.repo.GetDataByID(ctx, d.ID); err != nil {
 		return errorx.New(errno.ErrSystemDictNotFound, errorx.KV("id", formatID(d.ID)))
 	}
+	if err := validateThemeColor(d.Theme, d.Color); err != nil {
+		return err
+	}
 	return s.repo.SaveData(ctx, d)
+}
+
+// validThemes 主题令牌集合；''=未勾选（伴随自定义色），info=纯文本不渲染标签
+var validThemes = map[string]bool{"": true, "info": true, "default": true, "primary": true, "success": true, "danger": true, "warning": true}
+
+// colorHexRe 自定义色 #RGB / #RRGGBB
+var colorHexRe = regexp.MustCompile(`^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$`)
+
+// validateThemeColor 校验主题令牌、自定义色及二者互斥
+func validateThemeColor(theme, color string) error {
+	if !validThemes[theme] {
+		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "非法主题: "+theme))
+	}
+	if color != "" && !colorHexRe.MatchString(color) {
+		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "非法颜色值: "+color))
+	}
+	if color != "" && theme != "" {
+		return errorx.New(errno.ErrSystemInvalidParam, errorx.KV("msg", "主题与颜色互斥"))
+	}
+	return nil
 }
 
 // DeleteData 软删

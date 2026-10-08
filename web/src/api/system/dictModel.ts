@@ -18,6 +18,10 @@ export interface DictDataDTO {
   listOrder: number;
   status: number;
   isDefault: number;
+  /** 主题令牌 default/primary/success/danger/warning（default=不着色） */
+  theme: string;
+  /** 自定义色 #RGB/#RRGGBB，非空时优先于 theme */
+  color: string;
 }
 
 export interface DictGroupDTO {
@@ -34,4 +38,6 @@ export type DictGroupSaveParams = Omit<DictGroupDTO, 'id'> & { id?: string };
 export interface DictOption {
   label: string;
   value: string;
+  theme?: string;
+  color?: string;
 }

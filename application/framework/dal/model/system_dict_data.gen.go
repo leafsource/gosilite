@@ -23,6 +23,8 @@ type SystemDictData struct {
 	DelFlag   int16     `gorm:"column:del_flag;not null" json:"del_flag"`
 	CreatedAt time.Time `gorm:"column:created_at;not null;default:now();autoCreateTime:milli" json:"created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at;not null;default:now();autoUpdateTime:milli" json:"updated_at"`
+	Theme     string    `gorm:"column:theme;not null" json:"theme"`
+	Color     string    `gorm:"column:color;not null" json:"color"`
 }
 
 // TableName SystemDictData's table name

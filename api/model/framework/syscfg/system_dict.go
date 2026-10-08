@@ -2487,6 +2487,10 @@ type DictDataDTO struct {
 	ListOrder int32  `thrift:"listOrder,6" form:"listOrder" json:"listOrder" query:"listOrder"`
 	Status    int32  `thrift:"status,7" form:"status" json:"status" query:"status"`
 	IsDefault int32  `thrift:"isDefault,8" form:"isDefault" json:"isDefault" query:"isDefault"`
+	// 主题令牌：default/primary/success/danger/warning（default=不着色）
+	Theme string `thrift:"theme,9" form:"theme" json:"theme" query:"theme"`
+	// 自定义色 #RGB/#RRGGBB，非空时优先于 theme
+	Color string `thrift:"color,10" form:"color" json:"color" query:"color"`
 }
 
 func NewDictDataDTO() *DictDataDTO {
@@ -2528,15 +2532,25 @@ func (p *DictDataDTO) GetIsDefault() (v int32) {
 	return p.IsDefault
 }
 
+func (p *DictDataDTO) GetTheme() (v string) {
+	return p.Theme
+}
+
+func (p *DictDataDTO) GetColor() (v string) {
+	return p.Color
+}
+
 var fieldIDToName_DictDataDTO = map[int16]string{
-	1: "id",
-	2: "dictType",
-	3: "dictLabel",
-	4: "dictValue",
-	5: "cssClass",
-	6: "listOrder",
-	7: "status",
-	8: "isDefault",
+	1:  "id",
+	2:  "dictType",
+	3:  "dictLabel",
+	4:  "dictValue",
+	5:  "cssClass",
+	6:  "listOrder",
+	7:  "status",
+	8:  "isDefault",
+	9:  "theme",
+	10: "color",
 }
 
 func (p *DictDataDTO) Read(iprot thrift.TProtocol) (err error) {
@@ -2617,6 +2631,22 @@ func (p *DictDataDTO) Read(iprot thrift.TProtocol) (err error) {
 		case 8:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 9:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField9(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 10:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField10(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -2739,6 +2769,28 @@ func (p *DictDataDTO) ReadField8(iprot thrift.TProtocol) error {
 	p.IsDefault = _field
 	return nil
 }
+func (p *DictDataDTO) ReadField9(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Theme = _field
+	return nil
+}
+func (p *DictDataDTO) ReadField10(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Color = _field
+	return nil
+}
 
 func (p *DictDataDTO) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -2776,6 +2828,14 @@ func (p *DictDataDTO) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField8(oprot); err != nil {
 			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField9(oprot); err != nil {
+			fieldId = 9
+			goto WriteFieldError
+		}
+		if err = p.writeField10(oprot); err != nil {
+			fieldId = 10
 			goto WriteFieldError
 		}
 	}
@@ -2930,6 +2990,40 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
+}
+
+func (p *DictDataDTO) writeField9(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("theme", thrift.STRING, 9); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Theme); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
+}
+
+func (p *DictDataDTO) writeField10(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("color", thrift.STRING, 10); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Color); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
 }
 
 func (p *DictDataDTO) String() string {
@@ -3403,6 +3497,8 @@ type DictDataSaveRequest struct {
 	ListOrder int32   `thrift:"listOrder,6" form:"listOrder" json:"listOrder" query:"listOrder"`
 	Status    int32   `thrift:"status,7" form:"status" json:"status" query:"status"`
 	IsDefault int32   `thrift:"isDefault,8" form:"isDefault" json:"isDefault" query:"isDefault"`
+	Theme     *string `thrift:"theme,9,optional" form:"theme" json:"theme,omitempty" query:"theme"`
+	Color     *string `thrift:"color,10,optional" form:"color" json:"color,omitempty" query:"color"`
 }
 
 func NewDictDataSaveRequest() *DictDataSaveRequest {
@@ -3454,15 +3550,35 @@ func (p *DictDataSaveRequest) GetIsDefault() (v int32) {
 	return p.IsDefault
 }
 
+var DictDataSaveRequest_Theme_DEFAULT string
+
+func (p *DictDataSaveRequest) GetTheme() (v string) {
+	if !p.IsSetTheme() {
+		return DictDataSaveRequest_Theme_DEFAULT
+	}
+	return *p.Theme
+}
+
+var DictDataSaveRequest_Color_DEFAULT string
+
+func (p *DictDataSaveRequest) GetColor() (v string) {
+	if !p.IsSetColor() {
+		return DictDataSaveRequest_Color_DEFAULT
+	}
+	return *p.Color
+}
+
 var fieldIDToName_DictDataSaveRequest = map[int16]string{
-	1: "id",
-	2: "dictType",
-	3: "dictLabel",
-	4: "dictValue",
-	5: "cssClass",
-	6: "listOrder",
-	7: "status",
-	8: "isDefault",
+	1:  "id",
+	2:  "dictType",
+	3:  "dictLabel",
+	4:  "dictValue",
+	5:  "cssClass",
+	6:  "listOrder",
+	7:  "status",
+	8:  "isDefault",
+	9:  "theme",
+	10: "color",
 }
 
 func (p *DictDataSaveRequest) IsSetID() bool {
@@ -3471,6 +3587,14 @@ func (p *DictDataSaveRequest) IsSetID() bool {
 
 func (p *DictDataSaveRequest) IsSetCssClass() bool {
 	return p.CssClass != nil
+}
+
+func (p *DictDataSaveRequest) IsSetTheme() bool {
+	return p.Theme != nil
+}
+
+func (p *DictDataSaveRequest) IsSetColor() bool {
+	return p.Color != nil
 }
 
 func (p *DictDataSaveRequest) Read(iprot thrift.TProtocol) (err error) {
@@ -3551,6 +3675,22 @@ func (p *DictDataSaveRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 8:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField8(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 9:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField9(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 10:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField10(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -3673,6 +3813,28 @@ func (p *DictDataSaveRequest) ReadField8(iprot thrift.TProtocol) error {
 	p.IsDefault = _field
 	return nil
 }
+func (p *DictDataSaveRequest) ReadField9(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Theme = _field
+	return nil
+}
+func (p *DictDataSaveRequest) ReadField10(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Color = _field
+	return nil
+}
 
 func (p *DictDataSaveRequest) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -3710,6 +3872,14 @@ func (p *DictDataSaveRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField8(oprot); err != nil {
 			fieldId = 8
+			goto WriteFieldError
+		}
+		if err = p.writeField9(oprot); err != nil {
+			fieldId = 9
+			goto WriteFieldError
+		}
+		if err = p.writeField10(oprot); err != nil {
+			fieldId = 10
 			goto WriteFieldError
 		}
 	}
@@ -3870,6 +4040,44 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 8 end error: ", p), err)
 }
 
+func (p *DictDataSaveRequest) writeField9(oprot thrift.TProtocol) (err error) {
+	if p.IsSetTheme() {
+		if err = oprot.WriteFieldBegin("theme", thrift.STRING, 9); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Theme); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
+}
+
+func (p *DictDataSaveRequest) writeField10(oprot thrift.TProtocol) (err error) {
+	if p.IsSetColor() {
+		if err = oprot.WriteFieldBegin("color", thrift.STRING, 10); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Color); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
+}
+
 func (p *DictDataSaveRequest) String() string {
 	if p == nil {
 		return "<nil>"
@@ -4021,6 +4229,8 @@ func (p *DictOptionsRequest) String() string {
 type DictOptionDTO struct {
 	Label string `thrift:"label,1" form:"label" json:"label" query:"label"`
 	Value string `thrift:"value,2" form:"value" json:"value" query:"value"`
+	Theme string `thrift:"theme,3" form:"theme" json:"theme" query:"theme"`
+	Color string `thrift:"color,4" form:"color" json:"color" query:"color"`
 }
 
 func NewDictOptionDTO() *DictOptionDTO {
@@ -4038,9 +4248,19 @@ func (p *DictOptionDTO) GetValue() (v string) {
 	return p.Value
 }
 
+func (p *DictOptionDTO) GetTheme() (v string) {
+	return p.Theme
+}
+
+func (p *DictOptionDTO) GetColor() (v string) {
+	return p.Color
+}
+
 var fieldIDToName_DictOptionDTO = map[int16]string{
 	1: "label",
 	2: "value",
+	3: "theme",
+	4: "color",
 }
 
 func (p *DictOptionDTO) Read(iprot thrift.TProtocol) (err error) {
@@ -4073,6 +4293,22 @@ func (p *DictOptionDTO) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -4129,6 +4365,28 @@ func (p *DictOptionDTO) ReadField2(iprot thrift.TProtocol) error {
 	p.Value = _field
 	return nil
 }
+func (p *DictOptionDTO) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Theme = _field
+	return nil
+}
+func (p *DictOptionDTO) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Color = _field
+	return nil
+}
 
 func (p *DictOptionDTO) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -4142,6 +4400,14 @@ func (p *DictOptionDTO) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
 			goto WriteFieldError
 		}
 	}
@@ -4194,6 +4460,40 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *DictOptionDTO) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("theme", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Theme); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *DictOptionDTO) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("color", thrift.STRING, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Color); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 
 func (p *DictOptionDTO) String() string {

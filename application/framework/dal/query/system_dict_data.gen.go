@@ -39,6 +39,8 @@ func newSystemDictData(db *gorm.DB, opts ...gen.DOOption) systemDictData {
 	_systemDictData.DelFlag = field.NewInt16(tableName, "del_flag")
 	_systemDictData.CreatedAt = field.NewTime(tableName, "created_at")
 	_systemDictData.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_systemDictData.Theme = field.NewString(tableName, "theme")
+	_systemDictData.Color = field.NewString(tableName, "color")
 
 	_systemDictData.fillFieldMap()
 
@@ -60,6 +62,8 @@ type systemDictData struct {
 	DelFlag   field.Int16
 	CreatedAt field.Time
 	UpdatedAt field.Time
+	Theme     field.String
+	Color     field.String
 
 	fieldMap map[string]field.Expr
 }
@@ -87,6 +91,8 @@ func (s *systemDictData) updateTableName(table string) *systemDictData {
 	s.DelFlag = field.NewInt16(table, "del_flag")
 	s.CreatedAt = field.NewTime(table, "created_at")
 	s.UpdatedAt = field.NewTime(table, "updated_at")
+	s.Theme = field.NewString(table, "theme")
+	s.Color = field.NewString(table, "color")
 
 	s.fillFieldMap()
 
@@ -103,7 +109,7 @@ func (s *systemDictData) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (s *systemDictData) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 11)
+	s.fieldMap = make(map[string]field.Expr, 13)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["dict_type"] = s.DictType
 	s.fieldMap["dict_label"] = s.DictLabel
@@ -115,6 +121,8 @@ func (s *systemDictData) fillFieldMap() {
 	s.fieldMap["del_flag"] = s.DelFlag
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["updated_at"] = s.UpdatedAt
+	s.fieldMap["theme"] = s.Theme
+	s.fieldMap["color"] = s.Color
 }
 
 func (s systemDictData) clone(db *gorm.DB) systemDictData {

@@ -91,14 +91,15 @@
         <template #groupName="{ row }">
           {{ groupOf(row.groupId) }}
         </template>
+        <template #dictType="{ row }">
+          <t-link theme="primary" @click="onSelectType(row as DictTypeDTO)">{{ row.dictType }}</t-link>
+        </template>
         <template #status="{ row }">
-          <t-tag :theme="row.status === 0 ? 'success' : 'danger'" variant="light">
-            {{ statusDict.labelOf(row.status) }}
-          </t-tag>
+          <s-tag-dict dict-type="sys_status" :value="row.status" />
         </template>
         <template #ops="{ row }">
           <t-space>
-            <t-link theme="primary" @click="onSelectType(row as DictTypeDTO)">数据项</t-link>
+            <t-link theme="primary" @click="onSelectType(row as DictTypeDTO)">列表</t-link>
             <t-link v-permission="'system:dict:edit'" theme="primary" @click="openType(row as DictTypeDTO)"
               >编辑</t-link
             >
@@ -151,10 +152,19 @@
             >新增数据项</t-button
           >
         </template>
-        <template #status="{ row }">
-          <t-tag :theme="row.status === 0 ? 'success' : 'danger'" variant="light">
-            {{ statusDict.labelOf(row.status) }}
+        <template #dictLabel="{ row }">
+          <span v-if="(row as DictDataDTO).theme === 'info'">{{ row.dictLabel }}</span>
+          <t-tag
+            v-else
+            :theme="rowTheme(row as DictDataDTO)"
+            :color="(row as DictDataDTO).color || undefined"
+            variant="light"
+          >
+            {{ row.dictLabel }}
           </t-tag>
+        </template>
+        <template #status="{ row }">
+          <s-tag-dict dict-type="sys_status" :value="row.status" />
         </template>
         <template #ops="{ row }">
           <t-space>
@@ -183,13 +193,14 @@
         </t-form-item>
         <t-form-item label="排序"><t-input-number v-model="typeForm.orderNum" theme="column" /></t-form-item>
         <t-form-item label="状态">
-          <t-radio-group v-model="typeForm.status" :options="statusOptions" />
+          <s-radio-dict v-model="typeForm.status" dict-type="sys_status" />
         </t-form-item>
         <t-form-item label="备注"><t-textarea v-model="typeForm.remark" /></t-form-item>
       </t-form>
     </s-form-drawer>
 
-    <s-form-dialog
+    <!-- 数据项表单 6 字段（主题+颜色合一行）>5 → 抽屉 -->
+    <s-form-drawer
       v-model:visible="dataDialog"
       :title="dataForm.id ? '编辑字典数据' : '新增字典数据'"
       @confirm="saveData"
@@ -199,7 +210,7 @@
         <t-form-item label="值"><t-input v-model="dataForm.dictValue" /></t-form-item>
         <t-form-item label="排序"><t-input-number v-model="dataForm.listOrder" theme="column" /></t-form-item>
         <t-form-item label="状态">
-          <t-radio-group v-model="dataForm.status" :options="statusOptions" />
+          <s-radio-dict v-model="dataForm.status" dict-type="sys_status" />
         </t-form-item>
         <t-form-item label="默认">
           <t-radio-group v-model="dataForm.isDefault">
@@ -207,8 +218,20 @@
             <t-radio :value="0">否</t-radio>
           </t-radio-group>
         </t-form-item>
+        <t-form-item label="主题">
+          <div class="dict-page__theme-row">
+            <t-radio-group v-model="dataForm.theme" @change="onThemePick">
+              <t-radio v-for="t in themeOptions" :key="t.value" :value="t.value">
+                <span v-if="t.swatch" class="dict-page__theme-swatch" :style="{ backgroundColor: t.swatch }" />
+                {{ t.label }}
+              </t-radio>
+            </t-radio-group>
+            <!-- 与主题互斥：填色则取消勾选，勾主题则清空颜色（watch） -->
+            <t-color-picker v-model="dataForm.color" format="HEX" clearable />
+          </div>
+        </t-form-item>
       </t-form>
-    </s-form-dialog>
+    </s-form-drawer>
 
     <s-form-dialog v-model:visible="groupDialog" :title="groupForm.id ? '编辑分组' : '新增分组'" @confirm="saveGroup">
       <t-form ref="groupFormRef" :data="groupForm" :rules="groupRules" label-width="90px">
@@ -224,7 +247,7 @@
 import { AddIcon, MoreIcon, MoveIcon } from 'tdesign-icons-vue-next';
 import type { DropdownOption, FormInstanceFunctions, FormRule } from 'tdesign-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 import {
   createDictData,
@@ -243,13 +266,35 @@ import {
 import type { DictDataDTO, DictGroupDTO, DictTypeDTO } from '@/api/system/dictModel';
 import SFormDialog from '@/components/s-form-dialog/index.vue';
 import SFormDrawer from '@/components/s-form-drawer/index.vue';
+import SRadioDict from '@/components/s-radio-dict/index.vue';
 import STable from '@/components/s-table/index.vue';
+import STagDict from '@/components/s-tag-dict/index.vue';
 import { hasPerm } from '@/directives/permission';
-import { useConfigStore, useDict, useDictStore } from '@/store';
+import { useConfigStore, useDictStore } from '@/store';
 
-const statusDict = useDict('sys_status');
-const statusOptions = computed(() => statusDict.options.value.map((o) => ({ label: o.label, value: Number(o.value) })));
 const dictStore = useDictStore();
+
+/** 主题单选（与颜色互斥）：info=纯文本、default=中性标签；色块预览与渲染一致 */
+const themeOptions = [
+  { value: 'info', label: '纯文本', swatch: '' },
+  { value: 'default', label: '默认', swatch: 'var(--td-text-color-placeholder)' },
+  { value: 'primary', label: '主色', swatch: 'var(--td-brand-color)' },
+  { value: 'success', label: '成功', swatch: 'var(--td-success-color)' },
+  { value: 'danger', label: '危险', swatch: 'var(--td-error-color)' },
+  { value: 'warning', label: '警告', swatch: 'var(--td-warning-color)' },
+];
+
+/** 勾选主题 → 清空自定义色（互斥） */
+function onThemePick(v: string | number | boolean) {
+  if (v) dataForm.value.color = '';
+}
+
+/** 数据项行标签主题：合法令牌透传，default/空/未知回落 default（info 由模板分支处理） */
+const TAG_THEMES = ['primary', 'success', 'danger', 'warning'];
+function rowTheme(row: DictDataDTO): 'default' | 'primary' | 'success' | 'danger' | 'warning' {
+  const t = row.theme || '';
+  return (TAG_THEMES.includes(t) ? t : 'default') as 'default' | 'primary' | 'success' | 'danger' | 'warning';
+}
 
 const loading = ref(false);
 const types = ref<DictTypeDTO[]>([]);
@@ -273,6 +318,14 @@ const typeDialog = ref(false);
 const typeForm = ref<Partial<DictTypeDTO>>({});
 const dataDialog = ref(false);
 const dataForm = ref<Partial<DictDataDTO>>({});
+
+// 互斥：填入自定义色 → 取消全部主题勾选；清空颜色保持未勾选，渲染回落中性 default
+watch(
+  () => dataForm.value.color,
+  (c) => {
+    if (c) dataForm.value.theme = '';
+  },
+);
 const groupDialog = ref(false);
 const groupForm = ref<Partial<DictGroupDTO>>({});
 const groupFormRef = ref<FormInstanceFunctions>();
@@ -285,7 +338,7 @@ const groupSorting = ref(false);
 
 const typeColumns = [
   { colKey: 'dictName', title: '字典名称', cell: 'dictName' },
-  { colKey: 'dictType', title: '字典类型' },
+  { colKey: 'dictType', title: '字典类型', cell: 'dictType' },
   { colKey: 'groupName', title: '分组', width: 110, cell: 'groupName' },
   { colKey: 'orderNum', title: '排序', width: 80 },
   { colKey: 'status', title: '状态', width: 90, cell: 'status' },
@@ -293,7 +346,7 @@ const typeColumns = [
 ];
 
 const dataColumns = [
-  { colKey: 'dictLabel', title: '标签' },
+  { colKey: 'dictLabel', title: '标签', cell: 'dictLabel' },
   { colKey: 'dictValue', title: '值' },
   { colKey: 'listOrder', title: '排序', width: 80 },
   { colKey: 'status', title: '状态', width: 90, cell: 'status' },
@@ -533,6 +586,8 @@ function openData(row?: DictDataDTO) {
         status: 0,
         isDefault: 0,
         cssClass: '',
+        theme: 'default',
+        color: '',
       };
   dataDialog.value = true;
 }
@@ -677,5 +732,23 @@ onMounted(() => {
 .dict-page__main {
   flex: 1;
   min-width: 0;
+}
+
+// 主题单选与取色器同一行（互斥单选）
+.dict-page__theme-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--td-comp-margin-m);
+}
+
+// 主题单选的色块预览
+.dict-page__theme-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
 }
 </style>

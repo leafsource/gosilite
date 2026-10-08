@@ -16,6 +16,7 @@ type fakeDictRepo struct {
 	dataByType  map[string]int64
 	groups      map[int64]*model.SystemDictGroup
 	typesInGroup map[int64]int64
+	data        map[int64]*model.SystemDictData
 	saveErr     error
 	createCalls int
 }
@@ -26,6 +27,7 @@ func newFakeDictRepo() *fakeDictRepo {
 		dataByType:  map[string]int64{},
 		groups:      map[int64]*model.SystemDictGroup{},
 		typesInGroup: map[int64]int64{},
+		data:        map[int64]*model.SystemDictData{},
 	}
 }
 
@@ -112,6 +114,9 @@ func (f *fakeDictRepo) Options(ctx context.Context, dictType string) ([]*model.S
 	return nil, nil
 }
 func (f *fakeDictRepo) GetDataByID(ctx context.Context, id int64) (*model.SystemDictData, error) {
+	if d, ok := f.data[id]; ok {
+		return d, nil
+	}
 	return nil, errors.New("not found")
 }
 func (f *fakeDictRepo) CreateData(ctx context.Context, m *model.SystemDictData) error { return nil }
@@ -236,5 +241,70 @@ func TestDeleteGroupOK(t *testing.T) {
 	}
 	if repo.groups[4].DelFlag != 2 {
 		t.Fatalf("group not soft-deleted, delFlag=%d", repo.groups[4].DelFlag)
+	}
+}
+
+// ===== theme/color 校验（dict-theme-components） =====
+
+func validData(theme, color string) *model.SystemDictData {
+	return &model.SystemDictData{DictType: "sys_x", DictLabel: "标签", DictValue: "v", Theme: theme, Color: color}
+}
+
+func TestCreateDataRejectsBadTheme(t *testing.T) {
+	svc := NewDataService(newFakeDictRepo())
+	err := svc.CreateData(context.Background(), validData("nope", ""))
+	if errCode(err) != errno.ErrSystemInvalidParam {
+		t.Fatalf("want invalid param for bad theme, got %v", err)
+	}
+}
+
+func TestCreateDataRejectsBadColor(t *testing.T) {
+	svc := NewDataService(newFakeDictRepo())
+	for _, color := range []string{"red", "#gg0000", "#12345"} {
+		err := svc.CreateData(context.Background(), validData("success", color))
+		if errCode(err) != errno.ErrSystemInvalidParam {
+			t.Fatalf("want invalid param for color %q, got %v", color, err)
+		}
+	}
+}
+
+func TestCreateDataAcceptsThemeAndColor(t *testing.T) {
+	repo := newFakeDictRepo()
+	svc := NewDataService(repo)
+	for _, tc := range []struct{ theme, color string }{
+		{"default", ""},
+		{"", ""},
+		{"info", ""},
+		{"warning", ""},
+		{"", "#f00"},
+		{"", "#FF00AA"},
+	} {
+		if err := svc.CreateData(context.Background(), validData(tc.theme, tc.color)); err != nil {
+			t.Fatalf("theme=%q color=%q want ok, got %v", tc.theme, tc.color, err)
+		}
+	}
+}
+
+func TestCreateDataRejectsThemeColorCoexist(t *testing.T) {
+	svc := NewDataService(newFakeDictRepo())
+	err := svc.CreateData(context.Background(), validData("primary", "#f00"))
+	if errCode(err) != errno.ErrSystemInvalidParam {
+		t.Fatalf("want invalid param for theme+color coexist, got %v", err)
+	}
+}
+
+func TestUpdateDataRejectsBadTheme(t *testing.T) {
+	repo := newFakeDictRepo()
+	repo.data[5] = &model.SystemDictData{ID: 5}
+	svc := NewDataService(repo)
+
+	d := validData("primary", "#abc")
+	d.ID = 5
+	d.Theme = "pink"
+	if err := svc.UpdateData(context.Background(), d); errCode(err) != errno.ErrSystemInvalidParam {
+		t.Fatalf("want invalid param for bad theme, got %v", err)
+	}
+	if err := svc.UpdateData(context.Background(), validData("default", "")); errCode(err) != errno.ErrSystemDictNotFound {
+		t.Fatalf("want not found for missing id, got %v", err)
 	}
 }

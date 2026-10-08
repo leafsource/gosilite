@@ -18,12 +18,11 @@
         <t-button v-permission="'system:role:add'" theme="primary" @click="openCreate">新增角色</t-button>
       </template>
       <template #dataScope="{ row }">
-        <t-tag theme="primary" variant="light">{{ dataScopeDict.labelOf(row.dataScope) }}</t-tag>
+        <s-tag-dict dict-type="sys_data_scope" :value="row.dataScope" />
       </template>
       <template #state="{ row }">
-        <t-tag :theme="row.state === 'enabled' ? 'success' : 'default'" variant="light">
-          {{ stateDict.labelOf(row.state) || '-' }}
-        </t-tag>
+        <s-tag-dict v-if="row.state" dict-type="sys_state" :value="row.state" />
+        <span v-else>-</span>
       </template>
       <template #op="{ row }">
         <t-space>
@@ -53,7 +52,7 @@
           <t-textarea v-model="form.description" placeholder="角色描述" :autosize="{ minRows: 2, maxRows: 4 }" />
         </t-form-item>
         <t-form-item label="状态">
-          <t-radio-group v-model="form.state" :options="stateOptions" />
+          <s-radio-dict v-model="form.state" dict-type="sys_state" />
         </t-form-item>
         <t-form-item label="排序">
           <t-input-number v-model="form.orderNum" :min="0" theme="column" style="width: 100%" />
@@ -81,14 +80,12 @@ import { computed, onMounted, ref } from 'vue';
 import type { RoleDTO, RoleSaveParams } from '@/api/system/role';
 import { createRole, fetchRoleList, removeRole, updateRole } from '@/api/system/role';
 import SFormDialog from '@/components/s-form-dialog/index.vue';
+import SRadioDict from '@/components/s-radio-dict/index.vue';
 import STable from '@/components/s-table/index.vue';
-import { useConfigStore, useDict } from '@/store';
+import STagDict from '@/components/s-tag-dict/index.vue';
+import { useConfigStore } from '@/store';
 
 import AuthorizeDrawer from './components/AuthorizeDrawer.vue';
-
-const stateDict = useDict('sys_state');
-const stateOptions = stateDict.options;
-const dataScopeDict = useDict('sys_data_scope');
 
 const columns: PrimaryTableCol[] = [
   { title: '角色名称', colKey: 'name', width: 160 },
