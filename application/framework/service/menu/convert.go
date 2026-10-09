@@ -11,5 +11,6 @@ func toTreeNode(m *model.SystemMenu) *TreeNode {
 		MenuType: m.MenuType, Perms: m.Perms, OrderNum: m.Sort,
 		Visible: m.Visible != "hide" && m.Visible != "0", Status: m.Status,
 		Path: m.Path, Component: m.Component, Icon: m.Icon, ActionType: m.ActionType,
+		Redirect: m.Redirect,
 	}
 }

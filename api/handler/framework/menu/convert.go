@@ -4,6 +4,7 @@ import (
 	menu "gosilite/api/model/framework/menu"
 	"gosilite/application/framework/dal/model"
 	"sort"
+	"strings"
 )
 
 // toRoutes 将菜单列表转换为路由树（根：parent_id 为 0 或 -1）
@@ -84,10 +85,10 @@ func buildRouteTree(menus []*model.SystemMenu, menuMap map[int64]*model.SystemMe
 		if len(children) > 0 {
 			route.Children = children
 
-			// 显式 redirect 优先；单子菜单自动指到唯一子路由
+			// 显式 redirect 优先；否则目录默认指向排序最前的子路由（避免点目录白屏）
 			if menuData.Redirect != "" {
 				route.Redirect = menuData.Redirect
-			} else if route.Meta.Single && len(children) == 1 {
+			} else if len(children) == 1 || menuData.MenuType == "M" {
 				route.Redirect = children[0].Path
 			}
 		}
@@ -113,22 +114,38 @@ func buildFullPath(menu *model.SystemMenu, menuMap map[int64]*model.SystemMenu) 
 
 	// 根菜单直接返回
 	if menu.ParentID == -1 || menu.ParentID == 0 {
-		return menu.Path
+		return normalizeMenuPath(menu.Path)
 	}
 
 	parent, exists := menuMap[menu.ParentID]
 	if !exists {
-		return menu.Path
+		return normalizeMenuPath(menu.Path)
 	}
 
 	// 递归构建完整路径
 	parentPath := buildFullPath(parent, menuMap)
 
-	// 组合路径
-	if parentPath == "/" {
-		return parentPath + menu.Path
+	// 子级 path 允许写成 `log` 或 `/log`：拼接前去掉前导 /，避免 /system//log
+	child := normalizeMenuPath(menu.Path)
+	child = strings.TrimPrefix(child, "/")
+
+	// 子级若已是含父前缀的完整路径，直接返回
+	if child != "" && parentPath != "/" && strings.HasPrefix(child, strings.TrimPrefix(parentPath, "/")+"/") {
+		return "/" + child
 	}
-	return parentPath + "/" + menu.Path
+	if parentPath == "/" || parentPath == "" {
+		return "/" + child
+	}
+	return parentPath + "/" + child
+}
+
+// normalizeMenuPath 去空白；根返回 "/"。
+func normalizeMenuPath(p string) string {
+	p = strings.TrimSpace(p)
+	if p == "" {
+		return "/"
+	}
+	return p
 }
 
 func getChildMenus(menus []*model.SystemMenu, parentID int64) []*model.SystemMenu { // 返回值切片

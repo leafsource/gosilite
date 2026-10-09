@@ -1,6 +1,21 @@
 @import './font-family.less';
 @import './reset.less';
 
+// 页面外包 content-card：统一白底容器（字典/参数/通知/日志/在线等共用）
+// 无描边：与内容区灰底对比即可，避免双重卡片边框
+.content-card {
+  box-sizing: border-box;
+  min-height: 240px;
+  padding: var(--td-comp-paddingLR-xl, 24px);
+  background: var(--td-bg-color-container);
+  border: none;
+  border-radius: var(--td-radius-medium, 6px);
+
+  .s-table {
+    width: 100%;
+  }
+}
+
 // 顶部进度条（NProgress）跟随品牌色
 // NProgress 的 DOM 由它自己动态挂到 body 上，不带 Vue 的 scoped 属性，
 // 写在组件的 <style scoped> 里会被编译成 #nprogress .bar[data-v-xxx]，选择器永远匹配不上，

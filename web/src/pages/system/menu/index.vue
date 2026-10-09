@@ -70,6 +70,9 @@
         <t-form-item v-if="form.menuType !== 'F'" label="组件路径" name="component">
           <t-input v-model="form.component" :placeholder="componentPlaceholder" />
         </t-form-item>
+        <t-form-item v-if="form.menuType === 'M'" label="重定向" name="redirect">
+          <t-input v-model="form.redirect" placeholder="目录默认打开的路径，如 /system/log/operlog；留空则进第一个子菜单" />
+        </t-form-item>
         <t-form-item v-if="form.menuType !== 'M'" label="权限标识" name="perms">
           <t-input v-model="form.perms" :placeholder="permsPlaceholder" />
         </t-form-item>
@@ -103,6 +106,8 @@
   </div>
 </template>
 <script setup lang="ts">
+
+defineOptions({ name: 'SystemMenu' });
 import type { FormInstanceFunctions, FormRule, PrimaryTableCol } from 'tdesign-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { computed, onMounted, ref } from 'vue';
@@ -187,6 +192,7 @@ const INITIAL_FORM: MenuSaveParams = {
   visible: true,
   status: 0,
   actionType: '',
+  redirect: '',
 };
 const dialogVisible = ref(false);
 const form = ref<MenuSaveParams>({ ...INITIAL_FORM });
@@ -255,6 +261,7 @@ function openEdit(row: MenuNode) {
     visible: row.visible,
     status: row.status,
     actionType: row.actionType ?? '',
+    redirect: row.redirect ?? '',
   };
   dialogVisible.value = true;
 }
@@ -273,11 +280,13 @@ async function onSave() {
     }
     if (payload.menuType === 'C') {
       payload.actionType = '';
+      payload.redirect = '';
     }
     if (payload.menuType === 'F') {
       payload.path = '';
       payload.component = '';
       payload.icon = '';
+      payload.redirect = '';
     }
     if (payload.id != null) {
       await updateMenu(payload);

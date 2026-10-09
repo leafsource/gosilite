@@ -1,11 +1,15 @@
 <template>
   <div v-if="!isRefreshing" class="page-container">
     <router-view v-if="!isFramePage" v-slot="{ Component }">
-      <transition name="fade">
-        <keep-alive :include="aliveViews">
-          <component :is="Component" v-if="!isFramePage" />
-        </keep-alive>
-      </transition>
+      <!-- v-if 必须在 keep-alive 外：内层 v-if 为假时会插入注释节点，触发 KeepAlive 单子节点告警 -->
+      <template v-if="Component">
+        <!-- 不用 out-in：与 keep-alive 组合切换子路由时易出现空白帧 -->
+        <transition name="fade">
+          <keep-alive :include="aliveViews">
+            <component :is="Component" :key="route.path" />
+          </keep-alive>
+        </transition>
+      </template>
     </router-view>
     <frame-page v-show="isFramePage" />
   </div>
@@ -22,40 +26,23 @@ import { useRoute } from 'vue-router';
 import FramePage from '@/layouts/frame/index.vue';
 import { useTabsRouterStore } from '@/store';
 
-// <suspense>标签属于实验性功能，请谨慎使用
-// 如果存在需解决/page/1=> /page/2 刷新数据问题 请修改代码 使用activeRouteFullPath 作为key
-// <suspense>
-//  <component :is="Component" :key="activeRouteFullPath" />
-// </suspense>
+const route = useRoute();
+const tabsRouterStore = useTabsRouterStore();
 
-// import { useRouter } from 'vue-router';
-// const activeRouteFullPath = computed(() => {
-//   const router = useRouter();
-//   return router.currentRoute.value.fullPath;
-// });
-
-const aliveViews = computed(() => {
-  const tabsRouterStore = useTabsRouterStore();
-  const { tabRouters } = tabsRouterStore;
-  return tabRouters
-    .filter((route) => {
-      const keepAliveConfig = route.meta?.keepAlive;
-      const isRouteKeepAlive = isUndefined(keepAliveConfig) || (isBoolean(keepAliveConfig) && keepAliveConfig); // 默认开启keepalive
-      return route.isAlive && isRouteKeepAlive;
+const aliveViews = computed(() =>
+  tabsRouterStore.tabRouters
+    .filter((r) => {
+      const keepAliveConfig = r.meta?.keepAlive;
+      const shouldKeep =
+        isUndefined(keepAliveConfig) || (isBoolean(keepAliveConfig) && keepAliveConfig);
+      return Boolean(r.isAlive) && shouldKeep && typeof r.name === 'string' && r.name !== '';
     })
-    .map((route) => route.name);
-}) as ComputedRef<string[]>;
+    .map((r) => r.name as string),
+) as ComputedRef<string[]>;
 
-const isRefreshing = computed(() => {
-  const tabsRouterStore = useTabsRouterStore();
-  const { refreshing } = tabsRouterStore;
-  return refreshing;
-});
+const isRefreshing = computed(() => tabsRouterStore.refreshing);
 
-const route = useRoute(); // 这个不能放到computed中，切换页面时会导致被缓存
-const isFramePage = computed(() => {
-  return !!route.meta?.frameSrc;
-});
+const isFramePage = computed(() => !!route.meta?.frameSrc);
 </script>
 <style lang="less" scoped>
 .page-container {

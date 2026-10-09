@@ -90,6 +90,8 @@
   </div>
 </template>
 <script setup lang="ts">
+
+defineOptions({ name: 'SystemConfig' });
 import { MessagePlugin } from 'tdesign-vue-next';
 import { onMounted, ref } from 'vue';
 

@@ -40,6 +40,8 @@
   </div>
 </template>
 <script setup lang="ts">
+
+defineOptions({ name: 'SystemLogLoginlog' });
 import { MessagePlugin } from 'tdesign-vue-next';
 import { computed, onMounted, ref } from 'vue';
 

@@ -158,6 +158,7 @@ struct MenuNode {
     11: string icon
     12: list<MenuNode> children
     13: string actionType
+    14: string redirect
 }
 
 struct MenuTreeResponse {
@@ -182,6 +183,7 @@ struct MenuSaveRequest {
     10: bool visible
     11: i32 status
     12: optional string actionType
+    13: optional string redirect
 }
 
 // ========== 角色 ==========

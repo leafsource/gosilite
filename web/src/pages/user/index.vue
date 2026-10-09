@@ -6,7 +6,7 @@
           {{ t('pages.user.greeting') }}
           <span class="regular"> {{ t('pages.user.markDay') }}</span>
         </div>
-        <img src="@/assets/assets-tencent-logo.png" class="logo" />
+        <logo-full class="logo" />
       </div>
 
       <t-card class="user-info-list" :title="t('pages.user.personalInfo.title')" :bordered="false">
@@ -96,6 +96,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { DateRangeValue } from 'tdesign-vue-next';
 import { computed, nextTick, onMounted, onUnmounted, watch } from 'vue';
 
+import LogoFull from '@/assets/assets-logo-full.svg?component';
 import ProductAIcon from '@/assets/assets-product-1.svg';
 import ProductBIcon from '@/assets/assets-product-2.svg';
 import ProductCIcon from '@/assets/assets-product-3.svg';

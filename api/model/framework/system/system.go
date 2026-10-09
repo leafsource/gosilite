@@ -5728,6 +5728,7 @@ type MenuNode struct {
 	Icon       string      `thrift:"icon,11" form:"icon" json:"icon" query:"icon"`
 	Children   []*MenuNode `thrift:"children,12,default,list<MenuNode>" form:"children" json:"children" query:"children"`
 	ActionType string      `thrift:"actionType,13" form:"actionType" json:"actionType" query:"actionType"`
+	Redirect   string      `thrift:"redirect,14" form:"redirect" json:"redirect" query:"redirect"`
 }
 
 func NewMenuNode() *MenuNode {
@@ -5789,6 +5790,10 @@ func (p *MenuNode) GetActionType() (v string) {
 	return p.ActionType
 }
 
+func (p *MenuNode) GetRedirect() (v string) {
+	return p.Redirect
+}
+
 var fieldIDToName_MenuNode = map[int16]string{
 	1:  "id",
 	2:  "parentId",
@@ -5803,6 +5808,7 @@ var fieldIDToName_MenuNode = map[int16]string{
 	11: "icon",
 	12: "children",
 	13: "actionType",
+	14: "redirect",
 }
 
 func (p *MenuNode) Read(iprot thrift.TProtocol) (err error) {
@@ -5923,6 +5929,14 @@ func (p *MenuNode) Read(iprot thrift.TProtocol) (err error) {
 		case 13:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField13(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 14:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField14(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -6112,6 +6126,17 @@ func (p *MenuNode) ReadField13(iprot thrift.TProtocol) error {
 	p.ActionType = _field
 	return nil
 }
+func (p *MenuNode) ReadField14(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Redirect = _field
+	return nil
+}
 
 func (p *MenuNode) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -6169,6 +6194,10 @@ func (p *MenuNode) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField13(oprot); err != nil {
 			fieldId = 13
+			goto WriteFieldError
+		}
+		if err = p.writeField14(oprot); err != nil {
+			fieldId = 14
 			goto WriteFieldError
 		}
 	}
@@ -6416,6 +6445,23 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
+}
+
+func (p *MenuNode) writeField14(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("redirect", thrift.STRING, 14); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Redirect); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
 }
 
 func (p *MenuNode) String() string {
@@ -6805,6 +6851,7 @@ type MenuSaveRequest struct {
 	Visible    bool    `thrift:"visible,10" form:"visible" json:"visible" query:"visible"`
 	Status     int32   `thrift:"status,11" form:"status" json:"status" query:"status"`
 	ActionType *string `thrift:"actionType,12,optional" form:"actionType" json:"actionType,omitempty" query:"actionType"`
+	Redirect   *string `thrift:"redirect,13,optional" form:"redirect" json:"redirect,omitempty" query:"redirect"`
 }
 
 func NewMenuSaveRequest() *MenuSaveRequest {
@@ -6892,6 +6939,15 @@ func (p *MenuSaveRequest) GetActionType() (v string) {
 	return *p.ActionType
 }
 
+var MenuSaveRequest_Redirect_DEFAULT string
+
+func (p *MenuSaveRequest) GetRedirect() (v string) {
+	if !p.IsSetRedirect() {
+		return MenuSaveRequest_Redirect_DEFAULT
+	}
+	return *p.Redirect
+}
+
 var fieldIDToName_MenuSaveRequest = map[int16]string{
 	1:  "id",
 	2:  "parentId",
@@ -6905,6 +6961,7 @@ var fieldIDToName_MenuSaveRequest = map[int16]string{
 	10: "visible",
 	11: "status",
 	12: "actionType",
+	13: "redirect",
 }
 
 func (p *MenuSaveRequest) IsSetID() bool {
@@ -6929,6 +6986,10 @@ func (p *MenuSaveRequest) IsSetIcon() bool {
 
 func (p *MenuSaveRequest) IsSetActionType() bool {
 	return p.ActionType != nil
+}
+
+func (p *MenuSaveRequest) IsSetRedirect() bool {
+	return p.Redirect != nil
 }
 
 func (p *MenuSaveRequest) Read(iprot thrift.TProtocol) (err error) {
@@ -7041,6 +7102,14 @@ func (p *MenuSaveRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 12:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField12(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 13:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField13(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -7207,6 +7276,17 @@ func (p *MenuSaveRequest) ReadField12(iprot thrift.TProtocol) error {
 	p.ActionType = _field
 	return nil
 }
+func (p *MenuSaveRequest) ReadField13(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Redirect = _field
+	return nil
+}
 
 func (p *MenuSaveRequest) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -7260,6 +7340,10 @@ func (p *MenuSaveRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField12(oprot); err != nil {
 			fieldId = 12
+			goto WriteFieldError
+		}
+		if err = p.writeField13(oprot); err != nil {
+			fieldId = 13
 			goto WriteFieldError
 		}
 	}
@@ -7494,6 +7578,25 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
+}
+
+func (p *MenuSaveRequest) writeField13(oprot thrift.TProtocol) (err error) {
+	if p.IsSetRedirect() {
+		if err = oprot.WriteFieldBegin("redirect", thrift.STRING, 13); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Redirect); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
 }
 
 func (p *MenuSaveRequest) String() string {

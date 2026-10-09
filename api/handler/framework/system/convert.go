@@ -130,6 +130,7 @@ func toMenuNode(n *menu.TreeNode) *system.MenuNode {
 		ID: n.ID, ParentId: n.ParentID, Label: n.Label, MenuType: n.MenuType,
 		Perms: n.Perms, OrderNum: n.OrderNum, Visible: n.Visible, Status: int32(n.Status),
 		Path: n.Path, Component: n.Component, Icon: n.Icon, ActionType: n.ActionType,
+		Redirect: n.Redirect,
 	}
 	for _, ch := range n.Children {
 		node.Children = append(node.Children, toMenuNode(ch))
@@ -165,6 +166,9 @@ func fromMenuSaveRequest(req *system.MenuSaveRequest) *model.SystemMenu {
 	}
 	if req.ActionType != nil {
 		m.ActionType = *req.ActionType
+	}
+	if req.Redirect != nil {
+		m.Redirect = *req.Redirect
 	}
 	if req.Visible {
 		m.Visible = "show"

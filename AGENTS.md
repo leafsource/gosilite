@@ -47,6 +47,24 @@ python3 .agents/skills/frontend-dev/scripts/tdesign_mcp.py call get-component-do
 
 Tools：`get-component-docs`（写码前必查，`framework: "vue-next"`）、`get-component-list`（选型）、`get-component-dom`（DOM/样式）、`get-component-changelog`（升级前）、`search-icon`（图标名）。步骤、契约与示例见 `.agents/skills/frontend-dev/references/tdesign-mcp.md`。
 
+## 前端路由：后端菜单为主（强制）
+
+业务侧栏与可访问 path **唯一来源**是 `GET /menu/routes`（数据库菜单），不再在 `web/src/router/modules` 增加 system/monitor 等业务表。
+
+| 保留的静态 modules | 用途 |
+|--------------------|------|
+| `homepage.ts` | 登录后首页侧栏入口（与后端 `/dashboard` 去重） |
+| `result.ts` | 404/500 等跳转目标 |
+| `notice.ts` / `user.ts` | 非菜单入口（铃铛、个人中心） |
+
+规则：
+
+1. **`system_menu.component`** 必须指向 `web/src/pages/**` 下真实文件（相对路径，无 `.vue`），例如 `monitor/data/index`。
+2. 页面 **`defineOptions({ name })` = `genRouteName(fullPath)`**（`/system/ai` → `SystemAi`），keep-alive `include` 依赖该名。
+3. 动态注册见 `store/modules/permission.ts`：只跳过 login/首页 reserved path，其余后端树全部 `addRoute`。
+4. 找不到 component → 落到 `EXCEPTION_COMPONENT`（500）并在控制台 warn；上线前用菜单表核对文件存在。
+5. 新页面流程：建 `pages/.../index.vue` → `system_menu` 写 `component` + 权限 → 无需改 `modules`。
+
 ---
 
 ## 一、目录边界

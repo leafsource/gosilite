@@ -26,7 +26,8 @@ import OverviewPanel from './components/OverviewPanel.vue';
 import SqlPanel from './components/SqlPanel.vue';
 import UriPanel from './components/UriPanel.vue';
 
-defineOptions({ name: 'MonitorData' });
+defineOptions({
+  name: 'MonitorData', });
 
 type TabKey = 'overview' | 'sql' | 'firewall' | 'uri';
 

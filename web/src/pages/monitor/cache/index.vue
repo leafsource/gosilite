@@ -1,5 +1,5 @@
 <template>
-  <div class="content-card cache-monitor">
+  <div class="cache-monitor">
     <div class="cache-monitor__cols">
       <!-- 左：前缀 -->
       <section class="cache-monitor__panel">
@@ -162,6 +162,8 @@
 </template>
 
 <script setup lang="ts">
+
+defineOptions({ name: 'MonitorCache' });
 import { DeleteIcon, RefreshIcon } from 'tdesign-icons-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';
 import { computed, onMounted, ref } from 'vue';

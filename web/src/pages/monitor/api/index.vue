@@ -1,5 +1,5 @@
 <template>
-  <div class="content-card api-doc">
+  <div class="api-doc">
     <div v-if="loadFailed" class="api-doc__error">
       <t-empty description="Swagger 加载失败，请确认后端已启动">
         <t-button theme="primary" @click="reload">重试</t-button>
@@ -21,6 +21,8 @@
 </template>
 
 <script setup lang="ts">
+
+defineOptions({ name: 'MonitorApi' });
 import { ref } from 'vue';
 
 /** 与 request 相同的 API 前缀（dev 走 Vite 代理 → 127.0.0.1:8888） */
@@ -56,8 +58,8 @@ function onLoad() {
   min-height: 480px;
   overflow: hidden;
   background: var(--td-bg-color-container);
-  border: 1px solid #e7e9ed;
-  border-radius: 8px;
+  border: none;
+  border-radius: 0;
 }
 
 .api-doc__frame {

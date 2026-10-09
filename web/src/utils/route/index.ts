@@ -3,22 +3,12 @@ import cloneDeep from 'lodash/cloneDeep';
 import type { RouteItem } from '@/api/model/permissionModel';
 import {
   BLANK_LAYOUT,
-  EXCEPTION_COMPONENT,
   IFRAME,
   LAYOUT,
+  NOT_FOUND_COMPONENT,
   PAGE_NOT_FOUND_ROUTE,
   PARENT_LAYOUT,
 } from '@/utils/route/constant';
-
-// 动态从包内引入单个Icon,如果没有网络环境可以使用这种方式 但是会导致产物存在多个chunk
-// const iconsPath = import.meta.glob('../../../node_modules/tdesign-icons-vue-next/esm/components/*.js');
-
-// async function getMenuIcon(iconName: string): Promise<string> {
-//   const RenderIcon = iconsPath[`../../../node_modules/tdesign-icons-vue-next/esm/components/${iconName}.js`];
-
-//   const Icon = await RenderIcon();
-//   return shallowRef(Icon.default);
-// }
 
 const LayoutMap = new Map<string, () => Promise<typeof import('*.vue')>>();
 
@@ -28,32 +18,40 @@ LayoutMap.set('IFRAME', IFRAME);
 
 let dynamicViewsModules: Record<string, () => Promise<Recordable>>;
 
-// 动态引入路由组件
-function asyncImportRoute(routes: RouteItem[] | undefined) {
+/**
+ * 动态引入路由组件。
+ * @param nested true = 已在某个 LAYOUT 子树内；此时再遇到 layout 只透传 router-view，避免双层侧栏
+ */
+function asyncImportRoute(routes: RouteItem[] | undefined, nested = false) {
   dynamicViewsModules = dynamicViewsModules || import.meta.glob('../../pages/**/*.vue');
   if (!routes) return;
 
-  routes.forEach(async (item) => {
+  routes.forEach((item) => {
     const { component, name } = item;
     const { children } = item;
 
     if (component) {
-      const layoutFound = LayoutMap.get(component.toUpperCase());
-      if (layoutFound) {
-        item.component = layoutFound;
+      const upper = String(component).toUpperCase();
+      if (upper === 'LAYOUT') {
+        // 根级目录用完整 Layout；嵌套目录只透传，防止内嵌第二个 layout
+        item.component = nested ? ROUTER_PASS : LAYOUT;
+      } else if (upper === 'BLANK') {
+        item.component = BLANK_LAYOUT;
+      } else if (upper === 'IFRAME') {
+        item.component = IFRAME;
       } else {
-        item.component = dynamicImport(dynamicViewsModules, component);
+        item.component = dynamicImport(dynamicViewsModules, String(component));
       }
     } else if (name) {
       item.component = PARENT_LAYOUT();
     }
 
-    // 动态从包内引入单个Icon,如果没有网络环境可以使用这种方式 但是会导致产物存在多个chunk
-    // if (item.meta.icon) item.meta.icon = await getMenuIcon(item.meta.icon);
-
-    children && asyncImportRoute(children);
+    children && asyncImportRoute(children, true);
   });
 }
+
+/** 嵌套 M 目录（如 /system/log）：仅渲染子路由，不套完整 Layout */
+const ROUTER_PASS = () => import('@/layouts/router-pass.vue');
 
 function dynamicImport(dynamicViewsModules: Record<string, () => Promise<Recordable>>, component: string) {
   const keys = Object.keys(dynamicViewsModules);
@@ -73,21 +71,22 @@ function dynamicImport(dynamicViewsModules: Record<string, () => Promise<Recorda
     throw new Error(
       'Please do not create `.vue` and `.TSX` files with the same file name in the same hierarchical directory under the views folder. This will cause dynamic introduction failure',
     );
-  } else {
-    console.warn(`Can't find ${component} in pages folder`);
   }
-  return EXCEPTION_COMPONENT;
+  console.warn(`[router] component not found in pages, fallback 404: ${component}`);
+  // 缺页 → 404（不是 500）
+  return NOT_FOUND_COMPONENT;
 }
 
-// 将背景对象变成路由对象
+// 将菜单对象变成路由对象
 export function transformObjectToRoute<T = RouteItem>(routeList: RouteItem[]): T[] {
-  routeList.forEach(async (route) => {
+  routeList.forEach((route) => {
     const component = route.component as string;
 
     if (component) {
-      if (component.toUpperCase() === 'LAYOUT') {
-        route.component = LayoutMap.get(component.toUpperCase());
+      if (String(component).toUpperCase() === 'LAYOUT') {
+        route.component = LAYOUT;
       } else {
+        // 无 LAYOUT 目录的业务节点：包一层空 path 的 LAYOUT，子节点承载真实 path
         route.children = [cloneDeep(route)];
         route.component = LAYOUT;
         route.name = `${route.name}Parent`;
@@ -98,11 +97,8 @@ export function transformObjectToRoute<T = RouteItem>(routeList: RouteItem[]): T
       throw new Error('component is undefined');
     }
 
-    route.children && asyncImportRoute(route.children);
-
-    // 动态从包内引入单个Icon,如果没有网络环境可以使用这种方式 但是会导致产物存在多个chunk
-    // if (route.meta.icon)
-    // route.meta.icon = await getMenuIcon(route.meta.icon);
+    // 子节点均在外层已套 Layout 的壳内：再遇 layout 一律透传
+    route.children && asyncImportRoute(route.children, true);
   });
 
   return [PAGE_NOT_FOUND_ROUTE, ...routeList] as unknown as T[];
@@ -111,8 +107,6 @@ export function transformObjectToRoute<T = RouteItem>(routeList: RouteItem[]): T
 // 统一 path 编解码
 export function normalizePath(path: string): string {
   if (!path || !path.includes('%')) return path;
-
-  // 遇到非合规 % 参数会抛出错误
   try {
     return decodeURIComponent(path);
   } catch {

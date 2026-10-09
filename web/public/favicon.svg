@@ -1,0 +1,12 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="gosilite">
+  <defs>
+    <linearGradient id="gsl-bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563EB"/>
+      <stop offset="0.5" stop-color="#22A3FF"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#gsl-bg)"/>
+  <path fill="#FFFFFF" d="M56.6202 36.3412 A25 25 0 1 1 47.3915 12.2997 L40.7424 20.8102 A14.2 14.2 0 1 0 45.9843 34.4658 Z"/>
+  <path fill="#FFFFFF" d="M29.8 26 H56.2693 A25 25 0 0 1 56.2693 38 H29.8 Z"/>
+</svg>

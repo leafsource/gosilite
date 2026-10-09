@@ -215,6 +215,8 @@
   </div>
 </template>
 <script setup lang="ts">
+
+defineOptions({ name: 'SystemContacts' });
 import { AddIcon, MoreIcon, SearchIcon } from 'tdesign-icons-vue-next';
 import type { DropdownOption, PrimaryTableCol } from 'tdesign-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';

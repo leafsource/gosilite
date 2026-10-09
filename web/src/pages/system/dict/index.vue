@@ -244,6 +244,8 @@
   </div>
 </template>
 <script setup lang="ts">
+
+defineOptions({ name: 'SystemDict' });
 import { AddIcon, MoreIcon, MoveIcon } from 'tdesign-icons-vue-next';
 import type { DropdownOption, FormInstanceFunctions, FormRule } from 'tdesign-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';

@@ -52,6 +52,7 @@ type TreeNode struct {
 	Component  string      `json:"component"`
 	Icon       string      `json:"icon"`
 	ActionType string      `json:"actionType"`
+	Redirect   string      `json:"redirect"`
 	Children   []*TreeNode `json:"children,omitempty"`
 }
 

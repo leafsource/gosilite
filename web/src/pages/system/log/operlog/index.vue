@@ -148,6 +148,8 @@
   </div>
 </template>
 <script setup lang="ts">
+
+defineOptions({ name: 'SystemLogOperlog' });
 import { MessagePlugin } from 'tdesign-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
@@ -397,8 +399,8 @@ onMounted(() => {
     min-height: 0;
     height: auto !important; // 兜底：切换动画可能写入内联定高
     overflow: visible;
-    // 整体留白：tab 栏与表格四周的呼吸间距
-    padding: 12px;
+    // 外层 content-card 已有左右/下 padding；tab 栏与面板之间留出顶部间距
+    padding: 12px 0 0;
   }
 
   :deep(.t-tab-panel) {

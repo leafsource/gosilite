@@ -44,6 +44,8 @@
   </div>
 </template>
 <script setup lang="ts">
+
+defineOptions({ name: 'NoticeList' });
 import { MessagePlugin } from 'tdesign-vue-next';
 import { onMounted, ref } from 'vue';
 

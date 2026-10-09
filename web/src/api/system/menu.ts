@@ -15,6 +15,8 @@ export interface MenuDTO {
   status: number;
   /** 按钮操作类型（sys_action_type），仅 menuType=F */
   actionType: string;
+  /** 目录重定向（可选） */
+  redirect?: string;
 }
 
 // 菜单树节点（MenuNode）
@@ -32,6 +34,7 @@ export interface MenuNode {
   icon: string;
   /** 按钮操作类型（sys_action_type），仅 menuType=F */
   actionType: string;
+  redirect?: string;
   children?: MenuNode[];
 }
 
@@ -49,6 +52,8 @@ export interface MenuSaveParams {
   status: number;
   /** 按钮操作类型（sys_action_type），仅 menuType=F 必填 */
   actionType?: string;
+  /** 目录默认打开的路由（可选） */
+  redirect?: string;
 }
 
 // 树选择 / 树勾选统一结构
