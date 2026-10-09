@@ -44,6 +44,9 @@ const (
 	ErrSystemDictGroupNotFound = 701000026
 	ErrSystemDictGroupHasTypes = 701000027
 	ErrSystemNoticeNotFound = 701000028
+	ErrOperLogNotFound      = 701000029
+	ErrErrorLogNotFound     = 701000030
+	ErrOnlineSessionNotFound = 701000031
 )
 
 func init() {
@@ -56,4 +59,7 @@ func init() {
 	code.Register(ErrSystemDictGroupNotFound, "dict group not found: {id}", code.WithAffectStability(false))
 	code.Register(ErrSystemDictGroupHasTypes, "cannot delete dict group with types: {id}", code.WithAffectStability(false))
 	code.Register(ErrSystemNoticeNotFound, "notice not found: {id}", code.WithAffectStability(false))
+	code.Register(ErrOperLogNotFound, "oper log not found: {id}", code.WithAffectStability(false))
+	code.Register(ErrErrorLogNotFound, "error log not found: {id}", code.WithAffectStability(false))
+	code.Register(ErrOnlineSessionNotFound, "online session not found: {id}", code.WithAffectStability(false))
 }

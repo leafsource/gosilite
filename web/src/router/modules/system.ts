@@ -59,6 +59,26 @@ export default [
         component: () => import('@/pages/system/notice/index.vue'),
         meta: { title: { zh_CN: '通知公告', en_US: 'Notice' } },
       },
+      {
+        path: 'log',
+        name: 'SystemLog',
+        redirect: '/system/log/operlog',
+        meta: { title: { zh_CN: '日志管理', en_US: 'Logs' } },
+        children: [
+          {
+            path: 'operlog',
+            name: 'SystemOperLog',
+            component: () => import('@/pages/system/log/operlog/index.vue'),
+            meta: { title: { zh_CN: '操作日志', en_US: 'Operation Logs' } },
+          },
+          {
+            path: 'loginlog',
+            name: 'SystemLoginLog',
+            component: () => import('@/pages/system/log/loginlog/index.vue'),
+            meta: { title: { zh_CN: '登录日志', en_US: 'Login Logs' } },
+          },
+        ],
+      },
     ],
   },
 ] satisfies RouteRecordRaw[];

@@ -32,6 +32,9 @@ type login struct {
 // so the JWT LoginResponse callback can issue a refresh token for the same login.
 const loginUserIDKey = "security_login_user_id"
 
+// LoginUserIDKey 供 operlog 日志中间件读取 Authenticator 写入的登录用户 ID。
+const LoginUserIDKey = loginUserIDKey
+
 var Security *jwt.HertzJWTMiddleware
 
 func NewSecurity() []app.HandlerFunc {
@@ -196,6 +199,10 @@ func Register(conf conf.JWT) {
 				R.Error(ctx, c, err)
 				return
 			}
+
+			// 在线会话登记（内部容错：失败仅告警，不影响登录）
+			userService.SystemUserSVC.RegisterOnline(ctx, userId, token, tokens.RefreshToken,
+				c.ClientIP(), string(c.GetHeader("User-Agent")), expire)
 
 			R.SuccessWithData(ctx, c, &userModel.SessionTokenResponse{
 				AccessToken:  token,

@@ -2,6 +2,8 @@ package user
 
 import (
 	"context"
+	"errors"
+
 	"gosilite/api/middleware/permission"
 	"gosilite/application/base/ctxutil"
 	userService "gosilite/application/framework/service/user"
@@ -117,7 +119,13 @@ func Refresh(ctx context.Context, c *app.RequestContext) {
 
 	tokens, userId, err := userService.SystemUserSVC.RefreshSession(ctx, req.RefreshToken)
 	if err != nil {
-		R.Unauthorized(c, err.Error())
+		// 只回业务消息：err.Error() 含 code/stack 全量 dump，不能直接进响应
+		var se errorx.StatusError
+		msg := err.Error()
+		if errors.As(err, &se) {
+			msg = se.Msg()
+		}
+		R.Unauthorized(c, msg)
 		return
 	}
 
@@ -130,6 +138,10 @@ func Refresh(ctx context.Context, c *app.RequestContext) {
 	if expiresIn < 0 {
 		expiresIn = 0
 	}
+
+	// refresh rotation 后迁移在线登记（内部容错）
+	userService.SystemUserSVC.MoveOnline(ctx, userId, permission.BearerToken(c), accessToken,
+		tokens.RefreshToken, c.ClientIP(), string(c.GetHeader("User-Agent")), expire)
 
 	R.SuccessWithData(ctx, c, toSessionTokenResponse(accessToken, tokens.RefreshToken, expiresIn))
 }
@@ -149,6 +161,8 @@ func Logout(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 	}
+	// 摘除在线登记（容错降级）
+	userService.SystemUserSVC.DeregisterOnline(ctx, permission.BearerToken(c))
 	if err := permission.DenyCurrentAccessToken(ctx, c); err != nil {
 		R.Error(ctx, c, err)
 		return

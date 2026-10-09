@@ -64,4 +64,10 @@ func init() {
 		"authentication failed: {reason}",
 		code.WithAffectStability(false),
 	)
+
+	code.Register(
+		ErrUserSessionInvalidateCode,
+		"session has expired, please log in again",
+		code.WithAffectStability(false),
+	)
 }

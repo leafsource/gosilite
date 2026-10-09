@@ -22,9 +22,12 @@ var (
 	SystemDictData       *systemDictData
 	SystemDictGroup      *systemDictGroup
 	SystemDictType       *systemDictType
+	SystemErrorLog       *systemErrorLog
+	SystemLoginLog       *systemLoginLog
 	SystemMenu           *systemMenu
 	SystemNotice         *systemNotice
 	SystemNoticeRead     *systemNoticeRead
+	SystemOperLog        *systemOperLog
 	SystemPost           *systemPost
 	SystemRole           *systemRole
 	SystemRoleDept       *systemRoleDept
@@ -42,9 +45,12 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	SystemDictData = &Q.SystemDictData
 	SystemDictGroup = &Q.SystemDictGroup
 	SystemDictType = &Q.SystemDictType
+	SystemErrorLog = &Q.SystemErrorLog
+	SystemLoginLog = &Q.SystemLoginLog
 	SystemMenu = &Q.SystemMenu
 	SystemNotice = &Q.SystemNotice
 	SystemNoticeRead = &Q.SystemNoticeRead
+	SystemOperLog = &Q.SystemOperLog
 	SystemPost = &Q.SystemPost
 	SystemRole = &Q.SystemRole
 	SystemRoleDept = &Q.SystemRoleDept
@@ -63,9 +69,12 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		SystemDictData:       newSystemDictData(db, opts...),
 		SystemDictGroup:      newSystemDictGroup(db, opts...),
 		SystemDictType:       newSystemDictType(db, opts...),
+		SystemErrorLog:       newSystemErrorLog(db, opts...),
+		SystemLoginLog:       newSystemLoginLog(db, opts...),
 		SystemMenu:           newSystemMenu(db, opts...),
 		SystemNotice:         newSystemNotice(db, opts...),
 		SystemNoticeRead:     newSystemNoticeRead(db, opts...),
+		SystemOperLog:        newSystemOperLog(db, opts...),
 		SystemPost:           newSystemPost(db, opts...),
 		SystemRole:           newSystemRole(db, opts...),
 		SystemRoleDept:       newSystemRoleDept(db, opts...),
@@ -85,9 +94,12 @@ type Query struct {
 	SystemDictData       systemDictData
 	SystemDictGroup      systemDictGroup
 	SystemDictType       systemDictType
+	SystemErrorLog       systemErrorLog
+	SystemLoginLog       systemLoginLog
 	SystemMenu           systemMenu
 	SystemNotice         systemNotice
 	SystemNoticeRead     systemNoticeRead
+	SystemOperLog        systemOperLog
 	SystemPost           systemPost
 	SystemRole           systemRole
 	SystemRoleDept       systemRoleDept
@@ -108,9 +120,12 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		SystemDictData:       q.SystemDictData.clone(db),
 		SystemDictGroup:      q.SystemDictGroup.clone(db),
 		SystemDictType:       q.SystemDictType.clone(db),
+		SystemErrorLog:       q.SystemErrorLog.clone(db),
+		SystemLoginLog:       q.SystemLoginLog.clone(db),
 		SystemMenu:           q.SystemMenu.clone(db),
 		SystemNotice:         q.SystemNotice.clone(db),
 		SystemNoticeRead:     q.SystemNoticeRead.clone(db),
+		SystemOperLog:        q.SystemOperLog.clone(db),
 		SystemPost:           q.SystemPost.clone(db),
 		SystemRole:           q.SystemRole.clone(db),
 		SystemRoleDept:       q.SystemRoleDept.clone(db),
@@ -138,9 +153,12 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		SystemDictData:       q.SystemDictData.replaceDB(db),
 		SystemDictGroup:      q.SystemDictGroup.replaceDB(db),
 		SystemDictType:       q.SystemDictType.replaceDB(db),
+		SystemErrorLog:       q.SystemErrorLog.replaceDB(db),
+		SystemLoginLog:       q.SystemLoginLog.replaceDB(db),
 		SystemMenu:           q.SystemMenu.replaceDB(db),
 		SystemNotice:         q.SystemNotice.replaceDB(db),
 		SystemNoticeRead:     q.SystemNoticeRead.replaceDB(db),
+		SystemOperLog:        q.SystemOperLog.replaceDB(db),
 		SystemPost:           q.SystemPost.replaceDB(db),
 		SystemRole:           q.SystemRole.replaceDB(db),
 		SystemRoleDept:       q.SystemRoleDept.replaceDB(db),
@@ -158,9 +176,12 @@ type queryCtx struct {
 	SystemDictData       ISystemDictDataDo
 	SystemDictGroup      ISystemDictGroupDo
 	SystemDictType       ISystemDictTypeDo
+	SystemErrorLog       ISystemErrorLogDo
+	SystemLoginLog       ISystemLoginLogDo
 	SystemMenu           ISystemMenuDo
 	SystemNotice         ISystemNoticeDo
 	SystemNoticeRead     ISystemNoticeReadDo
+	SystemOperLog        ISystemOperLogDo
 	SystemPost           ISystemPostDo
 	SystemRole           ISystemRoleDo
 	SystemRoleDept       ISystemRoleDeptDo
@@ -178,9 +199,12 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		SystemDictData:       q.SystemDictData.WithContext(ctx),
 		SystemDictGroup:      q.SystemDictGroup.WithContext(ctx),
 		SystemDictType:       q.SystemDictType.WithContext(ctx),
+		SystemErrorLog:       q.SystemErrorLog.WithContext(ctx),
+		SystemLoginLog:       q.SystemLoginLog.WithContext(ctx),
 		SystemMenu:           q.SystemMenu.WithContext(ctx),
 		SystemNotice:         q.SystemNotice.WithContext(ctx),
 		SystemNoticeRead:     q.SystemNoticeRead.WithContext(ctx),
+		SystemOperLog:        q.SystemOperLog.WithContext(ctx),
 		SystemPost:           q.SystemPost.WithContext(ctx),
 		SystemRole:           q.SystemRole.WithContext(ctx),
 		SystemRoleDept:       q.SystemRoleDept.WithContext(ctx),

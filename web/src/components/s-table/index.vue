@@ -14,7 +14,7 @@
         <t-select
           v-if="f.type === 'select'"
           :model-value="fieldModelValue(f.name)"
-          :placeholder="f.placeholder ?? f.label"
+          :placeholder="fieldPlaceholder(f)"
           :options="f.options ?? []"
           clearable
           style="flex: 0 0 160px"
@@ -29,7 +29,7 @@
           v-else-if="f.type === 'tree-select'"
           :model-value="fieldModelValue(f.name)"
           :data="f.treeData ?? []"
-          :placeholder="f.placeholder ?? f.label"
+          :placeholder="fieldPlaceholder(f)"
           clearable
           style="flex: 0 0 200px"
           @change="
@@ -39,10 +39,25 @@
             }
           "
         />
+        <t-date-range-picker
+          v-else-if="f.type === 'daterange'"
+          :model-value="(extraParams[f.name] ?? []) as string[]"
+          :placeholder="f.placeholder ?? ['开始日期', '结束日期']"
+          value-type="YYYY-MM-DD"
+          clearable
+          style="flex: 0 0 250px"
+          @change="
+            (v) => {
+              const arr = Array.isArray(v) ? v : [];
+              extraParams[f.name] = arr.length ? arr : undefined;
+              onSearch();
+            }
+          "
+        />
         <t-input
           v-else
           :model-value="(extraParams[f.name] ?? '') as string"
-          :placeholder="f.placeholder ?? f.label"
+          :placeholder="fieldPlaceholder(f)"
           clearable
           style="flex: 0 0 160px"
           @enter="onSearch"
@@ -136,8 +151,8 @@
 import './s-table.css';
 
 import { MoveIcon, RefreshIcon, SettingIcon } from 'tdesign-icons-vue-next';
-import { EnhancedTable, Table } from 'tdesign-vue-next';
 import type { TableProps } from 'tdesign-vue-next';
+import { EnhancedTable, Table } from 'tdesign-vue-next';
 import { computed, ref, watch } from 'vue';
 
 import { useConfigStore } from '@/store';
@@ -161,6 +176,7 @@ const props = withDefaults(
     selectable?: boolean;
     tree?: STableTreeConfig;
     paginated?: boolean;
+    defaultParams?: Record<string, unknown>;
   }>(),
   {
     rowKey: 'id',
@@ -173,6 +189,7 @@ const props = withDefaults(
     selectable: true,
     tree: undefined,
     paginated: true,
+    defaultParams: () => ({}),
   },
 );
 
@@ -189,7 +206,7 @@ const configStore = useConfigStore();
 const innerTable = computed(() => (props.tree ? EnhancedTable : Table));
 
 const keyword = ref('');
-const extraParams = ref<Record<string, unknown>>({});
+const extraParams = ref<Record<string, unknown>>({ ...props.defaultParams });
 const columnVisible = ref<string[]>([]);
 const columnOrder = ref<string[]>([]);
 const columnCtlVisible = ref(false);
@@ -219,6 +236,12 @@ const panelKeys = computed(() => columnOrder.value.filter((k) => k !== treeColKe
 // 模板中避免写 `as string | number`（`|` 会被 vue/no-deprecated-filter 误判为过滤器）
 function fieldModelValue(name: string): string | number | undefined {
   return extraParams.value[name] as string | number | undefined;
+}
+
+// 单值控件的 placeholder（daterange 才允许 string[]）
+function fieldPlaceholder(f: STableSearchField): string {
+  if (typeof f.placeholder === 'string') return f.placeholder;
+  return f.label ?? '';
 }
 
 function initVisible() {
@@ -286,7 +309,8 @@ function onSearch() {
 
 function onReset() {
   keyword.value = '';
-  extraParams.value = {};
+  // 恢复到默认筛选（如默认时间范围），避免重置后全量查询
+  extraParams.value = { ...props.defaultParams };
   emit('reset');
 }
 

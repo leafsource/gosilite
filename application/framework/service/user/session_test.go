@@ -18,13 +18,17 @@ func (*emptyErr) Error() string { return "cache: empty" }
 
 // memCache is a minimal in-memory CacheClient for SessionStore tests.
 type memCache struct {
-	mu   sync.Mutex
-	data map[string]string
+	mu     sync.Mutex
+	data   map[string]string
+	hashes map[string]map[string]string
 }
 
 func newMemCache() *memCache {
 	cache.SetEmptyValueError(errEmpty)
-	return &memCache{data: make(map[string]string)}
+	return &memCache{
+		data:   make(map[string]string),
+		hashes: make(map[string]map[string]string),
+	}
 }
 
 type memStringCmd struct {
@@ -104,11 +108,46 @@ func (m *memCache) Incr(ctx context.Context, key string) cache.IntCmd {
 }
 
 func (m *memCache) HSet(ctx context.Context, key string, values ...interface{}) cache.IntCmd {
-	return &memIntCmd{}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	h, ok := m.hashes[key]
+	if !ok {
+		h = make(map[string]string)
+		m.hashes[key] = h
+	}
+	var n int64
+	for i := 0; i+1 < len(values); i += 2 {
+		f := toString(values[i])
+		v := toString(values[i+1])
+		if _, exists := h[f]; !exists {
+			n++
+		}
+		h[f] = v
+	}
+	return &memIntCmd{val: n}
 }
 
 func (m *memCache) HGetAll(ctx context.Context, key string) cache.MapStringStringCmd {
-	return &memMapCmd{val: map[string]string{}}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	out := make(map[string]string, len(m.hashes[key]))
+	for f, v := range m.hashes[key] {
+		out[f] = v
+	}
+	return &memMapCmd{val: out}
+}
+
+func (m *memCache) HDel(ctx context.Context, key string, fields ...string) cache.IntCmd {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	var n int64
+	for _, f := range fields {
+		if _, ok := m.hashes[key][f]; ok {
+			delete(m.hashes[key], f)
+			n++
+		}
+	}
+	return &memIntCmd{val: n}
 }
 
 func (m *memCache) Delete(ctx context.Context, keys ...string) cache.IntCmd {

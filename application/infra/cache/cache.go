@@ -70,6 +70,10 @@ type HashOperations interface {
 	// HGetAll retrieves all field-value pairs from a hash
 	// 从哈希中获取所有字段值对
 	HGetAll(ctx context.Context, key string) MapStringStringCmd
+
+	// HDel deletes one or more fields from a hash
+	// 删除哈希中的一个或多个字段
+	HDel(ctx context.Context, key string, fields ...string) IntCmd
 }
 
 // CoreOperations defines core cache operations

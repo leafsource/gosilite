@@ -98,7 +98,7 @@ web/src/api/<feature>.ts
 
 登录成功 `data`：`accessToken` / `tokenType` / `expiresIn` / `refreshToken`。
 
-- 路由：`POST /user/login|refresh|logout|password`，`GET /user/info|profile`
+- 路由：`POST /user/login|refresh|logout|password`，`GET /user/info|profile`（logout 挂 `permission.Default()`：登出为已认证动作，同时供登录日志记录登出用户）
 - Access：Hertz JWT `Authorization: Bearer`；Refresh：Redis rotation/revoke；改密吊销全部 refresh
 - 登出：吊销 refresh + access denylist
 - 前端：`web/src/api/user.ts` + `store/modules/user.ts`（单飞 refresh）

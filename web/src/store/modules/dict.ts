@@ -87,6 +87,33 @@ const DEFAULT_FALLBACK: Record<string, DictOption[]> = {
     { label: '已发布', value: '0' },
     { label: '已撤回', value: '1' },
   ],
+  sys_oper_type: [
+    { label: '其他', value: '0' },
+    { label: '新增', value: '1' },
+    { label: '修改', value: '2' },
+    { label: '删除', value: '3' },
+    { label: '查询', value: '4' },
+    { label: '导入', value: '5' },
+    { label: '导出', value: '6' },
+    { label: '上传', value: '7' },
+  ],
+  sys_oper_status: [
+    { label: '成功', value: '0' },
+    { label: '失败', value: '1' },
+  ],
+  sys_error_level: [
+    { label: '普通', value: '1' },
+    { label: '严重', value: '2' },
+  ],
+  sys_handle_status: [
+    { label: '待处理', value: '0' },
+    { label: '已处理', value: '1' },
+  ],
+  sys_login_status: [
+    { label: '成功', value: '0' },
+    { label: '失败', value: '1' },
+    { label: '登出', value: '2' },
+  ],
 };
 
 /**

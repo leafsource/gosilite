@@ -73,10 +73,12 @@ export const useUserStore = defineStore('user', {
             const res = await refreshSession(currentRefreshToken);
             this.setSession(res);
             return res.accessToken;
-          } catch (error) {
+          } catch {
+            // 会话已失效（过期/被强退）：清理并回登录页，
+            // 抛友好文案而非后端内部错误，避免 toast「Service Internal Error」
             this.clearSession();
             await redirectToLogin();
-            throw error;
+            throw new Error(t('pages.login.expired'));
           } finally {
             refreshPromise = null;
           }

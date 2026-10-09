@@ -77,6 +77,18 @@ var generateConfig = map[string]map[string]map[string]any{
 			"repository": false,
 			"service":    false,
 		},
+		"system_oper_log": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_error_log": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_login_log": {
+			"repository": false,
+			"service":    false,
+		},
 	},
 	"application/agent/dal/query": {
 		"single_agent_draft": {

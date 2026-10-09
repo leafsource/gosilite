@@ -49,8 +49,9 @@ func _updateavatarMw() []app.HandlerFunc {
 }
 
 func _logoutMw() []app.HandlerFunc {
-	// your code...
-	return nil
+	// 登出是已认证动作：挂登录校验，使 Authorizator 解析身份，
+	// 供 operlog 中间件把登出记入登录日志（含用户名）
+	return permission.Default()
 }
 
 func _changepasswordMw() []app.HandlerFunc {

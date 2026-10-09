@@ -100,6 +100,12 @@ func (r *redisClient) HSet(ctx context.Context, key string, values ...interface{
 	return r.client.HSet(ctx, key, values...)
 }
 
+// HDel deletes one or more fields from a hash
+// 删除哈希中的一个或多个字段
+func (r *redisClient) HDel(ctx context.Context, key string, fields ...string) cache.IntCmd {
+	return r.client.HDel(ctx, key, fields...)
+}
+
 // Incr increments a key by 1
 // 将键的值增加1
 func (r *redisClient) Incr(ctx context.Context, key string) cache.IntCmd {
@@ -215,6 +221,12 @@ func (p *redisPipeline) HGetAll(ctx context.Context, key string) cache.MapString
 // 向哈希中设置多个字段值对（管道操作）
 func (p *redisPipeline) HSet(ctx context.Context, key string, values ...interface{}) cache.IntCmd {
 	return p.pipeline.HSet(ctx, key, values...)
+}
+
+// HDel deletes one or more fields from a hash (pipeline operation)
+// 删除哈希中的一个或多个字段（管道操作）
+func (p *redisPipeline) HDel(ctx context.Context, key string, fields ...string) cache.IntCmd {
+	return p.pipeline.HDel(ctx, key, fields...)
 }
 
 // Incr increments a key by 1 (pipeline operation)

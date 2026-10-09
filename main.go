@@ -6,7 +6,9 @@ import (
 	"context"
 	"fmt"
 	"gosilite/api/middleware"
+	"gosilite/api/middleware/operlog"
 	"gosilite/api/middleware/permission"
+	"gosilite/application/base/logq"
 	"gosilite/pkg/genid"
 	"gosilite/pkg/jsonid"
 	"gosilite/pkg/logger"
@@ -14,6 +16,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"gosilite/application"
 	"gosilite/conf"
@@ -101,6 +104,13 @@ func main() {
 	h.GET("/swagger/*any", adaptor.HertzHandler(httpSwagger.WrapHandler))
 
 	boot.MountRoutes(h)
+
+	// 退出前排空日志异步队列（有界批量写，见 application/framework/service/syslog）
+	h.OnShutdown = append(h.OnShutdown, func(ctx context.Context) {
+		flushCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		_ = logq.Flush(flushCtx)
+	})
 	// do what you wanted
 	// add some render data: <no value>
 
@@ -148,10 +158,15 @@ func registerMiddleware(h *server.Hertz) {
 		hlog.SetOutput(fileWriter)
 	}
 
+	// oper log：注册在 requestid/accesslog 之后、recovery 之前（外层），
+	// panic 由内层 recovery 捕获并回填 PanicKey，收尾统一分类入队
+	h.Use(operlog.MW())
+
 	// recovery
 	h.Use(recovery.Recovery(
 		recovery.WithRecoveryHandler(func(ctx context.Context, c *app.RequestContext, err interface{}, stack []byte) {
 			hlog.SystemLogger().CtxErrorf(ctx, "[Recovery] err=%v\nstack=%s", err, stack)
+			c.Set(operlog.PanicKey, &operlog.PanicInfo{Err: err, Stack: stack})
 			if customErr, ok := err.(error); ok {
 				R.Error(ctx, c, customErr)
 				return

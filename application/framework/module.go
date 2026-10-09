@@ -6,6 +6,8 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 
+	frameworkLogRouter "gosilite/api/router/framework/log"
+	frameworkMonitorRouter "gosilite/api/router/framework/monitor"
 	frameworkMenuRouter "gosilite/api/router/framework/menu"
 	frameworkNoticeRouter "gosilite/api/router/framework/notice"
 	frameworkSyscfgRouter "gosilite/api/router/framework/syscfg"
@@ -20,6 +22,7 @@ import (
 	"gosilite/application/framework/service/notice"
 	"gosilite/application/framework/service/post"
 	"gosilite/application/framework/service/role"
+	"gosilite/application/framework/service/syslog"
 	"gosilite/application/framework/service/user"
 	"gosilite/application/infra"
 )
@@ -46,6 +49,7 @@ func (m *Module) Init(ctx context.Context, deps *infra.AppDependencies) error {
 	dict.InitService(repository.NewDictRepository(deps.DB))
 	config.InitService(repository.NewConfigRepository(deps.DB))
 	notice.InitService(repository.NewNoticeRepository(deps.DB))
+	syslog.InitService(repository.NewSysLogRepository(deps.DB))
 	return nil
 }
 
@@ -58,4 +62,6 @@ func (m *Module) RegisterRoutes(r *server.Hertz) {
 	// 免登录全局参数：独立 IDL 文件生成的独立 Register（rootMw=nil），spec: config-consumption S2.2
 	frameworkSyscfgGlobalRouter.Register(r)
 	frameworkNoticeRouter.Register(r)
+	frameworkLogRouter.Register(r)
+	frameworkMonitorRouter.Register(r)
 }

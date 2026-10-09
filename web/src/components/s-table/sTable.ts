@@ -14,8 +14,9 @@ export interface STableSearchField {
   /** 字段名，对应 searchParams 的 key */
   name: string;
   label?: string;
-  type?: 'input' | 'select' | 'date' | 'custom' | 'tree-select';
-  placeholder?: string;
+  type?: 'input' | 'select' | 'date' | 'daterange' | 'custom' | 'tree-select';
+  /** placeholder；daterange 时可传 [起, 止] */
+  placeholder?: string | string[];
   options?: Array<{ label: string; value: string | number }>;
   /** type=tree-select 时的树数据 */
   treeData?: TreeOptionData[];
@@ -47,6 +48,8 @@ export interface STableProps {
   tree?: STableTreeConfig;
   /** 是否显示分页条（全量数据页可关），默认 true */
   paginated?: boolean;
+  /** 搜索项初始值 / 重置后的恢复值（如默认时间范围） */
+  defaultParams?: Record<string, unknown>;
 }
 
 export interface STableEmits {
