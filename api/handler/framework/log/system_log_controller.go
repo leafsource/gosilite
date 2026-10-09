@@ -17,7 +17,13 @@ func derefStr(p *string) string {
 }
 
 // OperLogList .
-// @router /system/operlog/list [GET]
+// @Summary 操作日志列表
+// @Description 操作日志列表接口
+// @Tags 日志
+// @Produce json
+// @Param data query log.OperLogListRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/operlog/list [GET]
 func OperLogList(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req log.OperLogListRequest
@@ -39,7 +45,13 @@ func OperLogList(ctx context.Context, c *app.RequestContext) {
 }
 
 // OperLogDetail .
-// @router /system/operlog [GET]
+// @Summary 操作日志
+// @Description 操作日志接口
+// @Tags 日志
+// @Produce json
+// @Param data query log.LogIdRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/operlog [GET]
 func OperLogDetail(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req log.LogIdRequest
@@ -59,7 +71,13 @@ func OperLogDetail(ctx context.Context, c *app.RequestContext) {
 }
 
 // OperLogClean .
-// @router /system/operlog/clean [POST]
+// @Summary 清空
+// @Description 清空接口
+// @Tags 日志
+// @Produce json
+// @Param data body log.LogCleanRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/operlog/clean [POST]
 func OperLogClean(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req log.LogCleanRequest
@@ -79,7 +97,13 @@ func OperLogClean(ctx context.Context, c *app.RequestContext) {
 }
 
 // ErrorLogList .
-// @router /system/errorlog/list [GET]
+// @Summary 错误日志列表
+// @Description 错误日志列表接口
+// @Tags 日志
+// @Produce json
+// @Param data query log.ErrorLogListRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/errorlog/list [GET]
 func ErrorLogList(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req log.ErrorLogListRequest
@@ -101,7 +125,13 @@ func ErrorLogList(ctx context.Context, c *app.RequestContext) {
 }
 
 // ErrorLogDetail .
-// @router /system/errorlog [GET]
+// @Summary 错误日志
+// @Description 错误日志接口
+// @Tags 日志
+// @Produce json
+// @Param data query log.LogIdRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/errorlog [GET]
 func ErrorLogDetail(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req log.LogIdRequest
@@ -121,7 +151,13 @@ func ErrorLogDetail(ctx context.Context, c *app.RequestContext) {
 }
 
 // ErrorLogHandle .
-// @router /system/errorlog/handle [POST]
+// @Summary 处理
+// @Description 处理接口
+// @Tags 日志
+// @Produce json
+// @Param data body log.ErrorHandleRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/errorlog/handle [POST]
 func ErrorLogHandle(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req log.ErrorHandleRequest
@@ -141,7 +177,13 @@ func ErrorLogHandle(ctx context.Context, c *app.RequestContext) {
 }
 
 // ErrorLogClean .
-// @router /system/errorlog/clean [POST]
+// @Summary 清空
+// @Description 清空接口
+// @Tags 日志
+// @Produce json
+// @Param data body log.LogCleanRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/errorlog/clean [POST]
 func ErrorLogClean(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req log.LogCleanRequest
@@ -161,7 +203,13 @@ func ErrorLogClean(ctx context.Context, c *app.RequestContext) {
 }
 
 // LoginLogList .
-// @router /system/loginlog/list [GET]
+// @Summary 登录日志列表
+// @Description 登录日志列表接口
+// @Tags 日志
+// @Produce json
+// @Param data query log.LoginLogListRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/loginlog/list [GET]
 func LoginLogList(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req log.LoginLogListRequest

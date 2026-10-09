@@ -16,7 +16,13 @@ import (
 // spec: docs/compose/spec/notice.md S2.2
 
 // List 分页列表
-// @router /system/notice/list [GET]
+// @Summary 通知列表
+// @Description 通知列表接口
+// @Tags 通知
+// @Produce json
+// @Param data query notice.NoticeListRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/notice/list [GET]
 func List(ctx context.Context, c *app.RequestContext) {
 	var req notice.NoticeListRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -41,7 +47,13 @@ func List(ctx context.Context, c *app.RequestContext) {
 }
 
 // Get 详情
-// @router /system/notice [GET]
+// @Summary 通知
+// @Description 通知接口
+// @Tags 通知
+// @Produce json
+// @Param data query notice.NoticeIdRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/notice [GET]
 func Get(ctx context.Context, c *app.RequestContext) {
 	var req notice.NoticeIdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -57,7 +69,13 @@ func Get(ctx context.Context, c *app.RequestContext) {
 }
 
 // Create 新增
-// @router /system/notice [POST]
+// @Summary 通知
+// @Description 通知接口
+// @Tags 通知
+// @Produce json
+// @Param data body notice.NoticeSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/notice [POST]
 func Create(ctx context.Context, c *app.RequestContext) {
 	var req notice.NoticeSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -73,7 +91,13 @@ func Create(ctx context.Context, c *app.RequestContext) {
 }
 
 // Update 更新
-// @router /system/notice [PUT]
+// @Summary 通知
+// @Description 通知接口
+// @Tags 通知
+// @Produce json
+// @Param data body notice.NoticeSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/notice [PUT]
 func Update(ctx context.Context, c *app.RequestContext) {
 	var req notice.NoticeSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -100,7 +124,13 @@ func Update(ctx context.Context, c *app.RequestContext) {
 }
 
 // Remove 删除
-// @router /system/notice [DELETE]
+// @Summary 通知
+// @Description 通知接口
+// @Tags 通知
+// @Produce json
+// @Param data body notice.NoticeIdRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/notice [DELETE]
 func Remove(ctx context.Context, c *app.RequestContext) {
 	var req notice.NoticeIdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -115,7 +145,13 @@ func Remove(ctx context.Context, c *app.RequestContext) {
 }
 
 // Inbox 当前用户通知收件箱（login-only；列表不含 content）
-// @router /notice/inbox [GET]
+// @Summary 通知收件箱
+// @Description 通知收件箱接口
+// @Tags 通知
+// @Produce json
+// @Param data query notice.NoticeInboxRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /notice/inbox [GET]
 func Inbox(ctx context.Context, c *app.RequestContext) {
 	var req notice.NoticeInboxRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -133,7 +169,13 @@ func Inbox(ctx context.Context, c *app.RequestContext) {
 }
 
 // Detail 通知详情（login-only；打开即自动已读）
-// @router /notice/detail [GET]
+// @Summary 详情
+// @Description 详情接口
+// @Tags 通知
+// @Produce json
+// @Param data query notice.NoticeDetailRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /notice/detail [GET]
 func Detail(ctx context.Context, c *app.RequestContext) {
 	var req notice.NoticeDetailRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -149,7 +191,12 @@ func Detail(ctx context.Context, c *app.RequestContext) {
 }
 
 // UnreadCount 未读数（login-only；Header 角标）
-// @router /notice/unread-count [GET]
+// @Summary 通知未读数
+// @Description 通知未读数接口
+// @Tags 通知
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /notice/unread-count [GET]
 func UnreadCount(ctx context.Context, c *app.RequestContext) {
 	count, err := noticeSvc.SystemNoticeSVC.UnreadCount(ctx)
 	if err != nil {
@@ -160,7 +207,13 @@ func UnreadCount(ctx context.Context, c *app.RequestContext) {
 }
 
 // Read 标记已读（login-only；id 缺省=全部已读）
-// @router /notice/read [POST]
+// @Summary 标记已读
+// @Description 标记已读接口
+// @Tags 通知
+// @Produce json
+// @Param data body notice.NoticeReadRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /notice/read [POST]
 func Read(ctx context.Context, c *app.RequestContext) {
 	var req notice.NoticeReadRequest
 	if err := c.BindAndValidate(&req); err != nil {

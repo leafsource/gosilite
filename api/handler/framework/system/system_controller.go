@@ -17,7 +17,12 @@ import (
 // ========== 部门 ==========
 
 // DeptTree .
-// @router /system/dept/tree [GET]
+// @Summary 部门树
+// @Description 部门树接口
+// @Tags 系统管理
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dept/tree [GET]
 func DeptTree(ctx context.Context, c *app.RequestContext) {
 	nodes, err := dept.SystemDeptSVC.Tree(ctx)
 	if err != nil {
@@ -33,7 +38,12 @@ func DeptTree(ctx context.Context, c *app.RequestContext) {
 }
 
 // DeptList .
-// @router /system/dept/list [GET]
+// @Summary 部门列表
+// @Description 部门列表接口
+// @Tags 系统管理
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dept/list [GET]
 func DeptList(ctx context.Context, c *app.RequestContext) {
 	list, err := dept.SystemDeptSVC.List(ctx)
 	if err != nil {
@@ -45,7 +55,13 @@ func DeptList(ctx context.Context, c *app.RequestContext) {
 }
 
 // DeptCreate .
-// @router /system/dept [POST]
+// @Summary 部门
+// @Description 部门接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.DeptSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dept [POST]
 func DeptCreate(ctx context.Context, c *app.RequestContext) {
 	var req system.DeptSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -61,7 +77,13 @@ func DeptCreate(ctx context.Context, c *app.RequestContext) {
 }
 
 // DeptUpdate .
-// @router /system/dept [PUT]
+// @Summary 部门
+// @Description 部门接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.DeptSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dept [PUT]
 func DeptUpdate(ctx context.Context, c *app.RequestContext) {
 	var req system.DeptSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -82,7 +104,13 @@ func DeptUpdate(ctx context.Context, c *app.RequestContext) {
 }
 
 // DeptRemove .
-// @router /system/dept [DELETE]
+// @Summary 部门
+// @Description 部门接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.IdRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dept [DELETE]
 func DeptRemove(ctx context.Context, c *app.RequestContext) {
 	var req system.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -99,7 +127,13 @@ func DeptRemove(ctx context.Context, c *app.RequestContext) {
 // ========== 岗位 ==========
 
 // PostList .
-// @router /system/post/list [GET]
+// @Summary 岗位列表
+// @Description 岗位列表接口
+// @Tags 系统管理
+// @Produce json
+// @Param data query system.PageQuery false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/post/list [GET]
 func PostList(ctx context.Context, c *app.RequestContext) {
 	var req system.PageQuery
 	_ = c.BindAndValidate(&req)
@@ -113,7 +147,13 @@ func PostList(ctx context.Context, c *app.RequestContext) {
 }
 
 // PostCreate .
-// @router /system/post [POST]
+// @Summary 岗位
+// @Description 岗位接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.PostSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/post [POST]
 func PostCreate(ctx context.Context, c *app.RequestContext) {
 	var req system.PostSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -129,7 +169,13 @@ func PostCreate(ctx context.Context, c *app.RequestContext) {
 }
 
 // PostUpdate .
-// @router /system/post [PUT]
+// @Summary 岗位
+// @Description 岗位接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.PostSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/post [PUT]
 func PostUpdate(ctx context.Context, c *app.RequestContext) {
 	var req system.PostSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -150,7 +196,13 @@ func PostUpdate(ctx context.Context, c *app.RequestContext) {
 }
 
 // PostRemove .
-// @router /system/post [DELETE]
+// @Summary 岗位
+// @Description 岗位接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.IdRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/post [DELETE]
 func PostRemove(ctx context.Context, c *app.RequestContext) {
 	var req system.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -167,7 +219,13 @@ func PostRemove(ctx context.Context, c *app.RequestContext) {
 // ========== 用户 ==========
 
 // UserList .
-// @router /system/user/list [GET]
+// @Summary 用户列表
+// @Description 用户列表接口
+// @Tags 系统管理
+// @Produce json
+// @Param data query system.AdminUserListRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/user/list [GET]
 func UserList(ctx context.Context, c *app.RequestContext) {
 	var req system.AdminUserListRequest
 	_ = c.BindAndValidate(&req)
@@ -192,7 +250,13 @@ func UserList(ctx context.Context, c *app.RequestContext) {
 }
 
 // UserCreate .
-// @router /system/user [POST]
+// @Summary 用户
+// @Description 用户接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.AdminUserSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/user [POST]
 func UserCreate(ctx context.Context, c *app.RequestContext) {
 	var req system.AdminUserSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -213,7 +277,13 @@ func UserCreate(ctx context.Context, c *app.RequestContext) {
 }
 
 // UserUpdate .
-// @router /system/user [PUT]
+// @Summary 用户
+// @Description 用户接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.AdminUserSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/user [PUT]
 func UserUpdate(ctx context.Context, c *app.RequestContext) {
 	var req system.AdminUserSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -238,7 +308,13 @@ func UserUpdate(ctx context.Context, c *app.RequestContext) {
 }
 
 // UserRemove .
-// @router /system/user [DELETE]
+// @Summary 用户
+// @Description 用户接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.IdRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/user [DELETE]
 func UserRemove(ctx context.Context, c *app.RequestContext) {
 	var req system.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -253,7 +329,13 @@ func UserRemove(ctx context.Context, c *app.RequestContext) {
 }
 
 // UserStatus .
-// @router /system/user/status [PUT]
+// @Summary 状态
+// @Description 状态接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.UserStatusRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/user/status [PUT]
 func UserStatus(ctx context.Context, c *app.RequestContext) {
 	var req system.UserStatusRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -268,7 +350,13 @@ func UserStatus(ctx context.Context, c *app.RequestContext) {
 }
 
 // UserRoles .
-// @router /system/user/roles [GET]
+// @Summary 角色
+// @Description 角色接口
+// @Tags 系统管理
+// @Produce json
+// @Param data query system.IdRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/user/roles [GET]
 func UserRoles(ctx context.Context, c *app.RequestContext) {
 	var req system.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -286,7 +374,12 @@ func UserRoles(ctx context.Context, c *app.RequestContext) {
 // ========== 菜单 ==========
 
 // MenuTree .
-// @router /system/menu/tree [GET]
+// @Summary 菜单树
+// @Description 菜单树接口
+// @Tags 系统管理
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /system/menu/tree [GET]
 func MenuTree(ctx context.Context, c *app.RequestContext) {
 	nodes, err := menu.SystemMenuSVC.Tree(ctx)
 	if err != nil {
@@ -298,7 +391,12 @@ func MenuTree(ctx context.Context, c *app.RequestContext) {
 }
 
 // MenuList .
-// @router /system/menu/list [GET]
+// @Summary 菜单列表
+// @Description 菜单列表接口
+// @Tags 系统管理
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /system/menu/list [GET]
 func MenuList(ctx context.Context, c *app.RequestContext) {
 	list, total, err := menu.SystemMenuSVC.ListPage(ctx)
 	if err != nil {
@@ -317,7 +415,13 @@ func MenuList(ctx context.Context, c *app.RequestContext) {
 }
 
 // MenuCreate .
-// @router /system/menu [POST]
+// @Summary 菜单
+// @Description 菜单接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.MenuSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/menu [POST]
 func MenuCreate(ctx context.Context, c *app.RequestContext) {
 	var req system.MenuSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -333,7 +437,13 @@ func MenuCreate(ctx context.Context, c *app.RequestContext) {
 }
 
 // MenuUpdate .
-// @router /system/menu [PUT]
+// @Summary 菜单
+// @Description 菜单接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.MenuSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/menu [PUT]
 func MenuUpdate(ctx context.Context, c *app.RequestContext) {
 	var req system.MenuSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -354,7 +464,13 @@ func MenuUpdate(ctx context.Context, c *app.RequestContext) {
 }
 
 // MenuRemove .
-// @router /system/menu [DELETE]
+// @Summary 菜单
+// @Description 菜单接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.IdRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/menu [DELETE]
 func MenuRemove(ctx context.Context, c *app.RequestContext) {
 	var req system.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -371,7 +487,13 @@ func MenuRemove(ctx context.Context, c *app.RequestContext) {
 // ========== 角色 ==========
 
 // RoleList .
-// @router /system/role/list [GET]
+// @Summary 角色列表
+// @Description 角色列表接口
+// @Tags 系统管理
+// @Produce json
+// @Param data query system.RoleListRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/role/list [GET]
 func RoleList(ctx context.Context, c *app.RequestContext) {
 	var req system.RoleListRequest
 	_ = c.BindAndValidate(&req)
@@ -389,7 +511,13 @@ func RoleList(ctx context.Context, c *app.RequestContext) {
 }
 
 // RoleCreate .
-// @router /system/role [POST]
+// @Summary 角色
+// @Description 角色接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.RoleSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/role [POST]
 func RoleCreate(ctx context.Context, c *app.RequestContext) {
 	var req system.RoleSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -405,7 +533,13 @@ func RoleCreate(ctx context.Context, c *app.RequestContext) {
 }
 
 // RoleUpdate .
-// @router /system/role [PUT]
+// @Summary 角色
+// @Description 角色接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.RoleSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/role [PUT]
 func RoleUpdate(ctx context.Context, c *app.RequestContext) {
 	var req system.RoleSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -426,7 +560,13 @@ func RoleUpdate(ctx context.Context, c *app.RequestContext) {
 }
 
 // RoleRemove .
-// @router /system/role [DELETE]
+// @Summary 角色
+// @Description 角色接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.IdRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/role [DELETE]
 func RoleRemove(ctx context.Context, c *app.RequestContext) {
 	var req system.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -441,7 +581,13 @@ func RoleRemove(ctx context.Context, c *app.RequestContext) {
 }
 
 // RoleAuthorize 角色授权快照（菜单树勾选态 + 数据范围 + 自定义部门）
-// @router /system/role/authorize [GET]
+// @Summary 角色授权
+// @Description 角色授权接口
+// @Tags 系统管理
+// @Produce json
+// @Param data query system.IdRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/role/authorize [GET]
 func RoleAuthorize(ctx context.Context, c *app.RequestContext) {
 	var req system.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -457,7 +603,13 @@ func RoleAuthorize(ctx context.Context, c *app.RequestContext) {
 }
 
 // RoleAuthorizeSave 角色授权整体保存（菜单 + 数据范围 + 自定义部门）
-// @router /system/role/authorize [PUT]
+// @Summary 授权
+// @Description 授权接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.RoleAuthorizeSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/role/authorize [PUT]
 func RoleAuthorizeSave(ctx context.Context, c *app.RequestContext) {
 	var req system.RoleAuthorizeSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -472,7 +624,13 @@ func RoleAuthorizeSave(ctx context.Context, c *app.RequestContext) {
 }
 
 // DeptLeader 设置/清除部门负责人（userId=0 清除）
-// @router /system/dept/leader [PUT]
+// @Summary 负责人
+// @Description 负责人接口
+// @Tags 系统管理
+// @Produce json
+// @Param data body system.DeptLeaderRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dept/leader [PUT]
 func DeptLeader(ctx context.Context, c *app.RequestContext) {
 	var req system.DeptLeaderRequest
 	if err := c.BindAndValidate(&req); err != nil {

@@ -22,13 +22,13 @@ import (
 
 // Login godoc
 // @Summary 用户登录
+// @Summary 用户登录
 // @Description 用户登录接口
 // @Tags 用户
-// @Accept json
 // @Produce json
-// @Param login body user.LoginRequest true "登录参数"
-// @Success 200 {object} response.Resp
-// @router /user/login [POST]
+// @Param data body user.LoginRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /user/login [POST]
 func Login(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req user.LoginRequest
@@ -43,7 +43,12 @@ func Login(ctx context.Context, c *app.RequestContext) {
 }
 
 // GetInfo .
-// @router /user/info [GET]
+// @Summary 获取当前登录用户
+// @Description 获取当前登录用户接口
+// @Tags 用户
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /user/info [GET]
 func GetInfo(ctx context.Context, c *app.RequestContext) {
 	loginUser := ctxutil.GetLoginUser(ctx)
 	if loginUser == nil {
@@ -55,14 +60,25 @@ func GetInfo(ctx context.Context, c *app.RequestContext) {
 }
 
 // GetProfile .
-// @router user/profile [GET]
+// @Summary 获取个人信息
+// @Description 获取个人信息接口
+// @Tags 用户
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /user/profile [GET]
 func GetProfile(ctx context.Context, c *app.RequestContext) {
 	loginUser := ctxutil.GetLoginUser(ctx)
 	R.SuccessWithData(ctx, c, toLoginUserResponse(loginUser))
 }
 
 // UpdateAvatar .
-// @router /user/update/upload_avatar [POST]
+// @Summary 上传头像
+// @Description 上传头像接口
+// @Tags 用户
+// @Produce json
+// @Param data body user.UserUpdateAvatarRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /user/update/upload_avatar [POST]
 func UpdateAvatar(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req user.UserUpdateAvatarRequest
@@ -109,7 +125,13 @@ func UpdateAvatar(ctx context.Context, c *app.RequestContext) {
 }
 
 // Refresh .
-// @router /user/refresh [POST]
+// @Summary 刷新访问令牌
+// @Description 刷新访问令牌接口
+// @Tags 用户
+// @Produce json
+// @Param data body user.RefreshRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /user/refresh [POST]
 func Refresh(ctx context.Context, c *app.RequestContext) {
 	var req user.RefreshRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -147,7 +169,13 @@ func Refresh(ctx context.Context, c *app.RequestContext) {
 }
 
 // Logout .
-// @router /user/logout [POST]
+// @Summary 登出
+// @Description 登出接口
+// @Tags 用户
+// @Produce json
+// @Param data body user.LogoutRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /user/logout [POST]
 func Logout(ctx context.Context, c *app.RequestContext) {
 	var req user.LogoutRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -172,7 +200,13 @@ func Logout(ctx context.Context, c *app.RequestContext) {
 }
 
 // ChangePassword .
-// @router /user/password [POST]
+// @Summary 修改密码
+// @Description 修改密码接口
+// @Tags 用户
+// @Produce json
+// @Param data body user.ChangePasswordRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /user/password [POST]
 func ChangePassword(ctx context.Context, c *app.RequestContext) {
 	var req user.ChangePasswordRequest
 	if err := c.BindAndValidate(&req); err != nil {

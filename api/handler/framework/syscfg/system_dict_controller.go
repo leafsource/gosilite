@@ -10,7 +10,13 @@ import (
 )
 
 // TypeList .
-// @router /system/dict/type/list [GET]
+// @Summary 类型列表
+// @Description 类型列表接口
+// @Tags 系统配置
+// @Produce json
+// @Param data query syscfg.DictTypeListRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/type/list [GET]
 func TypeList(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.DictTypeListRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -27,7 +33,13 @@ func TypeList(ctx context.Context, c *app.RequestContext) {
 }
 
 // TypeCreate .
-// @router /system/dict/type [POST]
+// @Summary 类型
+// @Description 类型接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.DictTypeSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/type [POST]
 func TypeCreate(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.DictTypeSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -43,7 +55,13 @@ func TypeCreate(ctx context.Context, c *app.RequestContext) {
 }
 
 // TypeUpdate .
-// @router /system/dict/type [PUT]
+// @Summary 类型
+// @Description 类型接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.DictTypeSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/type [PUT]
 func TypeUpdate(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.DictTypeSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -64,7 +82,13 @@ func TypeUpdate(ctx context.Context, c *app.RequestContext) {
 }
 
 // TypeRemove .
-// @router /system/dict/type [DELETE]
+// @Summary 类型
+// @Description 类型接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.IdRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/type [DELETE]
 func TypeRemove(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -79,7 +103,13 @@ func TypeRemove(ctx context.Context, c *app.RequestContext) {
 }
 
 // DataList .
-// @router /system/dict/data/list [GET]
+// @Summary 数据列表
+// @Description 数据列表接口
+// @Tags 系统配置
+// @Produce json
+// @Param data query syscfg.DictDataListRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/data/list [GET]
 func DataList(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.DictDataListRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -100,7 +130,13 @@ func DataList(ctx context.Context, c *app.RequestContext) {
 }
 
 // DataCreate .
-// @router /system/dict/data [POST]
+// @Summary 数据
+// @Description 数据接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.DictDataSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/data [POST]
 func DataCreate(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.DictDataSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -116,7 +152,13 @@ func DataCreate(ctx context.Context, c *app.RequestContext) {
 }
 
 // DataUpdate .
-// @router /system/dict/data [PUT]
+// @Summary 数据
+// @Description 数据接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.DictDataSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/data [PUT]
 func DataUpdate(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.DictDataSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -137,7 +179,13 @@ func DataUpdate(ctx context.Context, c *app.RequestContext) {
 }
 
 // DataRemove .
-// @router /system/dict/data [DELETE]
+// @Summary 数据
+// @Description 数据接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.IdRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/data [DELETE]
 func DataRemove(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -152,7 +200,13 @@ func DataRemove(ctx context.Context, c *app.RequestContext) {
 }
 
 // DataOptions .
-// @router /system/dict/data/options [GET]
+// @Summary 选项
+// @Description 选项接口
+// @Tags 系统配置
+// @Produce json
+// @Param data query syscfg.DictOptionsRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/data/options [GET]
 func DataOptions(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.DictOptionsRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -169,7 +223,13 @@ func DataOptions(ctx context.Context, c *app.RequestContext) {
 }
 
 // GroupList .
-// @router /system/dict/group/list [GET]
+// @Summary 分组列表
+// @Description 分组列表接口
+// @Tags 系统配置
+// @Produce json
+// @Param data query syscfg.PageQuery false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/group/list [GET]
 func GroupList(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.PageQuery
 	if err := c.BindAndValidate(&req); err != nil {
@@ -186,7 +246,13 @@ func GroupList(ctx context.Context, c *app.RequestContext) {
 }
 
 // GroupCreate .
-// @router /system/dict/group [POST]
+// @Summary 分组
+// @Description 分组接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.DictGroupSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/group [POST]
 func GroupCreate(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.DictGroupSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -202,7 +268,13 @@ func GroupCreate(ctx context.Context, c *app.RequestContext) {
 }
 
 // GroupUpdate .
-// @router /system/dict/group [PUT]
+// @Summary 分组
+// @Description 分组接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.DictGroupSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/group [PUT]
 func GroupUpdate(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.DictGroupSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -223,7 +295,13 @@ func GroupUpdate(ctx context.Context, c *app.RequestContext) {
 }
 
 // GroupRemove .
-// @router /system/dict/group [DELETE]
+// @Summary 分组
+// @Description 分组接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.IdRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/dict/group [DELETE]
 func GroupRemove(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {

@@ -42,32 +42,21 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 
 	"gosilite/application/base/metrics"
+
+	_ "gosilite/docs/swagger"
 )
 
 // Package main SkyX Cloud API
 //
-// SkyX Cloud Platform API
-//
-//	Version: 1.0.0
-//	Title: SkyX Cloud API
-//	Description: SkyX Cloud Platform API Documentation
-//	BasePath: /api
-//
-//	Consumes:
-//	- application/json
-//	- multipart/form-data
-//
-//	Produces:
-//	- application/json
-//
-//	SecurityDefinitions:
-//	  BearerAuth:
-//	    type: apiKey
-//	    name: Authorization
-//	    in: header
-//	    description: "Bearer {token}"
-//
-// swagger:meta
+// @title SkyX Cloud API
+// @version 1.0.0
+// @description SkyX Cloud Platform API Documentation
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Bearer {token}
+// @swagger:meta
 func main() {
 	var p *print.Printer
 	p = print.StartPrinter("加载配置")

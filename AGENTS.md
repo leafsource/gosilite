@@ -149,6 +149,35 @@ CRUD 样板         templates/*.tmpl     script/codegen（仅新文件）
 - 入口集中组装；业务模块不得调用 `Spin()`。
 - 本项目 `main.go` 使用 `server.New` + 显式 Recovery。
 
+### Swagger 注解（强制，所有 HTTP Handler）
+
+每个对外 Handler **必须**写完整 swag 注解，否则系统监控 · 系统接口（Swagger UI）缺文档；`doc.json` 会漏路由。
+
+```go
+// Datasource 数据源监控
+// @Summary 数据源监控
+// @Description 数据源监控接口
+// @Tags 监控
+// @Accept json
+// @Produce json
+// @Param data body monitor.DatasourceDTO true "请求参数"   // GET 用 query；无参省略
+// @Success 200 {object} map[string]interface{}
+// @Router /system/monitor/datasource [GET]
+func Datasource(ctx context.Context, c *app.RequestContext) { ... }
+```
+
+| 规则 | 说明 |
+|------|------|
+| 必填 | `@Summary` `@Tags` `@Produce` `@Success` `@Router`（**大写 Router**） |
+| `@Tags` | 用户 / 系统管理 / 系统配置 / 监控 / 日志 / 通知 / 菜单 / 智能体 |
+| `@Param` | 有 `var req ...` 才写；body（POST/PUT/DELETE）或 query（GET）；类型用 **api/model 包名.结构体** |
+| `@Success` | 统一 `{object} map[string]interface{}`（信封在 `response` 包） |
+| 路径 | 与 IDL `api.get/post/...` **一致**；变更：**先改 IDL → hz update → 再补注解** |
+| 生成 | 改注解后执行 `swag init -g main.go -o ./docs/swagger --parseDependency --parseInternal` |
+| 挂载 | `main.go` 空导入 `_ "gosilite/docs/swagger"`；UI：`GET /swagger/index.html`；管理端内嵌「系统接口」 |
+
+禁止只写 `// @router` 而缺 Summary/Tags；新接口与注解同一 PR 提交。
+
 ---
 
 ## 四、业务分层与插件

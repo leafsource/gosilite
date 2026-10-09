@@ -10,7 +10,13 @@ import (
 )
 
 // List .
-// @router /system/config/list [GET]
+// @Summary 配置列表
+// @Description 配置列表接口
+// @Tags 系统配置
+// @Produce json
+// @Param data query syscfg.PageQuery false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/config/list [GET]
 func List(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.PageQuery
 	if err := c.BindAndValidate(&req); err != nil {
@@ -27,7 +33,13 @@ func List(ctx context.Context, c *app.RequestContext) {
 }
 
 // Create .
-// @router /system/config [POST]
+// @Summary 配置
+// @Description 配置接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.ConfigSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/config [POST]
 func Create(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.ConfigSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -43,7 +55,13 @@ func Create(ctx context.Context, c *app.RequestContext) {
 }
 
 // Update .
-// @router /system/config [PUT]
+// @Summary 配置
+// @Description 配置接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.ConfigSaveRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/config [PUT]
 func Update(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.ConfigSaveRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -64,7 +82,13 @@ func Update(ctx context.Context, c *app.RequestContext) {
 }
 
 // Remove .
-// @router /system/config [DELETE]
+// @Summary 配置
+// @Description 配置接口
+// @Tags 系统配置
+// @Produce json
+// @Param data body syscfg.IdRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/config [DELETE]
 func Remove(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.IdRequest
 	if err := c.BindAndValidate(&req); err != nil {
@@ -79,7 +103,13 @@ func Remove(ctx context.Context, c *app.RequestContext) {
 }
 
 // GetByKey .
-// @router /system/config/key [GET]
+// @Summary 键
+// @Description 键接口
+// @Tags 系统配置
+// @Produce json
+// @Param data query syscfg.ConfigKeyRequest false "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/config/key [GET]
 func GetByKey(ctx context.Context, c *app.RequestContext) {
 	var req syscfg.ConfigKeyRequest
 	if err := c.BindAndValidate(&req); err != nil {

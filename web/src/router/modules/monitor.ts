@@ -35,6 +35,12 @@ export default [
         component: () => import('@/pages/monitor/cache/index.vue'),
         meta: { title: { zh_CN: '缓存监控', en_US: 'Cache Monitor' } },
       },
+      {
+        path: 'api',
+        name: 'MonitorApi',
+        component: () => import('@/pages/monitor/api/index.vue'),
+        meta: { title: { zh_CN: '系统接口', en_US: 'API Docs' } },
+      },
     ],
   },
 ] satisfies RouteRecordRaw[];

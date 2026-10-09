@@ -12,7 +12,12 @@ import (
 )
 
 // GetRoutes .
-// @router /menu/routes [GET]
+// @Summary 获取前端路由
+// @Description 获取前端路由接口
+// @Tags 菜单
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /menu/routes [GET]
 func GetRoutes(ctx context.Context, c *app.RequestContext) {
 	var err error
 

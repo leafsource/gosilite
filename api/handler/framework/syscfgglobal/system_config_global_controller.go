@@ -13,7 +13,12 @@ import (
 // GlobalList 全局参数（config_type=global，免登录）。
 // 本包由独立 IDL 文件 idl/framework/system_config_global.thrift 生成，
 // rootMw 不挂登录（middleware.go 中保持 return nil）——spec: config-consumption S2.2。
-// @router /system/config/global [GET]
+// @Summary 全局参数
+// @Description 全局参数接口
+// @Tags 系统配置
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /system/config/global [GET]
 func GlobalList(ctx context.Context, c *app.RequestContext) {
 	list, err := config.SystemConfigSVC.ListGlobal(ctx)
 	if err != nil {

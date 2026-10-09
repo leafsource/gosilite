@@ -1,0 +1,2042 @@
+basePath: /
+definitions:
+  log.ErrorHandleRequest:
+    properties:
+      handleRemark:
+        type: string
+      id:
+        type: integer
+    type: object
+  log.LogCleanRequest:
+    properties:
+      all:
+        type: boolean
+      ids:
+        items:
+          type: integer
+        type: array
+    type: object
+  monitor.CacheKeyDeleteRequest:
+    properties:
+      field:
+        type: string
+      key:
+        type: string
+    type: object
+  monitor.CachePrefixClearRequest:
+    properties:
+      prefix:
+        type: string
+    type: object
+  monitor.OnlineForceRequest:
+    properties:
+      id:
+        type: string
+    type: object
+  notice.NoticeIdRequest:
+    properties:
+      id:
+        type: integer
+    type: object
+  notice.NoticeReadRequest:
+    properties:
+      id:
+        type: integer
+    type: object
+  notice.NoticeSaveRequest:
+    properties:
+      content:
+        type: string
+      id:
+        type: integer
+      noticeType:
+        type: integer
+      status:
+        type: integer
+      title:
+        type: string
+    type: object
+  syscfg.ConfigSaveRequest:
+    properties:
+      configKey:
+        type: string
+      configName:
+        type: string
+      configType:
+        type: string
+      configValue:
+        type: string
+      id:
+        type: integer
+      remark:
+        type: string
+      status:
+        type: integer
+    type: object
+  syscfg.DictDataSaveRequest:
+    properties:
+      color:
+        type: string
+      cssClass:
+        type: string
+      dictLabel:
+        type: string
+      dictType:
+        type: string
+      dictValue:
+        type: string
+      id:
+        type: integer
+      isDefault:
+        type: integer
+      listOrder:
+        type: integer
+      status:
+        type: integer
+      theme:
+        type: string
+    type: object
+  syscfg.DictGroupSaveRequest:
+    properties:
+      groupName:
+        type: string
+      id:
+        type: integer
+      orderNum:
+        type: integer
+      remark:
+        type: string
+    type: object
+  syscfg.DictTypeSaveRequest:
+    properties:
+      dictName:
+        type: string
+      dictType:
+        type: string
+      groupId:
+        type: integer
+      id:
+        type: integer
+      orderNum:
+        type: integer
+      remark:
+        type: string
+      status:
+        type: integer
+    type: object
+  syscfg.IdRequest:
+    properties:
+      id:
+        type: integer
+    type: object
+  system.AdminUserSaveRequest:
+    properties:
+      account:
+        type: string
+      deptId:
+        type: integer
+      email:
+        type: string
+      id:
+        type: integer
+      mobilePhone:
+        type: string
+      password:
+        type: string
+      postIds:
+        items:
+          type: integer
+        type: array
+      roleIds:
+        items:
+          type: integer
+        type: array
+      state:
+        type: string
+      username:
+        type: string
+    type: object
+  system.DeptLeaderRequest:
+    properties:
+      deptId:
+        type: integer
+      userId:
+        type: integer
+    type: object
+  system.DeptSaveRequest:
+    properties:
+      deptName:
+        type: string
+      id:
+        type: integer
+      orderNum:
+        type: integer
+      parentId:
+        type: integer
+      status:
+        type: integer
+    type: object
+  system.IdRequest:
+    properties:
+      id:
+        type: integer
+    type: object
+  system.MenuSaveRequest:
+    properties:
+      actionType:
+        type: string
+      component:
+        type: string
+      icon:
+        type: string
+      id:
+        type: integer
+      menuName:
+        type: string
+      menuType:
+        type: string
+      orderNum:
+        type: integer
+      parentId:
+        type: integer
+      path:
+        type: string
+      perms:
+        type: string
+      status:
+        type: integer
+      visible:
+        type: boolean
+    type: object
+  system.PostSaveRequest:
+    properties:
+      id:
+        type: integer
+      orderNum:
+        type: integer
+      postCode:
+        type: string
+      postName:
+        type: string
+      status:
+        type: integer
+    type: object
+  system.RoleAuthorizeSaveRequest:
+    properties:
+      dataScope:
+        type: integer
+      deptIds:
+        items:
+          type: integer
+        type: array
+      menuIds:
+        items:
+          type: integer
+        type: array
+      roleId:
+        type: integer
+    type: object
+  system.RoleSaveRequest:
+    properties:
+      code:
+        type: string
+      dataScope:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      orderNum:
+        type: integer
+      state:
+        type: string
+    type: object
+  system.UserStatusRequest:
+    properties:
+      id:
+        type: integer
+      state:
+        type: string
+    type: object
+  user.ChangePasswordRequest:
+    properties:
+      currentPassword:
+        type: string
+      newPassword:
+        type: string
+    type: object
+  user.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  user.LogoutRequest:
+    properties:
+      refreshToken:
+        type: string
+    type: object
+  user.RefreshRequest:
+    properties:
+      refreshToken:
+        type: string
+    type: object
+  user.UserUpdateAvatarRequest:
+    properties:
+      avatar:
+        items:
+          type: integer
+        type: array
+    type: object
+info:
+  contact: {}
+  description: SkyX Cloud Platform API Documentation
+  title: SkyX Cloud API
+  version: 1.0.0
+paths:
+  /agent/list:
+    get:
+      description: agent列表接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: agent列表
+      tags:
+      - 智能体
+  /menu/routes:
+    get:
+      description: 获取前端路由接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取前端路由
+      tags:
+      - 菜单
+  /notice/detail:
+    get:
+      description: 详情接口
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 详情
+      tags:
+      - 通知
+  /notice/inbox:
+    get:
+      description: 通知收件箱接口
+      parameters:
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 通知收件箱
+      tags:
+      - 通知
+  /notice/read:
+    post:
+      description: 标记已读接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/notice.NoticeReadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 标记已读
+      tags:
+      - 通知
+  /notice/unread-count:
+    get:
+      description: 通知未读数接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 通知未读数
+      tags:
+      - 通知
+  /system/cache/key/delete:
+    post:
+      description: 删除缓存键接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/monitor.CacheKeyDeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除缓存键
+      tags:
+      - 监控
+  /system/cache/key/list:
+    get:
+      description: 缓存键列表接口
+      parameters:
+      - in: query
+        name: prefix
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 缓存键列表
+      tags:
+      - 监控
+  /system/cache/prefix/clear:
+    post:
+      description: 清空前缀缓存接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/monitor.CachePrefixClearRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 清空前缀缓存
+      tags:
+      - 监控
+  /system/cache/prefix/list:
+    get:
+      description: 缓存前缀列表接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 缓存前缀列表
+      tags:
+      - 监控
+  /system/cache/value:
+    get:
+      description: 读取缓存值接口
+      parameters:
+      - in: query
+        name: field
+        type: string
+      - in: query
+        name: key
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 读取缓存值
+      tags:
+      - 监控
+  /system/config:
+    delete:
+      description: 配置接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.IdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 配置
+      tags:
+      - 系统配置
+    post:
+      description: 配置接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.ConfigSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 配置
+      tags:
+      - 系统配置
+    put:
+      description: 配置接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.ConfigSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 配置
+      tags:
+      - 系统配置
+  /system/config/global:
+    get:
+      description: 全局参数接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 全局参数
+      tags:
+      - 系统配置
+  /system/config/key:
+    get:
+      description: 键接口
+      parameters:
+      - in: query
+        name: key
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 键
+      tags:
+      - 系统配置
+  /system/config/list:
+    get:
+      description: 配置列表接口
+      parameters:
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 配置列表
+      tags:
+      - 系统配置
+  /system/dept:
+    delete:
+      description: 部门接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.IdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 部门
+      tags:
+      - 系统管理
+    post:
+      description: 部门接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.DeptSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 部门
+      tags:
+      - 系统管理
+    put:
+      description: 部门接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.DeptSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 部门
+      tags:
+      - 系统管理
+  /system/dept/leader:
+    put:
+      description: 负责人接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.DeptLeaderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 负责人
+      tags:
+      - 系统管理
+  /system/dept/list:
+    get:
+      description: 部门列表接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 部门列表
+      tags:
+      - 系统管理
+  /system/dept/tree:
+    get:
+      description: 部门树接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 部门树
+      tags:
+      - 系统管理
+  /system/dict/data:
+    delete:
+      description: 数据接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.IdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 数据
+      tags:
+      - 系统配置
+    post:
+      description: 数据接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.DictDataSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 数据
+      tags:
+      - 系统配置
+    put:
+      description: 数据接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.DictDataSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 数据
+      tags:
+      - 系统配置
+  /system/dict/data/list:
+    get:
+      description: 数据列表接口
+      parameters:
+      - in: query
+        name: dictType
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 数据列表
+      tags:
+      - 系统配置
+  /system/dict/data/options:
+    get:
+      description: 选项接口
+      parameters:
+      - in: query
+        name: dictType
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 选项
+      tags:
+      - 系统配置
+  /system/dict/group:
+    delete:
+      description: 分组接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.IdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 分组
+      tags:
+      - 系统配置
+    post:
+      description: 分组接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.DictGroupSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 分组
+      tags:
+      - 系统配置
+    put:
+      description: 分组接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.DictGroupSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 分组
+      tags:
+      - 系统配置
+  /system/dict/group/list:
+    get:
+      description: 分组列表接口
+      parameters:
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 分组列表
+      tags:
+      - 系统配置
+  /system/dict/type:
+    delete:
+      description: 类型接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.IdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 类型
+      tags:
+      - 系统配置
+    post:
+      description: 类型接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.DictTypeSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 类型
+      tags:
+      - 系统配置
+    put:
+      description: 类型接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/syscfg.DictTypeSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 类型
+      tags:
+      - 系统配置
+  /system/dict/type/list:
+    get:
+      description: 类型列表接口
+      parameters:
+      - description: 缺省=全部；0=未分组；>0=指定分组
+        in: query
+        name: groupId
+        type: integer
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 类型列表
+      tags:
+      - 系统配置
+  /system/errorlog:
+    get:
+      description: 错误日志接口
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 错误日志
+      tags:
+      - 日志
+  /system/errorlog/clean:
+    post:
+      description: 清空接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/log.LogCleanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 清空
+      tags:
+      - 日志
+  /system/errorlog/handle:
+    post:
+      description: 处理接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/log.ErrorHandleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 处理
+      tags:
+      - 日志
+  /system/errorlog/list:
+    get:
+      description: 错误日志列表接口
+      parameters:
+      - in: query
+        name: endTime
+        type: string
+      - description: sys_error_level，缺省=全部
+        in: query
+        name: errLevel
+        type: integer
+      - description: sys_handle_status，缺省=全部
+        in: query
+        name: handleStatus
+        type: integer
+      - in: query
+        name: httpMethod
+        type: string
+      - description: 异常信息模糊
+        in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: startTime
+        type: string
+      - in: query
+        name: traceId
+        type: string
+      - in: query
+        name: userName
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 错误日志列表
+      tags:
+      - 日志
+  /system/loginlog/list:
+    get:
+      description: 登录日志列表接口
+      parameters:
+      - in: query
+        name: clientIp
+        type: string
+      - in: query
+        name: endTime
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: startTime
+        type: string
+      - description: sys_login_status，缺省=全部
+        in: query
+        name: status
+        type: integer
+      - in: query
+        name: userName
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 登录日志列表
+      tags:
+      - 日志
+  /system/menu:
+    delete:
+      description: 菜单接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.IdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 菜单
+      tags:
+      - 系统管理
+    post:
+      description: 菜单接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.MenuSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 菜单
+      tags:
+      - 系统管理
+    put:
+      description: 菜单接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.MenuSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 菜单
+      tags:
+      - 系统管理
+  /system/menu/list:
+    get:
+      description: 菜单列表接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 菜单列表
+      tags:
+      - 系统管理
+  /system/menu/tree:
+    get:
+      description: 菜单树接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 菜单树
+      tags:
+      - 系统管理
+  /system/monitor/datasource:
+    get:
+      description: 数据源监控接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 数据源监控
+      tags:
+      - 监控
+  /system/monitor/firewall:
+    get:
+      description: SQL 防火墙状态接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: SQL 防火墙状态
+      tags:
+      - 监控
+  /system/monitor/http:
+    get:
+      description: HTTP 请求统计接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: HTTP 请求统计
+      tags:
+      - 监控
+  /system/monitor/server:
+    get:
+      description: 运行时监控接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 运行时监控
+      tags:
+      - 监控
+  /system/monitor/sql:
+    get:
+      description: SQL 监控接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: SQL 监控
+      tags:
+      - 监控
+  /system/monitor/uri:
+    get:
+      description: URI 访问统计接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: URI 访问统计
+      tags:
+      - 监控
+  /system/notice:
+    delete:
+      description: 通知接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/notice.NoticeIdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 通知
+      tags:
+      - 通知
+    get:
+      description: 通知接口
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 通知
+      tags:
+      - 通知
+    post:
+      description: 通知接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/notice.NoticeSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 通知
+      tags:
+      - 通知
+    put:
+      description: 通知接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/notice.NoticeSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 通知
+      tags:
+      - 通知
+  /system/notice/list:
+    get:
+      description: 通知列表接口
+      parameters:
+      - in: query
+        name: keyword
+        type: string
+      - description: 缺省=全部；1=通知 2=公告
+        in: query
+        name: noticeType
+        type: integer
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - description: 缺省=全部；0=已发布 1=已撤回
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 通知列表
+      tags:
+      - 通知
+  /system/online/force:
+    post:
+      description: 在线会话强退接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/monitor.OnlineForceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 在线会话强退
+      tags:
+      - 监控
+  /system/online/list:
+    get:
+      description: 在线用户列表接口
+      parameters:
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - description: 登录名称模糊
+        in: query
+        name: userName
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 在线用户列表
+      tags:
+      - 监控
+  /system/operlog:
+    get:
+      description: 操作日志接口
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 操作日志
+      tags:
+      - 日志
+  /system/operlog/clean:
+    post:
+      description: 清空接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/log.LogCleanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 清空
+      tags:
+      - 日志
+  /system/operlog/list:
+    get:
+      description: 操作日志列表接口
+      parameters:
+      - in: query
+        name: endTime
+        type: string
+      - description: sys_oper_status，缺省=全部
+        in: query
+        name: execStatus
+        type: integer
+      - in: query
+        name: httpMethod
+        type: string
+      - description: 执行方法（request_uri 模糊）
+        in: query
+        name: method
+        type: string
+      - description: sys_oper_type，缺省=全部
+        in: query
+        name: operType
+        type: integer
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: startTime
+        type: string
+      - in: query
+        name: traceId
+        type: string
+      - in: query
+        name: userName
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 操作日志列表
+      tags:
+      - 日志
+  /system/post:
+    delete:
+      description: 岗位接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.IdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 岗位
+      tags:
+      - 系统管理
+    post:
+      description: 岗位接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.PostSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 岗位
+      tags:
+      - 系统管理
+    put:
+      description: 岗位接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.PostSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 岗位
+      tags:
+      - 系统管理
+  /system/post/list:
+    get:
+      description: 岗位列表接口
+      parameters:
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 岗位列表
+      tags:
+      - 系统管理
+  /system/role:
+    delete:
+      description: 角色接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.IdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 角色
+      tags:
+      - 系统管理
+    post:
+      description: 角色接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.RoleSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 角色
+      tags:
+      - 系统管理
+    put:
+      description: 角色接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.RoleSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 角色
+      tags:
+      - 系统管理
+  /system/role/authorize:
+    get:
+      description: 角色授权接口
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 角色授权
+      tags:
+      - 系统管理
+    put:
+      description: 授权接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.RoleAuthorizeSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 授权
+      tags:
+      - 系统管理
+  /system/role/list:
+    get:
+      description: 角色列表接口
+      parameters:
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 角色列表
+      tags:
+      - 系统管理
+  /system/user:
+    delete:
+      description: 用户接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.IdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 用户
+      tags:
+      - 系统管理
+    post:
+      description: 用户接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.AdminUserSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 用户
+      tags:
+      - 系统管理
+    put:
+      description: 用户接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.AdminUserSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 用户
+      tags:
+      - 系统管理
+  /system/user/list:
+    get:
+      description: 用户列表接口
+      parameters:
+      - in: query
+        name: deptId
+        type: integer
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: state
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 用户列表
+      tags:
+      - 系统管理
+  /system/user/roles:
+    get:
+      description: 角色接口
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 角色
+      tags:
+      - 系统管理
+  /system/user/status:
+    put:
+      description: 状态接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/system.UserStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 状态
+      tags:
+      - 系统管理
+  /user/info:
+    get:
+      description: 获取当前登录用户接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取当前登录用户
+      tags:
+      - 用户
+  /user/login:
+    post:
+      description: 用户登录接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/user.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 用户登录
+      tags:
+      - 用户
+  /user/logout:
+    post:
+      description: 登出接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/user.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 登出
+      tags:
+      - 用户
+  /user/password:
+    post:
+      description: 修改密码接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/user.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 修改密码
+      tags:
+      - 用户
+  /user/profile:
+    get:
+      description: 获取个人信息接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取个人信息
+      tags:
+      - 用户
+  /user/refresh:
+    post:
+      description: 刷新访问令牌接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/user.RefreshRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 刷新访问令牌
+      tags:
+      - 用户
+  /user/update/upload_avatar:
+    post:
+      description: 上传头像接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/user.UserUpdateAvatarRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 上传头像
+      tags:
+      - 用户
+securityDefinitions:
+  BearerAuth:
+    description: Bearer {token}
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
