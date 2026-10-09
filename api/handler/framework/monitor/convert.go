@@ -121,3 +121,28 @@ func toHttpMonitorDTO(v *monitorService.HttpMonitorVO) *monitor.HttpMonitorRespo
 	}
 	return out
 }
+
+func toCachePrefixList(rows []monitorService.CachePrefixVO) *monitor.CachePrefixListResponse {
+	out := &monitor.CachePrefixListResponse{List: []*monitor.CachePrefixDTO{}, Total: int64(len(rows))}
+	for _, r := range rows {
+		out.List = append(out.List, &monitor.CachePrefixDTO{Prefix: r.Prefix, Count: r.Count, Remark: r.Remark})
+	}
+	return out
+}
+
+func toCacheKeyList(rows []monitorService.CacheKeyVO) *monitor.CacheKeyListResponse {
+	out := &monitor.CacheKeyListResponse{List: []*monitor.CacheKeyDTO{}, Total: int64(len(rows))}
+	for _, r := range rows {
+		out.List = append(out.List, &monitor.CacheKeyDTO{Key: r.Key, Type: r.Type, Field: r.Field})
+	}
+	return out
+}
+
+func toCacheValue(v *monitorService.CacheValueVO) *monitor.CacheValueResponse {
+	if v == nil {
+		return &monitor.CacheValueResponse{}
+	}
+	return &monitor.CacheValueResponse{
+		Key: v.Key, Type: v.Type, Value: v.Value, DisplayKey: v.DisplayKey,
+	}
+}

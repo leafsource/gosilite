@@ -59,3 +59,38 @@ func _sqlmonitorMw() []app.HandlerFunc {
 func _urilistMw() []app.HandlerFunc {
 	return permission.HPermissions("system:monitor:list")
 }
+
+func _cacheMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _valueMw() []app.HandlerFunc {
+	return permission.HPermissions("system:cachemonitor:list")
+}
+
+func _keyMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletekeyMw() []app.HandlerFunc {
+	return permission.HPermissions("system:cachemonitor:delete")
+}
+
+func _keylistMw() []app.HandlerFunc {
+	return permission.HPermissions("system:cachemonitor:list")
+}
+
+func _prefixMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _clearprefixMw() []app.HandlerFunc {
+	return permission.HPermissions("system:cachemonitor:delete")
+}
+
+func _prefixlistMw() []app.HandlerFunc {
+	return permission.HPermissions("system:cachemonitor:list")
+}

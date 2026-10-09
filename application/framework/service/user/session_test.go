@@ -198,6 +198,45 @@ func (m *memCache) LRange(ctx context.Context, key string, start, stop int64) ca
 	return &memSliceCmd{}
 }
 
+func (m *memCache) ScanAll(ctx context.Context, match string, limit int) ([]string, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	prefix := match
+	if len(prefix) > 0 && prefix[len(prefix)-1] == '*' {
+		prefix = prefix[:len(prefix)-1]
+	}
+	var out []string
+	for k := range m.data {
+		if len(prefix) == 0 || len(k) >= len(prefix) && k[:len(prefix)] == prefix {
+			out = append(out, k)
+			if limit > 0 && len(out) >= limit {
+				break
+			}
+		}
+	}
+	for k := range m.hashes {
+		if len(prefix) == 0 || len(k) >= len(prefix) && k[:len(prefix)] == prefix {
+			out = append(out, k)
+			if limit > 0 && len(out) >= limit {
+				break
+			}
+		}
+	}
+	return out, nil
+}
+
+func (m *memCache) TypeOf(ctx context.Context, key string) (string, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if _, ok := m.hashes[key]; ok {
+		return "hash", nil
+	}
+	if _, ok := m.data[key]; ok {
+		return "string", nil
+	}
+	return "none", nil
+}
+
 func toString(v interface{}) string {
 	switch x := v.(type) {
 	case string:

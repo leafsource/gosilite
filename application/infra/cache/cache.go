@@ -36,6 +36,9 @@ type CacheClient interface {
 	// ListOperations returns list-specific cache operations
 	// 获取列表类型缓存操作接口
 	ListOperations
+
+	// MonitorOperations 缓存监控 SCAN/TYPE（禁止 KEYS）
+	MonitorOperations
 }
 
 // StringOperations defines string-related cache operations
@@ -233,4 +236,12 @@ type StringSliceCmd interface {
 	// Val returns the string slice (ignores error)
 	// 返回字符串切片（忽略错误）
 	Val() []string
+}
+
+// MonitorOperations 缓存监控：前缀扫描与类型识别（有界，禁止 KEYS）。
+type MonitorOperations interface {
+	// ScanAll 分页 SCAN 直至结束或达到 limit，返回匹配 key。
+	ScanAll(ctx context.Context, match string, limit int) ([]string, error)
+	// TypeOf 返回 Redis 类型：string / hash / list / zset / set / none。
+	TypeOf(ctx context.Context, key string) (string, error)
 }

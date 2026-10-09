@@ -143,3 +143,64 @@ service SystemMonitorController {
     UriListResponse UriList()(api.get = "/system/monitor/uri")
     HttpMonitorResponse HttpMonitor()(api.get = "/system/monitor/http")
 }
+
+// ===== 缓存监控（三栏：前缀 / 键 / 值） =====
+
+struct CachePrefixDTO {
+    // 真实 key 前缀（或完整单键）
+    1: string prefix
+    2: i64 count
+    3: string remark
+}
+
+struct CachePrefixListResponse {
+    1: list<CachePrefixDTO> list
+    2: i64 total
+}
+
+struct CacheKeyListRequest {
+    1: string prefix
+}
+
+struct CacheKeyDTO {
+    1: string key
+    2: string type
+    // hash 展开后的 field 名；string key 为空
+    3: string field
+}
+
+struct CacheKeyListResponse {
+    1: list<CacheKeyDTO> list
+    2: i64 total
+}
+
+struct CacheValueRequest {
+    1: string key
+    2: string field
+}
+
+struct CacheValueResponse {
+    1: string key
+    2: string type
+    // string 原文；hash 无 field 时为 JSON；有 field 时为 field 值
+    3: string value
+    // 展示用键名：有 field 用 field，否则 key
+    4: string displayKey
+}
+
+struct CacheKeyDeleteRequest {
+    1: string key
+    2: string field
+}
+
+struct CachePrefixClearRequest {
+    1: string prefix
+}
+
+service SystemCacheMonitorController {
+    CachePrefixListResponse PrefixList()(api.get = "/system/cache/prefix/list")
+    CacheKeyListResponse KeyList(1: CacheKeyListRequest req)(api.get = "/system/cache/key/list")
+    CacheValueResponse Value(1: CacheValueRequest req)(api.get = "/system/cache/value")
+    i32 DeleteKey(1: CacheKeyDeleteRequest req)(api.post = "/system/cache/key/delete")
+    i32 ClearPrefix(1: CachePrefixClearRequest req)(api.post = "/system/cache/prefix/clear")
+}

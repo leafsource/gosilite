@@ -52,6 +52,7 @@ func (m *Module) Init(ctx context.Context, deps *infra.AppDependencies) error {
 	notice.InitService(repository.NewNoticeRepository(deps.DB))
 	syslog.InitService(repository.NewSysLogRepository(deps.DB))
 	monitor.InitService(deps.DB, deps.Cache)
+	monitor.InitCacheService(deps.Cache)
 	return nil
 }
 

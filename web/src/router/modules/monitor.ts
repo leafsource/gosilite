@@ -29,6 +29,12 @@ export default [
         component: () => import('@/pages/monitor/data/index.vue'),
         meta: { title: { zh_CN: '数据监控', en_US: 'Data Monitor' } },
       },
+      {
+        path: 'cache',
+        name: 'MonitorCache',
+        component: () => import('@/pages/monitor/cache/index.vue'),
+        meta: { title: { zh_CN: '缓存监控', en_US: 'Cache Monitor' } },
+      },
     ],
   },
 ] satisfies RouteRecordRaw[];

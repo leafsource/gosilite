@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"errors"
 	"os"
 	"time"
 
@@ -160,6 +161,39 @@ func (r *redisClient) Set(ctx context.Context, key string, value interface{}, ex
 	return r.client.Set(ctx, key, value, expiration)
 }
 
+// ScanAll 有界 SCAN 匹配 key（禁止 KEYS）。
+func (r *redisClient) ScanAll(ctx context.Context, match string, limit int) ([]string, error) {
+	if limit <= 0 {
+		limit = 1000
+	}
+	if limit > 10000 {
+		limit = 10000
+	}
+	var (
+		out    []string
+		cursor uint64
+	)
+	for {
+		keys, next, err := r.client.Scan(ctx, cursor, match, 200).Result()
+		if err != nil {
+			return out, err
+		}
+		out = append(out, keys...)
+		if len(out) >= limit {
+			return out[:limit], nil
+		}
+		if next == 0 {
+			return out, nil
+		}
+		cursor = next
+	}
+}
+
+// TypeOf 返回 key 的 Redis 类型。
+func (r *redisClient) TypeOf(ctx context.Context, key string) (string, error) {
+	return r.client.Type(ctx, key).Result()
+}
+
 // redisPipeline implements the Pipeline interface for Redis
 // redisPipeline为Redis实现Pipeline接口
 
@@ -287,4 +321,14 @@ func (p *redisPipeline) RPush(ctx context.Context, key string, values ...interfa
 // 存储键值对并设置过期时间（管道操作）
 func (p *redisPipeline) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) cache.StatusCmd {
 	return p.pipeline.Set(ctx, key, value, expiration)
+}
+
+// ScanAll 管道内不支持 SCAN。
+func (p *redisPipeline) ScanAll(ctx context.Context, match string, limit int) ([]string, error) {
+	return nil, errors.New("cache: ScanAll not supported in pipeline")
+}
+
+// TypeOf 管道内不支持 TYPE。
+func (p *redisPipeline) TypeOf(ctx context.Context, key string) (string, error) {
+	return "", errors.New("cache: TypeOf not supported in pipeline")
 }

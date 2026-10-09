@@ -20,6 +20,20 @@ func Register(r *server.Hertz) {
 	{
 		_system := root.Group("/system", _systemMw()...)
 		{
+			_cache := _system.Group("/cache", _cacheMw()...)
+			_cache.GET("/value", append(_valueMw(), monitor.Value)...)
+			{
+				_key := _cache.Group("/key", _keyMw()...)
+				_key.POST("/delete", append(_deletekeyMw(), monitor.DeleteKey)...)
+				_key.GET("/list", append(_keylistMw(), monitor.KeyList)...)
+			}
+			{
+				_prefix := _cache.Group("/prefix", _prefixMw()...)
+				_prefix.POST("/clear", append(_clearprefixMw(), monitor.ClearPrefix)...)
+				_prefix.GET("/list", append(_prefixlistMw(), monitor.PrefixList)...)
+			}
+		}
+		{
 			_monitor := _system.Group("/monitor", _monitorMw()...)
 			_monitor.GET("/datasource", append(_datasourceMw(), monitor.Datasource)...)
 			_monitor.GET("/firewall", append(_firewallMw(), monitor.Firewall)...)
