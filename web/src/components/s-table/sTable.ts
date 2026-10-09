@@ -38,6 +38,8 @@ export interface STableProps {
   loading?: boolean;
   /** 快捷关键字占位 */
   keywordPlaceholder?: string;
+  /** 是否显示搜索区（默认 true；纯展示表可关） */
+  showSearch?: boolean;
   /** 结构化搜索项（渲染在关键字旁） */
   searchFields?: STableSearchField[];
   /** 显示默认列（列 key 集合）；不传则全显示 */

@@ -20,6 +20,15 @@ func Register(r *server.Hertz) {
 	{
 		_system := root.Group("/system", _systemMw()...)
 		{
+			_monitor := _system.Group("/monitor", _monitorMw()...)
+			_monitor.GET("/datasource", append(_datasourceMw(), monitor.Datasource)...)
+			_monitor.GET("/firewall", append(_firewallMw(), monitor.Firewall)...)
+			_monitor.GET("/http", append(_httpmonitorMw(), monitor.HttpMonitor)...)
+			_monitor.GET("/server", append(_serverMw(), monitor.Server)...)
+			_monitor.GET("/sql", append(_sqlmonitorMw(), monitor.SqlMonitor)...)
+			_monitor.GET("/uri", append(_urilistMw(), monitor.UriList)...)
+		}
+		{
 			_online := _system.Group("/online", _onlineMw()...)
 			_online.POST("/force", append(_onlineforceMw(), monitor.OnlineForce)...)
 			_online.GET("/list", append(_onlinelistMw(), monitor.OnlineList)...)

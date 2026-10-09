@@ -24,6 +24,18 @@ type Config struct {
 	Database Database `yaml:"database"`
 	Redis    Redis    `yaml:"redis"`
 	Storage  Storage  `yaml:"storage"`
+	Monitor  Monitor  `yaml:"monitor"`
+}
+
+// Monitor 数据监控：指标出口与采集开关（业务热路径仅 O(1) 打点）。
+type Monitor struct {
+	EnableMetrics     bool   `yaml:"enable_metrics"`
+	MetricsAddr       string `yaml:"metrics_addr"`
+	MetricsPath       string `yaml:"metrics_path"`
+	SQLSlowMs         int    `yaml:"sql_slow_ms"`
+	SQLMaxTemplates   int    `yaml:"sql_max_templates"`
+	FirewallEnable    bool   `yaml:"firewall_enable"`
+	GormPostgresMetrics bool `yaml:"gorm_postgres_metrics"`
 }
 
 type Database struct {

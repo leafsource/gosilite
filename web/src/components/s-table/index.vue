@@ -1,7 +1,7 @@
 <template>
   <div class="s-table">
-    <!-- 第 1 行：查询条件（查询后生效） -->
-    <div class="s-table__search">
+    <!-- 第 1 行：查询条件（查询后生效；showSearch=false 时整行隐藏） -->
+    <div v-if="showSearch" class="s-table__search">
       <t-input
         v-model="keyword"
         class="s-table__keyword"
@@ -171,6 +171,7 @@ const props = withDefaults(
     pageSize?: number;
     loading?: boolean;
     keywordPlaceholder?: string;
+    showSearch?: boolean;
     searchFields?: STableSearchField[];
     defaultVisibleKeys?: string[];
     selectable?: boolean;
@@ -184,6 +185,7 @@ const props = withDefaults(
     page: 1,
     loading: false,
     keywordPlaceholder: '请输入关键字',
+    showSearch: true,
     searchFields: () => [],
     defaultVisibleKeys: undefined,
     selectable: true,

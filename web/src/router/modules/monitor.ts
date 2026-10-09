@@ -23,6 +23,12 @@ export default [
         component: () => import('@/pages/monitor/online/index.vue'),
         meta: { title: { zh_CN: '在线用户', en_US: 'Online Users' } },
       },
+      {
+        path: 'data',
+        name: 'MonitorData',
+        component: () => import('@/pages/monitor/data/index.vue'),
+        meta: { title: { zh_CN: '数据监控', en_US: 'Data Monitor' } },
+      },
     ],
   },
 ] satisfies RouteRecordRaw[];

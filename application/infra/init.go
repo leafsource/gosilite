@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"gosilite/application/base/metrics"
 	"gosilite/application/infra/cache"
 	"gosilite/application/infra/cache/impl/redis"
 	"gosilite/application/infra/hook"
@@ -14,6 +15,7 @@ import (
 	"gosilite/conf"
 
 	"gorm.io/gorm"
+	gormprom "gorm.io/plugin/prometheus"
 )
 
 type AppDependencies struct {
@@ -39,6 +41,22 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, fmt.Errorf("init database failed: %w", err)
 	}
 	deps.DB.Use(&hook.BaseModelPlugin{})
+
+	// 数据监控：SQL 聚合配置 + GORM Prometheus DBStats（不另起 HTTP）
+	metrics.Init()
+	metrics.Configure(conf.Monitor.SQLSlowMs, conf.Monitor.SQLMaxTemplates, conf.Monitor.FirewallEnable)
+	gormCfg := gormprom.Config{
+		DBName:          "gosilite",
+		RefreshInterval: 15,
+		StartServer:     false,
+	}
+	if conf.Monitor.GormPostgresMetrics {
+		// 含全表 recordCount，默认 conf 关；开启前评估大表
+		gormCfg.MetricsCollector = []gormprom.MetricsCollector{&gormprom.Postgres{}}
+	}
+	if err := deps.DB.Use(gormprom.New(gormCfg)); err != nil {
+		return nil, fmt.Errorf("init gorm prometheus: %w", err)
+	}
 
 	// 初始化缓存
 	deps.Cache = redis.NewWithConfig(conf.Redis.Address, conf.Redis.Password)

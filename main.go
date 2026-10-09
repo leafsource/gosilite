@@ -28,16 +28,20 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/middlewares/server/recovery"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/adaptor"
+	"github.com/cloudwego/hertz/pkg/common/config"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/hertz-contrib/cors"
 	"github.com/hertz-contrib/gzip"
 	"github.com/hertz-contrib/logger/accesslog"
 	hertzlogrus "github.com/hertz-contrib/logger/logrus"
+	hprom "github.com/hertz-contrib/monitor-prometheus"
 	"github.com/hertz-contrib/pprof"
 	"github.com/hertz-contrib/requestid"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	"gosilite/application/base/metrics"
 )
 
 // Package main SkyX Cloud API
@@ -86,7 +90,26 @@ func main() {
 
 	p = print.StartPrinter("初始化路由")
 	address := conf.Server.Address
-	h := server.New(server.WithHostPorts(address))
+	serverOpts := []config.Option{server.WithHostPorts(address)}
+	metricsAddr, metricsPath := "", ""
+	if conf.Monitor.EnableMetrics {
+		metrics.Init()
+		metricsAddr = conf.Monitor.MetricsAddr
+		if metricsAddr == "" {
+			metricsAddr = ":9091"
+		}
+		metricsPath = conf.Monitor.MetricsPath
+		if metricsPath == "" {
+			metricsPath = "/metrics"
+		}
+		// 请求量/时延（method,status,path=路由模板）；独立口暴露合并 registry
+		serverOpts = append(serverOpts, server.WithTracer(hprom.NewServerTracer(metricsAddr, metricsPath,
+			hprom.WithRegistry(metrics.Registry),
+			hprom.WithDisableServer(true),
+		)))
+		startMetricsServer(metricsAddr, metricsPath)
+	}
+	h := server.New(serverOpts...)
 
 	// add a ping route to test
 	h.GET("/ping", func(c context.Context, ctx *app.RequestContext) {
@@ -115,6 +138,17 @@ func main() {
 	// add some render data: <no value>
 
 	h.Spin()
+}
+
+// startMetricsServer 独立口暴露合并后的 /metrics（与业务端口隔离）。
+func startMetricsServer(addr, path string) {
+	mux := http.NewServeMux()
+	mux.Handle(path, metrics.Handler())
+	go func() {
+		if err := http.ListenAndServe(addr, mux); err != nil {
+			hlog.SystemLogger().Errorf("[metrics] listen %s%s failed: %v", addr, path, err)
+		}
+	}()
 }
 
 func registerMiddleware(h *server.Hertz) {

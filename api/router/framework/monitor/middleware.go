@@ -30,3 +30,32 @@ func _onlineforceMw() []app.HandlerFunc {
 func _onlinelistMw() []app.HandlerFunc {
 	return permission.HPermissions("system:online:list")
 }
+
+func _monitorMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _datasourceMw() []app.HandlerFunc {
+	return permission.HPermissions("system:monitor:list")
+}
+
+func _firewallMw() []app.HandlerFunc {
+	return permission.HPermissions("system:monitor:list")
+}
+
+func _httpmonitorMw() []app.HandlerFunc {
+	return permission.HPermissions("system:monitor:list")
+}
+
+func _serverMw() []app.HandlerFunc {
+	return permission.HPermissions("system:monitor:list")
+}
+
+func _sqlmonitorMw() []app.HandlerFunc {
+	return permission.HPermissions("system:monitor:list")
+}
+
+func _urilistMw() []app.HandlerFunc {
+	return permission.HPermissions("system:monitor:list")
+}

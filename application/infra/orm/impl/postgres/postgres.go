@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"gosilite/application/base/metrics"
 	"gosilite/pkg/env"
 	"time"
 
@@ -47,6 +48,9 @@ func NewWithConfig(config *PostgresConfig) (*gorm.DB, error) {
 	DB.SetMaxOpenConns(config.MaxOpenConns)
 	DB.SetConnMaxLifetime(time.Duration(config.ConnMaxLifetime) * time.Second)
 	DB.SetConnMaxIdleTime(time.Duration(config.ConnMaxIdleTime) * time.Second)
+
+	// SQL 聚合：仅 Trace 包装，O(1) 内存更新，不改变执行路径
+	db.Logger = metrics.NewGORMLogger(db.Logger)
 
 	return db, nil
 }

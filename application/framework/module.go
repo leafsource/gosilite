@@ -19,6 +19,7 @@ import (
 	"gosilite/application/framework/service/dept"
 	"gosilite/application/framework/service/dict"
 	"gosilite/application/framework/service/menu"
+	"gosilite/application/framework/service/monitor"
 	"gosilite/application/framework/service/notice"
 	"gosilite/application/framework/service/post"
 	"gosilite/application/framework/service/role"
@@ -50,6 +51,7 @@ func (m *Module) Init(ctx context.Context, deps *infra.AppDependencies) error {
 	config.InitService(repository.NewConfigRepository(deps.DB))
 	notice.InitService(repository.NewNoticeRepository(deps.DB))
 	syslog.InitService(repository.NewSysLogRepository(deps.DB))
+	monitor.InitService(deps.DB, deps.Cache)
 	return nil
 }
 
