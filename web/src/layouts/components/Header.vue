@@ -239,6 +239,13 @@ const handleChangePassword = () => {
   color: var(--td-text-color-primary);
 }
 
+// 头像走 #icon 插槽时不套 TDesign icon 的默认间距，手动补（原 t-icon 分支不受影响）
+.header-user-btn {
+  .header-user-avatar.t-avatar {
+    margin-right: var(--td-comp-margin-s, 8px);
+  }
+}
+
 :deep(.t-head-menu__inner) {
   border-bottom: 1px solid var(--td-component-stroke);
 }
