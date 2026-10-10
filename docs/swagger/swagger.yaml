@@ -1758,6 +1758,87 @@ paths:
       summary: 角色列表
       tags:
       - 系统管理
+  /system/storage/info:
+    get:
+      description: 存储概览接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 存储概览
+      tags:
+      - 系统管理
+  /system/storage/list:
+    get:
+      description: 存储对象列表接口
+      parameters:
+      - description: key 包含模糊
+        in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - description: key 前缀过滤
+        in: query
+        name: prefix
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 存储对象列表
+      tags:
+      - 系统管理
+  /system/storage/object:
+    delete:
+      description: 删除存储对象接口
+      parameters:
+      - in: query
+        name: key
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除存储对象
+      tags:
+      - 系统管理
+  /system/storage/upload:
+    post:
+      description: 上传存储对象接口
+      parameters:
+      - description: 上传文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 上传存储对象
+      tags:
+      - 系统管理
   /system/user:
     delete:
       description: 用户接口

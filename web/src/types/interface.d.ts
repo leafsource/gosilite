@@ -20,6 +20,8 @@ export type ModeType = 'dark' | 'light';
 
 export interface UserInfo {
   name: string;
+  /** 头像地址（/user/info 的 user.avatarURL），空串表示未设置 */
+  avatarURL: string;
   roles: string[];
   permissions: string[];
 }

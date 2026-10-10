@@ -7,6 +7,7 @@ import type { UserInfo } from '@/types/interface';
 
 const InitUserInfo: UserInfo = {
   name: '', // 用户名，用于展示在页面右上角头像处
+  avatarURL: '', // 头像地址，空串表示未设置（回退占位图标）
   roles: [], // 角色码（超管判定 admin/system）
   permissions: [], // 权限码，供 v-permission 指令使用
 };
@@ -56,6 +57,7 @@ export const useUserStore = defineStore('user', {
       this.userInfo = {
         ...InitUserInfo,
         name: res.user?.username || res.user?.account,
+        avatarURL: res.user?.avatarURL || '',
         roles: res.roles ?? [],
         permissions: res.permissions ?? [],
       };

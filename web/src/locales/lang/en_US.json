@@ -722,32 +722,18 @@
       }
     },
     "user": {
-      "markDay": "Good afternoon, today marks your 100th day at Tencent",
-      "greeting": "Hi, Image",
-      "unit": "(times)",
-      "account": "My Account",
-      "organization": "Tencent / Tencent Company / Business Group / Product Department / Operations Center / Merchant Services Group",
-      "personalInfo": {
-        "title": "Personal Info",
-        "position": "Employee of the Hong Kong and Macau Business Expansion team",
-        "desc": {
-          "phone": "Phone",
-          "mobile": "Mobile",
-          "seat": "Seat",
-          "email": "Email",
-          "position": "Position",
-          "leader": "Leader",
-          "entity": "Entity",
-          "joinDay": "Day of join",
-          "group": "Group"
-        },
-        "tencentGroup": "Tencent Group",
-        "seniorDesigner": "Senior UI Designer"
-      },
-      "visitData": "Visit Data",
-      "contentList": "Content List",
-      "teamMember": "Team Member",
-      "serviceProduction": "Service Product"
+      "title": "Personal Center",
+      "profileTitle": "Personal Info",
+      "account": "Account",
+      "username": "Username",
+      "email": "Email",
+      "mobile": "Mobile",
+      "state": "Status",
+      "createdAt": "Created At",
+      "roles": "Roles",
+      "uploadAvatar": "Change Avatar",
+      "avatarUpdated": "Avatar updated",
+      "changePassword": "Change Password"
     },
     "changePassword": {
       "title": "Change Password",
@@ -759,6 +745,37 @@
       "success": "Password updated, please sign in again",
       "mismatch": "The two new passwords do not match",
       "tooShort": "New password must be at least 8 characters"
+    },
+    "storageOverview": {
+      "title": "Storage Overview",
+      "bucket": "Bucket",
+      "domain": "Domain",
+      "status": "Status",
+      "connected": "Connected",
+      "disconnected": "Unavailable",
+      "objectCount": "Objects",
+      "totalSize": "Total Size",
+      "refresh": "Refresh",
+      "loadFailed": "Failed to load storage overview"
+    },
+    "storageTable": {
+      "keywordPlaceholder": "Search key",
+      "prefix": "Prefix",
+      "prefixPlaceholder": "e.g. user_avatar/",
+      "size": "Size",
+      "lastModified": "Modified",
+      "type": "Type",
+      "ops": "Actions",
+      "remove": "Delete",
+      "removeTitle": "Delete Object",
+      "removeConfirm": "Delete object \"{key}\"? This cannot be undone.",
+      "removeSuccess": "Deleted",
+      "removeFailed": "Delete failed",
+      "uploadTest": "Upload Test",
+      "uploadTitle": "Upload Test",
+      "uploadAction": "Click to upload",
+      "uploadSuccess": "Uploaded",
+      "loadFailed": "Load failed"
     }
   }
 }

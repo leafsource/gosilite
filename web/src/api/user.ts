@@ -30,12 +30,25 @@ export interface ChangePasswordParams {
   newPassword: string;
 }
 
+/** 个人资料（GET /user/profile）；email 等增强字段由后端补齐，缺失时前端占位 */
+export interface ProfileResponse {
+  id: string;
+  account: string;
+  username: string;
+  avatarURL: string;
+  email?: string;
+  mobilePhone?: string;
+  state?: string;
+  createdAt?: string;
+}
+
 const Api = {
   Login: '/user/login',
   Info: '/user/info',
   Refresh: '/user/refresh',
   Logout: '/user/logout',
   Password: '/user/password',
+  Profile: '/user/profile',
 };
 
 export function login(data: LoginParams) {
@@ -59,4 +72,8 @@ export function logout(refreshToken?: string) {
 
 export function changePassword(data: ChangePasswordParams) {
   return request.post({ url: Api.Password, data }, { skipAuthRefresh: true });
+}
+
+export function fetchProfile() {
+  return request.get<ProfileResponse>({ url: Api.Profile });
 }

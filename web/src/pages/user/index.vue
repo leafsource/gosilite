@@ -1,195 +1,177 @@
 <template>
-  <t-row :gutter="[24, 24]">
-    <t-col :flex="3">
-      <div class="user-left-greeting">
-        <div>
-          {{ t('pages.user.greeting') }}
-          <span class="regular"> {{ t('pages.user.markDay') }}</span>
-        </div>
-        <logo-full class="logo" />
-      </div>
-
-      <t-card class="user-info-list" :title="t('pages.user.personalInfo.title')" :bordered="false">
-        <template #actions>
-          <t-button theme="default" shape="square" variant="text">
-            <t-icon name="ellipsis" />
+  <div class="user-page">
+    <t-row :gutter="[24, 24]">
+      <t-col :flex="1">
+        <t-card class="profile-card" :bordered="false">
+          <div class="profile-card__avatar">
+            <s-upload-image
+              :action="UPLOAD_AVATAR_ACTION"
+              field="avatar"
+              :url="avatarUrl"
+              size="96px"
+              :upload-text="t('pages.user.uploadAvatar')"
+              @success="onAvatarSuccess"
+            />
+          </div>
+          <div class="profile-card__name">{{ displayName }}</div>
+          <div class="profile-card__account">{{ profile?.account || userStore.userInfo.name }}</div>
+          <div v-if="roleTags.length" class="profile-card__roles">
+            <t-tag v-for="role in roleTags" :key="role" theme="primary" variant="light">
+              {{ role }}
+            </t-tag>
+          </div>
+          <t-button class="profile-card__action" variant="outline" @click="changePwdRef?.open()">
+            {{ t('pages.user.changePassword') }}
           </t-button>
-        </template>
-        <t-descriptions :column="4" item-layout="vertical">
-          <t-descriptions-item v-for="(item, index) in userInfoList" :key="index" :label="t(item.title)">
-            {{ item.content }}
-          </t-descriptions-item>
-        </t-descriptions>
-      </t-card>
+        </t-card>
+      </t-col>
 
-      <t-card class="content-container" :bordered="false">
-        <t-tabs value="second">
-          <t-tab-panel value="first" :label="t('pages.user.contentList')">
-            <p>{{ t('pages.user.contentList') }}</p>
-          </t-tab-panel>
-          <t-tab-panel value="second" :label="t('pages.user.contentList')">
-            <t-card
-              :bordered="false"
-              class="card-padding-no"
-              :title="t('pages.user.visitData')"
-              :describe="t('pages.user.unit')"
-            >
-              <template #actions>
-                <t-date-range-picker
-                  class="card-date-picker-container"
-                  :default-value="LAST_7_DAYS"
+      <t-col :flex="3">
+        <t-card class="info-card" :bordered="false" :title="t('pages.user.profileTitle')">
+          <t-descriptions :column="2" item-layout="vertical">
+            <t-descriptions-item :label="t('pages.user.account')">
+              {{ profile?.account || noValue }}
+            </t-descriptions-item>
+            <t-descriptions-item :label="t('pages.user.username')">
+              {{ displayName }}
+            </t-descriptions-item>
+            <t-descriptions-item :label="t('pages.user.email')">
+              {{ profile?.email || noValue }}
+            </t-descriptions-item>
+            <t-descriptions-item :label="t('pages.user.mobile')">
+              {{ profile?.mobilePhone || noValue }}
+            </t-descriptions-item>
+            <t-descriptions-item :label="t('pages.user.state')">
+              <s-tag-dict
+                v-if="profile?.state"
+                dict-type="sys_state"
+                :value="profile.state"
+              />
+              <span v-else>{{ noValue }}</span>
+            </t-descriptions-item>
+            <t-descriptions-item :label="t('pages.user.createdAt')">
+              {{ profile?.createdAt || noValue }}
+            </t-descriptions-item>
+            <t-descriptions-item :label="t('pages.user.roles')" :span="2">
+              <template v-if="roleTags.length">
+                <t-tag
+                  v-for="role in roleTags"
+                  :key="role"
                   theme="primary"
-                  mode="date"
-                  @change="onLineChange"
-                />
+                  variant="light"
+                  class="info-card__role"
+                >
+                  {{ role }}
+                </t-tag>
               </template>
-              <div id="lineContainer" style="width: 100%; height: 328px" />
-            </t-card>
-          </t-tab-panel>
-          <t-tab-panel value="third" :label="t('pages.user.contentList')">
-            <p>{{ t('pages.user.contentList') }}</p>
-          </t-tab-panel>
-        </t-tabs>
-      </t-card>
-    </t-col>
+              <span v-else>{{ noValue }}</span>
+            </t-descriptions-item>
+          </t-descriptions>
+        </t-card>
+      </t-col>
+    </t-row>
 
-    <t-col :flex="1">
-      <t-card class="user-intro" :bordered="false">
-        <t-avatar size="80px">T</t-avatar>
-        <div class="name">{{ t('pages.user.account') }}</div>
-        <div class="position">{{ t('pages.user.personalInfo.position') }}</div>
-      </t-card>
-
-      <t-card :title="t('pages.user.teamMember')" class="user-team" :bordered="false">
-        <template #actions>
-          <t-button theme="default" shape="square" variant="text">
-            <t-icon name="ellipsis" />
-          </t-button>
-        </template>
-        <t-list :split="false">
-          <t-list-item v-for="(item, index) in teamMembers" :key="index">
-            <t-list-item-meta :image="item.avatar" :title="item.title" :description="item.description" />
-          </t-list-item>
-        </t-list>
-      </t-card>
-
-      <t-card :title="t('pages.user.serviceProduction')" class="product-container" :bordered="false">
-        <template #actions>
-          <t-button theme="default" shape="square" variant="text">
-            <t-icon name="ellipsis" />
-          </t-button>
-        </template>
-        <t-row class="content" :getters="16">
-          <t-col v-for="(item, index) in PRODUCT_LIST" :key="index" :span="3">
-            <component :is="getIcon(item)"></component>
-          </t-col>
-        </t-row>
-      </t-card>
-    </t-col>
-  </t-row>
+    <change-password-dialog ref="changePwdRef" />
+  </div>
 </template>
+
 <script setup lang="ts">
-import { LineChart } from 'echarts/charts';
-import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components';
-import * as echarts from 'echarts/core';
-import { CanvasRenderer } from 'echarts/renderers';
-import type { DateRangeValue } from 'tdesign-vue-next';
-import { computed, nextTick, onMounted, onUnmounted, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { MessagePlugin } from 'tdesign-vue-next';
 
-import LogoFull from '@/assets/assets-logo-full.svg?component';
-import ProductAIcon from '@/assets/assets-product-1.svg';
-import ProductBIcon from '@/assets/assets-product-2.svg';
-import ProductCIcon from '@/assets/assets-product-3.svg';
-import ProductDIcon from '@/assets/assets-product-4.svg';
+import { fetchProfile } from '@/api/user';
+import type { ProfileResponse } from '@/api/user';
+import ChangePasswordDialog from '@/layouts/components/ChangePasswordDialog.vue';
+import SUploadImage from '@/components/s-upload-image/index.vue';
+import STagDict from '@/components/s-tag-dict/index.vue';
 import { t } from '@/locales';
-import { useSettingStore } from '@/store';
-import { changeChartsTheme } from '@/utils/color';
-import { LAST_7_DAYS } from '@/utils/date';
+import { useUserStore } from '@/store';
 
-import { getTeamMembers, getUserInfoList, PRODUCT_LIST } from './constants';
-import { getFolderLineDataSet } from './index';
+defineOptions({ name: 'UserIndex' });
 
-defineOptions({
-  name: 'UserIndex',
-});
+const UPLOAD_AVATAR_ACTION = '/user/update/upload_avatar';
+const noValue = '-';
 
-echarts.use([GridComponent, TooltipComponent, LineChart, CanvasRenderer, LegendComponent]);
+const userStore = useUserStore();
+const profile = ref<ProfileResponse | null>(null);
+const changePwdRef = ref<{ open: () => void }>();
 
-let lineContainer: HTMLElement;
-let lineChart: echarts.ECharts;
-const store = useSettingStore();
-const chartColors = computed(() => store.chartColors);
+/** 头像单源：登录态 userInfo（上传成功后由 getUserInfo 刷新） */
+const avatarUrl = computed(() => userStore.userInfo.avatarURL || '');
+const displayName = computed(
+  () => profile.value?.username || userStore.userInfo.name || noValue,
+);
+const roleTags = computed(() => userStore.userInfo.roles ?? []);
 
-const onLineChange = (value: DateRangeValue) => {
-  lineChart.setOption(
-    getFolderLineDataSet({
-      dateTime: value as string[],
-      ...chartColors.value,
-    }),
-  );
-};
+async function loadProfile() {
+  try {
+    profile.value = await fetchProfile();
+  } catch {
+    // 资料接口异常时保底展示登录态已有信息
+    profile.value = null;
+  }
+}
 
-const initChart = () => {
-  lineContainer = document.getElementById('lineContainer')!;
-  lineChart = echarts.init(lineContainer);
-  lineChart.setOption({
-    ...getFolderLineDataSet({ ...chartColors.value }),
-    grid: {
-      x: 30, // 默认是80px
-      y: 30, // 默认是60px
-      x2: 10, // 默认80px
-      y2: 30, // 默认60px
-    },
-  });
-};
-
-const updateContainer = () => {
-  lineChart?.resize({
-    width: lineContainer.clientWidth,
-    height: lineContainer.clientHeight,
-  });
-};
+async function onAvatarSuccess() {
+  await Promise.all([userStore.getUserInfo(), loadProfile()]);
+  MessagePlugin.success(t('pages.user.avatarUpdated'));
+}
 
 onMounted(() => {
-  nextTick(() => {
-    initChart();
-  });
-  window.addEventListener('resize', updateContainer, false);
+  loadProfile();
+  // 兜底刷新登录态（头像/角色），幂等
+  userStore.getUserInfo().catch(() => undefined);
 });
-
-onUnmounted(() => {
-  window.removeEventListener('resize', updateContainer);
-});
-
-const getIcon = (type: string) => {
-  switch (type) {
-    case 'a':
-      return ProductAIcon;
-    case 'b':
-      return ProductBIcon;
-    case 'c':
-      return ProductCIcon;
-    case 'd':
-      return ProductDIcon;
-    default:
-      return ProductAIcon;
-  }
-};
-
-const userInfoList = computed(() => getUserInfoList());
-const teamMembers = computed(() => getTeamMembers());
-
-watch(
-  () => store.brandTheme,
-  () => {
-    changeChartsTheme([lineChart]);
-  },
-);
 </script>
-<style lang="less" scoped>
-@import './index.less';
 
-.t-descriptions {
-  margin-top: 24px;
+<style lang="less" scoped>
+.user-page {
+  width: 100%;
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--td-comp-paddingTB-l, 24px) var(--td-comp-paddingLR-l, 24px);
+
+  &__avatar {
+    margin-bottom: var(--td-comp-margin-l, 16px);
+  }
+
+  &__name {
+    font-size: var(--td-font-size-title-large, 20px);
+    font-weight: 600;
+    color: var(--td-text-color-primary);
+  }
+
+  &__account {
+    margin-top: 4px;
+    font-size: var(--td-font-size-body-small, 12px);
+    color: var(--td-text-color-secondary);
+  }
+
+  &__roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--td-comp-margin-s, 8px);
+    justify-content: center;
+    margin-top: var(--td-comp-margin-m, 12px);
+  }
+
+  &__action {
+    width: 100%;
+    margin-top: var(--td-comp-margin-xl, 24px);
+  }
+}
+
+.info-card {
+  :deep(.t-descriptions__content) {
+    color: var(--td-text-color-primary);
+  }
+}
+
+.info-card__role {
+  margin-right: var(--td-comp-margin-s, 8px);
 }
 </style>

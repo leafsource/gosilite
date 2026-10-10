@@ -38,3 +38,15 @@ func InitService(ctx context.Context, db *gorm.DB, imageOSS imagex.ImageX, cache
 	SystemUserSVC = NewService(db, imageOSS, cacheClient)
 	return SystemUserSVC
 }
+
+// ProfileVO 个人资料（AvatarURL 已转为可访问地址，CreatedAt 为展示格式）。
+type ProfileVO struct {
+	ID          int64
+	Account     string
+	Username    string
+	AvatarURL   string
+	Email       string
+	MobilePhone string
+	State       string
+	CreatedAt   string
+}

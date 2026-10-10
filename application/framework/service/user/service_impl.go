@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"gosilite/application/base/ctxutil"
-	"gosilite/application/framework/dal/model"
 	"gosilite/application/infra/imagex"
 	"gosilite/pkg/bcrypt"
 	"gosilite/pkg/errorx"
@@ -44,13 +43,30 @@ func (s *Service) Authorizator(ctx context.Context, userId int64) (*ctxutil.Logi
 	), nil
 }
 
-func (s *Service) GetProfile(ctx context.Context) (*model.SystemUser, error) {
+func (s *Service) GetProfile(ctx context.Context) (*ProfileVO, error) {
 	userId := ctxutil.GetLoginUserID(ctx)
 	user, err := s.repo.GetByID(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	avatarURL := user.AvatarURL
+	if avatarURL != "" {
+		resource, err := s.imageOSS.GetResourceURL(ctx, avatarURL)
+		if err != nil {
+			return nil, err
+		}
+		avatarURL = resource.URL
+	}
+	return &ProfileVO{
+		ID:          user.ID,
+		Account:     user.Account,
+		Username:    user.Username,
+		AvatarURL:   avatarURL,
+		Email:       user.Email,
+		MobilePhone: user.MobilePhone,
+		State:       user.State,
+		CreatedAt:   user.CreateTime.Format("2006-01-02 15:04:05"),
+	}, nil
 }
 
 func (s *Service) UpdateAvatar(ctx context.Context, userId int64, ext string, image []byte) (url string, err error) {

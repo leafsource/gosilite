@@ -40,12 +40,8 @@ func _updateMw() []app.HandlerFunc {
 
 func _updateavatarMw() []app.HandlerFunc {
 	// your code...
-	return permission.New(
-		permission.And(
-			permission.Permissions("page:root:page"),
-			permission.Roles("system:update"),
-		),
-	)
+	// 上传头像是个人动作：登录即可（原 page:root:page AND system:update 为遗留配置，任何账号均无法通过）
+	return permission.Default()
 }
 
 func _logoutMw() []app.HandlerFunc {

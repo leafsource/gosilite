@@ -14,6 +14,19 @@ struct UserProfile {
     4: required string avatarURL
 }
 
+// 个人资料（GET /user/profile）
+struct ProfileResponse {
+    1: required i64 id
+    2: required string account
+    3: required string username
+    4: required string avatarURL
+    5: required string email
+    6: required string mobilePhone
+    7: required string state
+    // yyyy-MM-dd HH:mm:ss
+    8: required string createdAt
+}
+
 // 登录用户响应
 struct LoginUserResponse {
     1: required UserProfile user
@@ -65,7 +78,7 @@ service UserController {
     LoginUserResponse GetInfo()(api.get="/user/info")
 
     // 获取用户资料
-    UserProfile GetProfile()(api.get="user/profile")
+    ProfileResponse GetProfile()(api.get="/user/profile")
 
     // 刷新会话
     SessionTokenResponse Refresh(1: RefreshRequest req)(api.post="/user/refresh")

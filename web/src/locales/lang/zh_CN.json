@@ -724,32 +724,18 @@
       }
     },
     "user": {
-      "markDay": "下午好，今天是你加入鹅厂的第 100 天",
-      "greeting": "Hi，Image",
-      "unit": "（次）",
-      "account": "My Account",
-      "organization": "腾讯/腾讯公司/某事业群/某产品部/某运营中心/商户服务组",
-      "personalInfo": {
-        "title": "个人信息",
-        "position": "港澳业务拓展组员工 直客销售 ",
-        "desc": {
-          "phone": "座机",
-          "mobile": "手机",
-          "seat": "座位",
-          "email": "邮箱",
-          "position": "职位",
-          "leader": "上级",
-          "entity": "主体",
-          "joinDay": "入职时间",
-          "group": "所属团队"
-        },
-        "tencentGroup": "腾讯集团",
-        "seniorDesigner": "高级 UI 设计师"
-      },
-      "visitData": "首页访问数据",
-      "contentList": "内容列表",
-      "teamMember": "团队成员",
-      "serviceProduction": "服务产品"
+      "title": "个人中心",
+      "profileTitle": "个人信息",
+      "account": "账号",
+      "username": "用户名",
+      "email": "邮箱",
+      "mobile": "手机号",
+      "state": "状态",
+      "createdAt": "创建时间",
+      "roles": "角色",
+      "uploadAvatar": "更换头像",
+      "avatarUpdated": "头像已更新",
+      "changePassword": "修改密码"
     },
     "changePassword": {
       "title": "修改密码",
@@ -761,6 +747,37 @@
       "success": "密码修改成功，请重新登录",
       "mismatch": "两次输入的新密码不一致",
       "tooShort": "新密码至少 8 位"
+    },
+    "storageOverview": {
+      "title": "存储概览",
+      "bucket": "存储桶",
+      "domain": "访问域名",
+      "status": "状态",
+      "connected": "连通",
+      "disconnected": "异常",
+      "objectCount": "对象数",
+      "totalSize": "总大小",
+      "refresh": "刷新",
+      "loadFailed": "获取存储概览失败"
+    },
+    "storageTable": {
+      "keywordPlaceholder": "key 模糊搜索",
+      "prefix": "前缀",
+      "prefixPlaceholder": "如 user_avatar/",
+      "size": "大小",
+      "lastModified": "修改时间",
+      "type": "类型",
+      "ops": "操作",
+      "remove": "删除",
+      "removeTitle": "删除对象",
+      "removeConfirm": "确认删除对象「{key}」？删除后不可恢复。",
+      "removeSuccess": "已删除",
+      "removeFailed": "删除失败",
+      "uploadTest": "上传测试",
+      "uploadTitle": "上传测试",
+      "uploadAction": "点击上传",
+      "uploadSuccess": "上传成功",
+      "loadFailed": "加载失败"
     }
   }
 }

@@ -35,7 +35,14 @@
             </template>
             <t-button class="header-user-btn" theme="default" variant="text">
               <template #icon>
-                <t-icon class="header-user-avatar" name="user-circle" />
+                <t-avatar
+                  v-if="user.userInfo.avatarURL"
+                  class="header-user-avatar"
+                  :image="user.userInfo.avatarURL"
+                  size="28px"
+                  shape="circle"
+                />
+                <t-icon v-else class="header-user-avatar" name="user-circle" />
               </template>
               <div class="header-user-account">{{ user.userInfo.name }}</div>
               <template #suffix><chevron-down-icon /></template>

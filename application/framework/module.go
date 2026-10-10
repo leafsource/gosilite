@@ -7,9 +7,10 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 
 	frameworkLogRouter "gosilite/api/router/framework/log"
-	frameworkMonitorRouter "gosilite/api/router/framework/monitor"
 	frameworkMenuRouter "gosilite/api/router/framework/menu"
+	frameworkMonitorRouter "gosilite/api/router/framework/monitor"
 	frameworkNoticeRouter "gosilite/api/router/framework/notice"
+	frameworkStorageRouter "gosilite/api/router/framework/storage"
 	frameworkSyscfgRouter "gosilite/api/router/framework/syscfg"
 	frameworkSyscfgGlobalRouter "gosilite/api/router/framework/syscfgglobal"
 	frameworkSystemRouter "gosilite/api/router/framework/system"
@@ -23,6 +24,7 @@ import (
 	"gosilite/application/framework/service/notice"
 	"gosilite/application/framework/service/post"
 	"gosilite/application/framework/service/role"
+	"gosilite/application/framework/service/storage"
 	"gosilite/application/framework/service/syslog"
 	"gosilite/application/framework/service/user"
 	"gosilite/application/infra"
@@ -53,6 +55,7 @@ func (m *Module) Init(ctx context.Context, deps *infra.AppDependencies) error {
 	syslog.InitService(repository.NewSysLogRepository(deps.DB))
 	monitor.InitService(deps.DB, deps.Cache)
 	monitor.InitCacheService(deps.Cache)
+	storage.InitService(deps.Storage)
 	return nil
 }
 
@@ -67,4 +70,5 @@ func (m *Module) RegisterRoutes(r *server.Hertz) {
 	frameworkNoticeRouter.Register(r)
 	frameworkLogRouter.Register(r)
 	frameworkMonitorRouter.Register(r)
+	frameworkStorageRouter.Register(r)
 }

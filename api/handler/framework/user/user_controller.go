@@ -67,8 +67,12 @@ func GetInfo(ctx context.Context, c *app.RequestContext) {
 // @Success 200 {object} map[string]interface{}
 // @Router /user/profile [GET]
 func GetProfile(ctx context.Context, c *app.RequestContext) {
-	loginUser := ctxutil.GetLoginUser(ctx)
-	R.SuccessWithData(ctx, c, toLoginUserResponse(loginUser))
+	profile, err := userService.SystemUserSVC.GetProfile(ctx)
+	if err != nil {
+		R.Error(ctx, c, err)
+		return
+	}
+	R.SuccessWithData(ctx, c, toProfileResponse(profile))
 }
 
 // UpdateAvatar .
