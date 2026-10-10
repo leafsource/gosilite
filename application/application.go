@@ -6,7 +6,6 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 
-	"gosilite/application/agent"
 	"gosilite/application/framework"
 	"gosilite/application/infra"
 	"gosilite/pkg/ctxcache"
@@ -22,7 +21,6 @@ type App struct {
 func builtinModules() []Module {
 	return []Module{
 		framework.NewModule(),
-		agent.NewModule(),
 	}
 }
 

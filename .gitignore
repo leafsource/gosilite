@@ -42,3 +42,8 @@ dist
 # 构建产物
 /codegen
 /package-lock.json
+
+# 环境变量文件（密钥不入库，模板 .env.example 除外）
+.env
+.env.*
+!.env.example

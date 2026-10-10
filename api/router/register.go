@@ -4,7 +4,6 @@ package router
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	agent "gosilite/api/router/agent"
 	framework_log "gosilite/api/router/framework/log"
 	framework_menu "gosilite/api/router/framework/menu"
 	framework_monitor "gosilite/api/router/framework/monitor"
@@ -29,8 +28,6 @@ func GeneratedRegister(r *server.Hertz) {
 	framework_syscfg.Register(r)
 
 	framework_system.Register(r)
-
-	agent.Register(r)
 
 	framework_user.Register(r)
 

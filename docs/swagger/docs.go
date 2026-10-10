@@ -15,27 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/agent/list": {
-            "get": {
-                "description": "agent列表接口",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "智能体"
-                ],
-                "summary": "agent列表",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
         "/menu/routes": {
             "get": {
                 "description": "获取前端路由接口",
@@ -2986,6 +2965,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "perms": {
+                    "type": "string"
+                },
+                "redirect": {
                     "type": "string"
                 },
                 "status": {

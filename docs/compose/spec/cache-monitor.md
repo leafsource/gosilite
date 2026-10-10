@@ -1,6 +1,6 @@
 # Feature Spec: 系统监控 · 缓存监控
 
-- status: in_progress
+- status: delivered
 - created: 2026-02-10
 
 ## Problem

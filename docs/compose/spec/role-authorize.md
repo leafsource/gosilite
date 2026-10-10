@@ -1,9 +1,9 @@
 ---
 feature: role-authorize
-status: designed
+status: delivered
 updated: 2026-10-07
 branch: develop
-commits: # 实现中，交付时回填
+commits: role-authorize 交付（AuthorizeDrawer + MenuPermTable + PUT/GET /system/role/authorize）
 ---
 
 # 角色授权（合并「分配菜单 + 数据部门」为「授权」）

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"gosilite/api/model/agent"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -88,11 +87,6 @@ var generateConfig = map[string]map[string]map[string]any{
 		"system_login_log": {
 			"repository": false,
 			"service":    false,
-		},
-	},
-	"application/agent/dal/query": {
-		"single_agent_draft": {
-			"model_info": &agent.ModelInfo{},
 		},
 	},
 }

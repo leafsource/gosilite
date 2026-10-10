@@ -41,7 +41,7 @@ description: Use when developing, reviewing, or delivering web API features with
 | 模块路径 | `gosilite` |
 | HTTP 框架 | CloudWeGo Hertz（禁用 Gin / 旧标准库业务 Handler） |
 | 入口 | 仓库根 `main.go`，`go run .`（`server.New` + 显式 Recovery） |
-| 配置 | `conf/<env>/conf.yaml`，`GO_ENV=test\|dev\|prod` |
+| 配置 | 单一 `conf/conf.yaml` + `.env.<GO_ENV>`/环境变量注入，`GO_ENV=test\|dev\|prod` |
 | 响应信封 | `{"code":<int32>,"msg":string,"data"?:any}` |
 | 错误 | `pkg/errorx` + `types/errno` 数字码，经 `R.Error` 输出 |
 | 会话契约 | `SessionTokenResponse`：`accessToken` / `tokenType` / `expiresIn` / `refreshToken` |

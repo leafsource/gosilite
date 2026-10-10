@@ -98,5 +98,5 @@ R.InvalidParamRequestResponse(c, m) // 400
 ```bash
 export PATH="$HOME/.local/go/bin:$PATH"
 GO_ENV=test go run .
-# 监听 conf/test/conf.yaml 的 server.address，默认 :8888
+# 监听 conf/conf.yaml 的 server.address（可用 GOSILITE_SERVER_ADDRESS 覆盖），默认 :8888
 ```

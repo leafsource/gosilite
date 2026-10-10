@@ -1,9 +1,9 @@
 ---
 feature: dict-theme-components
-status: designed
+status: delivered
 updated: 2026-10-07
 branch: develop
-commits:
+commits: dict-theme-components 交付（0009 迁移 + s-tag-dict/s-radio-dict/s-select-dict 组件族）
 ---
 
 # 字典主题色与统一字典组件

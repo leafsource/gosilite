@@ -5,7 +5,7 @@
 ## 包与命名（Go）
 
 - 框架包短且表义：`conf` / `pkg/errorx` / `pkg/utils/response` / `types/errno` / `types/consts`。
-- 业务按域：`application/framework/...`、`application/agent/...`；生成模型包名来自 IDL `namespace`。
+- 业务按域：`application/framework/...`（新域按 Module 契约自行追加）；生成模型包名来自 IDL `namespace`。
 - 构造函数 `NewXxx`；初始化门面 `InitService`；可选配置 `WithXxx`。
 - 只导出跨包需要的标识符。Repository 接口名 `IXxx` 或 `XxxRepository`，同一模块内统一。
 - **Service 是具体类型**（`type Service struct` + `NewService`），禁止 `I*Service`。

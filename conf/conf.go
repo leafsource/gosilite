@@ -3,10 +3,10 @@ package conf
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
-	"github.com/kr/pretty"
 	"gopkg.in/validator.v2"
 	"gopkg.in/yaml.v2"
 )
@@ -29,13 +29,13 @@ type Config struct {
 
 // Monitor 数据监控：指标出口与采集开关（业务热路径仅 O(1) 打点）。
 type Monitor struct {
-	EnableMetrics     bool   `yaml:"enable_metrics"`
-	MetricsAddr       string `yaml:"metrics_addr"`
-	MetricsPath       string `yaml:"metrics_path"`
-	SQLSlowMs         int    `yaml:"sql_slow_ms"`
-	SQLMaxTemplates   int    `yaml:"sql_max_templates"`
-	FirewallEnable    bool   `yaml:"firewall_enable"`
-	GormPostgresMetrics bool `yaml:"gorm_postgres_metrics"`
+	EnableMetrics       bool   `yaml:"enable_metrics"`
+	MetricsAddr         string `yaml:"metrics_addr"`
+	MetricsPath         string `yaml:"metrics_path"`
+	SQLSlowMs           int    `yaml:"sql_slow_ms"`
+	SQLMaxTemplates     int    `yaml:"sql_max_templates"`
+	FirewallEnable      bool   `yaml:"firewall_enable"`
+	GormPostgresMetrics bool   `yaml:"gorm_postgres_metrics"`
 }
 
 type Database struct {
@@ -85,8 +85,7 @@ func GetConf() *Config {
 }
 
 func initConf() {
-	prefix := "conf"
-	confFileRelPath := filepath.Join(prefix, filepath.Join(GetEnv(), "conf.yaml"))
+	confFileRelPath := filepath.Join("conf", "conf.yaml")
 	content, err := os.ReadFile(confFileRelPath)
 	if err != nil {
 		panic(err)
@@ -98,14 +97,75 @@ func initConf() {
 		hlog.Error("parse yaml error - %v", err)
 		panic(err)
 	}
+
+	envVars := loadDotEnv(GetEnv())
+	applyEnvOverrides(envVars)
+
 	if err := validator.Validate(conf); err != nil {
 		hlog.Error("validate config error - %v", err)
 		panic(err)
 	}
 
-	conf.Env = GetEnv()
+	if GetEnv() == "prod" {
+		// 生产密钥只走环境注入，禁止落到 yaml（conf.yaml 里是本地开发默认值）。
+		for _, key := range []string{
+			"GOSILITE_JWT_SECRET",
+			"GOSILITE_DATABASE_DSN",
+			"GOSILITE_STORAGE_ACCESS_KEY",
+			"GOSILITE_STORAGE_SECRET_KEY",
+		} {
+			if envVars[key] == "" {
+				panic("prod 环境缺少密钥注入: " + key + "（见仓库根 .env.example）")
+			}
+		}
+	}
 
-	pretty.Printf("%+v\n", conf)
+	conf.Env = GetEnv()
+}
+
+// loadDotEnv 读取仓库根 .env.<env>（KEY=VALUE，# 为注释），再并入系统环境变量；
+// 同名时系统环境变量优先。返回合并后的键值表。
+func loadDotEnv(env string) map[string]string {
+	vars := make(map[string]string)
+	if b, err := os.ReadFile(".env." + env); err == nil {
+		for _, line := range strings.Split(string(b), "\n") {
+			line = strings.TrimSpace(line)
+			if line == "" || strings.HasPrefix(line, "#") {
+				continue
+			}
+			k, v, ok := strings.Cut(line, "=")
+			if !ok {
+				continue
+			}
+			vars[strings.TrimSpace(k)] = strings.Trim(strings.TrimSpace(v), `"'`)
+		}
+	}
+	for _, kv := range os.Environ() {
+		if k, v, ok := strings.Cut(kv, "="); ok {
+			vars[k] = v
+		}
+	}
+	return vars
+}
+
+// applyEnvOverrides 用环境变量覆盖 yaml 中的敏感项与环境差异项（空值不覆盖）。
+func applyEnvOverrides(vars map[string]string) {
+	set := func(key string, dst *string) {
+		if v := vars[key]; v != "" {
+			*dst = v
+		}
+	}
+	set("GOSILITE_SERVER_ADDRESS", &conf.Server.Address)
+	if v := vars["GOSILITE_SERVER_ACCESS_LOG"]; v != "" {
+		conf.Server.EnableAccessLog = v == "true"
+	}
+	set("GOSILITE_JWT_SECRET", &conf.JWT.Secret)
+	set("GOSILITE_DATABASE_DSN", &conf.Database.DSN)
+	set("GOSILITE_REDIS_PASSWORD", &conf.Redis.Password)
+	set("GOSILITE_STORAGE_ACCESS_KEY", &conf.Storage.AccessKey)
+	set("GOSILITE_STORAGE_SECRET_KEY", &conf.Storage.SecretKey)
+	set("GOSILITE_STORAGE_ENDPOINT", &conf.Storage.Endpoint)
+	set("GOSILITE_STORAGE_DOMAIN", &conf.Storage.Domain)
 }
 
 func GetEnv() string {

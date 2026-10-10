@@ -35,7 +35,7 @@ application.Module (Init + RegisterRoutes) ──► 挂载 api/router 生成物
 - 装配：`Bootstrap` 初始化 infra 并 Init 全部模块；`MountRoutes` 按序挂路由。
 - 模块 `InitService` 建具体 Service 并安装包级门面；Handler 不依赖 `I*Service`。
 - 新域 = 新 Module + `builtinModules()` 一行；路由来自 IDL/hz 生成的 `Register`。
-- 内置：`application/framework`（user/role/menu/system）、`application/agent`。
+- 内置：`application/framework`（user/role/menu/system）。
 
 ## 4. 统一错误与响应
 

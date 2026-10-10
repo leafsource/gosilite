@@ -11,7 +11,7 @@
   export PATH="$HOME/.local/go/bin:$PATH"
   ```
 - 入口：仓库根目录 `main.go`（**不是** `cmd/gosilite`）。
-- 配置：`conf/<env>/conf.yaml`，用 `GO_ENV=test|dev|prod` 选择；测试默认 `conf/test/conf.yaml`（HTTP `:8888`）。
+- 配置：单一 `conf/conf.yaml`（本地开发默认值），密钥与环境差异经 `.env.<GO_ENV>` 或系统环境变量覆盖（模板见 `.env.example`）；`GO_ENV=test|dev|prod` 选择，默认 `test`（HTTP `:8888`）。生产必须注入 `GOSILITE_JWT_SECRET` / `GOSILITE_DATABASE_DSN` / `GOSILITE_STORAGE_*`。
 
 ## 目录结构
 

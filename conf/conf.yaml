@@ -1,0 +1,48 @@
+# gosilite 单一配置文件（非敏感项 + 本地开发默认值）。
+# 敏感项与环境差异用环境变量覆盖，变量清单见仓库根 .env.example；
+# 程序会加载仓库根 `.env.<GO_ENV>`（如 .env.dev），系统环境变量优先。
+# GO_ENV=prod 时必须通过环境注入 GOSILITE_JWT_SECRET / GOSILITE_DATABASE_DSN /
+# GOSILITE_STORAGE_ACCESS_KEY / GOSILITE_STORAGE_SECRET_KEY，否则启动即失败。
+server:
+  node: 1
+  address: ":8888"
+  enable_pprof: true
+  enable_gzip: true
+  enable_access_log: true
+  log_level: info
+  log_file_name: "log/skyx-cloud.log"
+  log_max_size: 10
+  log_max_age: 3
+  log_max_backups: 50
+
+jwt:
+  issuer: "skyx-cloud"
+  secret: "f7e5abdb96d994e4533bb5febd2ffc155b30ab6c48c3e0a0c558fc9df9a13a82" # 本地开发默认值；生产必须用 GOSILITE_JWT_SECRET 覆盖
+
+database:
+  dsn: "host=127.0.0.1 user=gosilite password=gosilite dbname=gosilite port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 3600
+  conn_max_idle_time: 600
+
+redis:
+  address: "127.0.0.1:6379"
+  password: ""
+
+storage:
+  access_key: "gosilite"            # 本地 docker-compose 默认值；生产必须用 GOSILITE_STORAGE_ACCESS_KEY 覆盖
+  secret_key: "gosilite-secret"     # 本地 docker-compose 默认值；生产必须用 GOSILITE_STORAGE_SECRET_KEY 覆盖
+  endpoint: "http://127.0.0.1:19000"
+  region: ""
+  bucket_name: "skyx"
+  domain: "127.0.0.1:19000"
+
+monitor:
+  enable_metrics: true
+  metrics_addr: ":9091"
+  metrics_path: "/metrics"
+  sql_slow_ms: 200
+  sql_max_templates: 200
+  firewall_enable: true
+  gorm_postgres_metrics: false

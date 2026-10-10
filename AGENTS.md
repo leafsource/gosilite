@@ -83,7 +83,7 @@ application/<域>/dal/model/ # *.gen.go 由 gorm gen 生成；*.go 手写模型�
 application/<域>/dal/query/ # gorm gen 查询 API【生成】
 application/<域>/dal/repository/ # 仓储接口+实现【手写】
 application/infra/          # PG / Redis / RustFS【手写】
-conf/                       # conf/<env>/conf.yaml【手写】
+conf/                       # conf/conf.yaml 单一配置；密钥/环境差异走 .env.<GO_ENV> 与环境变量【手写】
 idl/                        # Thrift 契约源【手写，是 hz 的输入】
 script/codegen/             # gorm/service/repository 脚手架模板【手写模板】
 pkg/ types/                 # errorx、response、errno【手写】
@@ -187,7 +187,7 @@ func Datasource(ctx context.Context, c *app.RequestContext) { ... }
 | 规则 | 说明 |
 |------|------|
 | 必填 | `@Summary` `@Tags` `@Produce` `@Success` `@Router`（**大写 Router**） |
-| `@Tags` | 用户 / 系统管理 / 系统配置 / 监控 / 日志 / 通知 / 菜单 / 智能体 |
+| `@Tags` | 用户 / 系统管理 / 系统配置 / 监控 / 日志 / 通知 / 菜单 |
 | `@Param` | 有 `var req ...` 才写；body（POST/PUT/DELETE）或 query（GET）；类型用 **api/model 包名.结构体** |
 | `@Success` | 统一 `{object} map[string]interface{}`（信封在 `response` 包） |
 | 路径 | 与 IDL `api.get/post/...` **一致**；变更：**先改 IDL → hz update → 再补注解** |
