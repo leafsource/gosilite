@@ -1,27 +1,18 @@
-{{/* 站点页树（左栏与移动端 <details> 共用）：首页 + RegularPages 按 weight；
-     当前页高亮并在其下挂 h2 锚点子导航（Fragments 树，文档序）。传入上下文：当前页。 */}}
+{{/* 文档树（左栏与移动端 <details> 共用）：
+     首页 + 根级散页（按 weight） + 文件夹 section 递归树（details 折叠，当前分支默认展开）。
+     左栏只承担文档导航，不做页内 h2 锚点（页内目录在右栏 TOC）。传入上下文：当前页。 */}}
 {{ $cur := . }}
 <ul class="np">
   <li>
     <a href="/docs/" class="np-a{{ if $cur.IsHome }} is-active{{ end }}"{{ if $cur.IsHome }} aria-current="page"{{ end }}>首页</a>
   </li>
   {{ range $.Site.RegularPages.ByWeight }}
-    {{ $active := eq .RelPermalink $cur.RelPermalink }}
-    <li>
-      <a href="{{ .RelPermalink }}" class="np-a{{ if $active }} is-active{{ end }}"{{ if $active }} aria-current="page"{{ end }}>{{ .Title }}</a>
-      {{ if $active }}
-        {{ range .Fragments.Headings }}
-          {{ with .Headings }}
-            <ul class="np-sub">
-              {{ range . }}
-                {{ if eq .Level 2 }}
-                  <li><a href="#{{ .ID }}">{{ .Title }}</a></li>
-                {{ end }}
-              {{ end }}
-            </ul>
-          {{ end }}
-        {{ end }}
-      {{ end }}
-    </li>
+    {{ if eq (path.Dir .File.Path) "." }}
+      {{ $active := eq .RelPermalink $cur.RelPermalink }}
+      <li>
+        <a href="{{ .RelPermalink }}" class="np-a{{ if $active }} is-active{{ end }}"{{ if $active }} aria-current="page"{{ end }}>{{ .Title }}</a>
+      </li>
+    {{ end }}
   {{ end }}
+  {{ partial "nav-branch.html" (dict "sections" $.Site.Sections "cur" $cur) }}
 </ul>

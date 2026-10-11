@@ -86,7 +86,8 @@ id 选择：48/4801/4802 已被 0021 回收（历史存储菜单），改用空�
 - **窄屏**：隐藏左右栏，页头 `<details>` 内嵌同一份页树 partial（`layouts/partials/nav-pages.html`，桌面/移动复用）。
 - 内容页 front matter 加 `weight` 固定排序；视觉沿用现有 token（品牌蓝 #0052d9、浅灰侧栏）。
 - **嵌入中后台修正（同日反馈）**：① `baseURL='/docs/'`——`.RelPermalink` 自动带 `/docs` 前缀，iframe 内点页树不再走出 `/docs` 被前端 SPA 兜底（否则套娃出第二个中后台）；② 左右栏通栏拉满 `min-height`（灰底铺到底，导航块自身 sticky），修短页上菜单灰底断半截；③ 断点改为 1100（右栏 TOC 藏）/520（真手机才收左栏进「目录」）——中后台 iframe 常见 700–900px 宽，左栏保持可见（≤1100 时收窄 220px）。
-- **页头页脚打磨（同日反馈）**：页头用项目 logo（`web/src/assets/assets-t-logo.svg` → `docs/hugo/static/logo.svg`），移除「Hugo 生成 · Hertz 托管」标语；footer 改为「最后修改于 `{{ .Lastmod }}` · 站名」（`enableGitInfo=true` 取 git 提交时间）。/docs 响应加 `Cache-Control: no-cache` 并支持 HEAD——FileServer 只带 Last-Modified 的启发式缓存会让嵌入 iframe 长期吃旧页。
+- **页头页脚打磨（同日反馈）**：页头用项目 logo（`web/src/assets/assets-t-logo.svg` → `docs/hugo/static/logo.svg`），移除「Hugo 生成 · Hertz 托管」标语；footer 改为「最后修改于 `{{ .Lastmod }}` · 站名」（`enableGitInfo=true` 取 git 提交时间；Lastmod 早于 2000 年时回落 `.File.ModTime`，覆盖未提交新文件）。/docs 响应加 `Cache-Control: no-cache` 并支持 HEAD——FileServer 只带 Last-Modified 的启发式缓存会让嵌入 iframe 长期吃旧页。
+- **左栏 tree 化（同日反馈）**：左栏改为文档树——首页 + 根级散页（weight 排序） + 文件夹 section 递归（`partials/nav-branch.html`，`<details>` 原生折叠，当前页所在分支默认 `open`，零 JS）；`content/<文件夹>/*.md` 任意层级自动入树。去掉当前页 h2 锚点子导航（np-sub，与右栏重复），**左栏只承担文档导航，右栏「本页目录」TOC 保留**。移动端 `<details>` 目录复用同一 partial。
 
 ## [S3] Out of Scope
 

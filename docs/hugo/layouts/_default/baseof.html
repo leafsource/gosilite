@@ -40,9 +40,14 @@
     .np-a { display: block; padding: 7px 12px; border-radius: 6px; color: #33415c; text-decoration: none; font-size: 14px; }
     .np-a:hover { background: #eceff4; color: var(--brand); }
     .np-a.is-active { background: #e8f0fe; color: var(--brand); font-weight: 600; }
-    .np-sub { list-style: none; margin: 2px 0 8px; padding: 0 0 0 12px; border-left: 1px solid var(--line); }
-    .np-sub li a { display: block; padding: 4px 12px; font-size: 13px; color: var(--muted); text-decoration: none; }
-    .np-sub li a:hover { color: var(--brand); }
+    /* 树形文件夹（details 折叠） */
+    .np summary { list-style: none; cursor: pointer; position: relative; }
+    .np summary::-webkit-details-marker { display: none; }
+    .np summary::before { content: ""; position: absolute; left: 4px; top: 13px; width: 5px; height: 5px; border-right: 1.5px solid #8a94a6; border-bottom: 1.5px solid #8a94a6; transform: rotate(-45deg); transition: transform .12s; }
+    .np details[open] > summary::before { transform: rotate(45deg) translate(-1px, -1px); }
+    .np summary .np-a { padding-left: 18px; }
+    .np-group { list-style: none; margin: 0; padding: 0 0 4px 12px; }
+    .np-group .np-a { padding-left: 30px; font-size: 13.5px; }
 
     /* 中栏正文 */
     .md { min-width: 0; padding: 32px 44px 72px; }
@@ -109,7 +114,11 @@
     <aside class="sb"><div class="sb-in">{{ partial "nav-pages.html" . }}</div></aside>
     <main class="md">
       {{ block "main" . }}{{ end }}
-      <p class="foot">最后修改于 {{ .Lastmod.Format "2006-01-02" }} · {{ .Site.Title }}</p>
+      <p class="foot">
+        {{- $mod := .Lastmod -}}
+        {{- if lt $mod.Year 2 }}{{ $mod = .File.ModTime }}{{ end -}}
+        最后修改于 {{ $mod.Format "2006-01-02" }} · {{ .Site.Title -}}
+      </p>
     </main>
     <aside class="tp">
       {{ if .IsPage }}
