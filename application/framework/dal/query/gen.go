@@ -28,6 +28,9 @@ var (
 	SystemNotice         *systemNotice
 	SystemNoticeRead     *systemNoticeRead
 	SystemOperLog        *systemOperLog
+	SystemOss            *systemOss
+	SystemOssConfig      *systemOssConfig
+	SystemOssRule        *systemOssRule
 	SystemPost           *systemPost
 	SystemRole           *systemRole
 	SystemRoleDept       *systemRoleDept
@@ -51,6 +54,9 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	SystemNotice = &Q.SystemNotice
 	SystemNoticeRead = &Q.SystemNoticeRead
 	SystemOperLog = &Q.SystemOperLog
+	SystemOss = &Q.SystemOss
+	SystemOssConfig = &Q.SystemOssConfig
+	SystemOssRule = &Q.SystemOssRule
 	SystemPost = &Q.SystemPost
 	SystemRole = &Q.SystemRole
 	SystemRoleDept = &Q.SystemRoleDept
@@ -75,6 +81,9 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		SystemNotice:         newSystemNotice(db, opts...),
 		SystemNoticeRead:     newSystemNoticeRead(db, opts...),
 		SystemOperLog:        newSystemOperLog(db, opts...),
+		SystemOss:            newSystemOss(db, opts...),
+		SystemOssConfig:      newSystemOssConfig(db, opts...),
+		SystemOssRule:        newSystemOssRule(db, opts...),
 		SystemPost:           newSystemPost(db, opts...),
 		SystemRole:           newSystemRole(db, opts...),
 		SystemRoleDept:       newSystemRoleDept(db, opts...),
@@ -100,6 +109,9 @@ type Query struct {
 	SystemNotice         systemNotice
 	SystemNoticeRead     systemNoticeRead
 	SystemOperLog        systemOperLog
+	SystemOss            systemOss
+	SystemOssConfig      systemOssConfig
+	SystemOssRule        systemOssRule
 	SystemPost           systemPost
 	SystemRole           systemRole
 	SystemRoleDept       systemRoleDept
@@ -126,6 +138,9 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		SystemNotice:         q.SystemNotice.clone(db),
 		SystemNoticeRead:     q.SystemNoticeRead.clone(db),
 		SystemOperLog:        q.SystemOperLog.clone(db),
+		SystemOss:            q.SystemOss.clone(db),
+		SystemOssConfig:      q.SystemOssConfig.clone(db),
+		SystemOssRule:        q.SystemOssRule.clone(db),
 		SystemPost:           q.SystemPost.clone(db),
 		SystemRole:           q.SystemRole.clone(db),
 		SystemRoleDept:       q.SystemRoleDept.clone(db),
@@ -159,6 +174,9 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		SystemNotice:         q.SystemNotice.replaceDB(db),
 		SystemNoticeRead:     q.SystemNoticeRead.replaceDB(db),
 		SystemOperLog:        q.SystemOperLog.replaceDB(db),
+		SystemOss:            q.SystemOss.replaceDB(db),
+		SystemOssConfig:      q.SystemOssConfig.replaceDB(db),
+		SystemOssRule:        q.SystemOssRule.replaceDB(db),
 		SystemPost:           q.SystemPost.replaceDB(db),
 		SystemRole:           q.SystemRole.replaceDB(db),
 		SystemRoleDept:       q.SystemRoleDept.replaceDB(db),
@@ -182,6 +200,9 @@ type queryCtx struct {
 	SystemNotice         ISystemNoticeDo
 	SystemNoticeRead     ISystemNoticeReadDo
 	SystemOperLog        ISystemOperLogDo
+	SystemOss            ISystemOssDo
+	SystemOssConfig      ISystemOssConfigDo
+	SystemOssRule        ISystemOssRuleDo
 	SystemPost           ISystemPostDo
 	SystemRole           ISystemRoleDo
 	SystemRoleDept       ISystemRoleDeptDo
@@ -205,6 +226,9 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		SystemNotice:         q.SystemNotice.WithContext(ctx),
 		SystemNoticeRead:     q.SystemNoticeRead.WithContext(ctx),
 		SystemOperLog:        q.SystemOperLog.WithContext(ctx),
+		SystemOss:            q.SystemOss.WithContext(ctx),
+		SystemOssConfig:      q.SystemOssConfig.WithContext(ctx),
+		SystemOssRule:        q.SystemOssRule.WithContext(ctx),
 		SystemPost:           q.SystemPost.WithContext(ctx),
 		SystemRole:           q.SystemRole.WithContext(ctx),
 		SystemRoleDept:       q.SystemRoleDept.WithContext(ctx),

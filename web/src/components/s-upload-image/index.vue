@@ -1,185 +1,381 @@
 <template>
-  <t-upload
-    v-model:files="files"
-    :action="resolvedAction"
-    :name="field"
-    :accept="accept"
-    :headers="uploadHeaders"
-    :size-limit="sizeLimit"
-    :disabled="disabled"
-    :format-response="formatResponse"
-    theme="image"
-    :show-image-file-name="false"
-    auto-upload
-    @success="handleSuccess"
-    @fail="handleFail"
-    @validate="handleValidate"
-  >
-    <template #trigger>
-      <div
-        class="s-upload-image"
-        :class="{ 'is-disabled': disabled }"
-        :style="{ width: size, height: size }"
-      >
-        <t-avatar :image="url || undefined" :size="size" shape="circle">
-          <t-icon name="user" />
-        </t-avatar>
-        <div v-if="!disabled" class="s-upload-image__mask">
-          <span class="s-upload-image__mask-text">{{ uploadText }}</span>
-        </div>
-      </div>
-    </template>
-    <!-- 单图 URL 语义：列表由外部 url 驱动，不渲染 t-upload 默认文件列表 -->
-    <template #file-list-display></template>
-  </t-upload>
+  <div class="component-upload-image">
+    <t-upload
+      v-model="fileList"
+      multiple
+      :abridge-name="abridgeName"
+      :theme="theme"
+      :accept="rawAccept"
+      :action="resolvedAction"
+      :before-upload="handleBeforeUpload"
+      :max="limit"
+      :headers="headers"
+      :draggable="draggable"
+      :size-limit="{ size: fileSize, unit: 'MB', message: '上传图片大小不能超过 {sizeLimit} MB!' }"
+      :disabled="disabled"
+      :allow-upload-duplicate-file="allowUploadDuplicateFile"
+      :show-image-file-name="showImageFileName"
+      @one-file-success="handleOneUploadSuccess"
+      @one-file-fail="handleUploadError"
+      @success="handleUploadSuccess"
+      @remove="handleDelete"
+      @validate="onValidate"
+    >
+      <template v-if="isShowTip" #tips>
+        请上传大小不超过 {{ fileSize }}MB 的图片，
+        <t-tooltip>
+          <template #content>
+            <p v-for="item in rawAccept?.split(',')" :key="item" style="word-break: break-all">
+              {{ item }}
+            </p>
+          </template>
+          <t-link theme="primary">查看格式要求</t-link>
+        </t-tooltip>
+      </template>
+      <!-- 上传按钮 -->
+      <slot />
+      <t-button v-if="!$slots.default" variant="outline">
+        <template #icon>
+          <cloud-upload-icon />
+        </template>
+        选取文件
+      </t-button>
+    </t-upload>
+  </div>
 </template>
-<script setup lang="ts">
-import { computed, ref } from 'vue';
+<script lang="ts" setup>
+import { compressAccurately } from 'image-conversion';
+import { CloudUploadIcon } from 'tdesign-icons-vue-next';
+import type { SuccessContext, UploadFile, UploadRemoveContext, UploadValidateType } from 'tdesign-vue-next';
 import { MessagePlugin } from 'tdesign-vue-next';
-import type { UploadProps } from 'tdesign-vue-next';
+import { computed, ref, watch } from 'vue';
 
-import { useUserStore } from '@/store/modules/user';
+import { delOss, listByIds, listByUrls } from '@/api/system/oss';
+import { useUserStore } from '@/store';
+import { blobToFile, getHttpFileName, getHttpFileSuffix } from '@/utils/file';
 
 defineOptions({ name: 'SUploadImage' });
 
-const props = withDefaults(
-  defineProps<{
-    /** 上传端点（统一信封，成功时 data.webURI 为图片地址） */
-    action: string;
-    /** multipart 字段名（头像接口为 avatar，通用上传为 file） */
-    field?: string;
-    /** 当前图片地址（v-model:url 双向绑定） */
-    url?: string;
-    /** 受控的 input accept，默认所有图片 */
-    accept?: string;
-    /** 预览尺寸（含遮罩区域），如 80px */
-    size?: string;
-    disabled?: boolean;
-    /** 图片大小上限（MB），超出由 t-upload 拦截 */
-    maxSizeMb?: number;
-    /** 遮罩提示文案 */
-    uploadText?: string;
-  }>(),
-  {
-    field: 'file',
-    url: '',
-    accept: 'image/*',
-    size: '80px',
-    disabled: false,
-    maxSizeMb: 5,
-    uploadText: '更换头像',
-  },
-);
-
-const emit = defineEmits<{
-  (e: 'update:url', v: string): void;
-  (e: 'success', payload: { url: string; response: unknown }): void;
-  (e: 'error', error: unknown): void;
-}>();
-
-/** 上传需带会话 token（t-upload 走原生请求，不经 axios 拦截器） */
-const userStore = useUserStore();
-const uploadHeaders = computed<Record<string, string>>(() => {
-  const headers: Record<string, string> = {};
-  if (userStore.token) {
-    headers.Authorization = `Bearer ${userStore.token}`;
-  }
-  return headers;
+const props = withDefaults(defineProps<ImageUploadProps>(), {
+  limit: 5,
+  fileSize: 5,
+  fileType: () => ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'],
+  isShowTip: true,
+  theme: 'image',
+  mode: 'url',
+  disabled: false,
+  allowUploadDuplicateFile: false,
+  showImageFileName: undefined,
+  showSuccessMessage: false,
+  compressSupport: false,
+  compressTargetSize: 300,
+  action: '/common/file/upload',
+  deleteRemoteOnRemove: false,
 });
 
-const sizeLimit = computed(() => ({
-  size: props.maxSizeMb,
-  unit: 'MB' as const,
-  message: `图片大小不超过 {sizeLimit} MB`,
-}));
+const emit = defineEmits(['update:model-value', 'change', 'success']);
 
-/**
- * t-upload 走原生请求、不经 axios 的 urlPrefix：以 / 开头的相对路径需自行拼
- * VITE_API_URL_PREFIX（vite proxy 再剥离前缀转发后端），否则会打到前端返回 index.html。
- */
+export interface ImageUploadProps {
+  modelValue?: string | string[];
+  // 文件名过长时，需要省略中间的文本，保留首尾文本。示例：[10, 7]，表示首尾分别保留的文本长度。
+  abridgeName?: Array<number>;
+  // 图片数量限制,为0不限制
+  limit?: number;
+  // 是否支持拖拽上传
+  draggable?: boolean;
+  // 大小限制(MB)
+  fileSize?: number;
+  // 接受上传的文件类型
+  accept?: Array<string>;
+  // 文件类型, 例如['png', 'jpg', 'jpeg']
+  fileType?: string[];
+  // 是否显示提示
+  isShowTip?: boolean;
+  theme?: 'custom' | 'image' | 'image-flow';
+  // 模式，id模式返回文件 id，url模式返回url链接
+  mode?: 'id' | 'url';
+  // 禁用组件
+  disabled?: boolean;
+  // 是否允许重复上传相同文件名的文件
+  allowUploadDuplicateFile?: boolean;
+  // 是否显示图片下方的文件名称
+  showImageFileName?: boolean;
+  // 上传成功后是否弹「文件【x】上传成功！」通用提示（默认关闭，由业务页自行决定成功提示，避免双重提醒）
+  showSuccessMessage?: boolean;
+  // 是否支持压缩，默认否
+  compressSupport?: boolean;
+  // 压缩目标大小，单位KB。默认300KB以上文件才压缩，并压缩至300KB以内
+  compressTargetSize?: number;
+  // 上传端点（gosilite：内部拼 VITE_API_URL_PREFIX 前缀）
+  action?: string;
+  // 移除文件时是否同时删除台账记录（对应 ruoyi supportSelectFile=false 的直传清理语义；
+  // 默认 false = gosilite 附件表单语义「仅清本地，远程由业务删除接口决定」，也避免头像等被引用文件误删）
+  deleteRemoteOnRemove?: boolean;
+}
+
+/** 上传成功负载（调用方需要 id/名称，如头像更新走 fileId 两步链路） */
+export interface SUploadSuccessFile {
+  ossId?: string;
+  url: string;
+  name: string;
+  size?: number;
+}
+
+const userStore = useUserStore();
+
+/** t-upload 走原生 XHR 不经 axios：以 / 开头的相对路径需拼 VITE_API_URL_PREFIX（vite proxy 再剥离前缀转发后端） */
 const resolvedAction = computed(() => {
   const prefix = (import.meta.env.VITE_API_URL_PREFIX || '').replace(/\/$/, '');
   const action = props.action;
-  if (!prefix || !action.startsWith('/') || action.startsWith('//')) return action;
-  if (action === prefix || action.startsWith(`${prefix}/`)) return action;
+  if (!prefix || !action.startsWith('/')) return action;
   return `${prefix}${action}`;
 });
 
-/** 单图替换语义：内部文件列表不驻留，成功后即清空 */
-const files = ref<UploadProps['value']>([]);
+/** computed 而非一次性 ref：beforeUpload 里刷新 token 后新 token 立即生效 */
+const headers = computed(() => ({ Authorization: `Bearer ${userStore.token}` }));
 
-function extractUrl(res: unknown): string | null {
-  const r = res as { code?: number; data?: { webURI?: string } } | null;
-  if (r && r.code === 200 && r.data?.webURI) return r.data.webURI;
-  return null;
+const rawAccept = computed(() => {
+  return props.accept?.join(',') || props.fileType.map((value) => `.${value}`).join(',');
+});
+
+const fileList = ref<UploadFile[]>([]);
+
+/** 会话内上传元数据缓存：url/ossId → 元数据，modelValue 回写重建列表时保留 originalName/url（对齐 ruoyi listByUrls 回显效果） */
+const metaCache = new Map<string, { name?: string; size?: number; url?: string; ossId?: string }>();
+
+function cacheMeta(items: SUploadSuccessFile[]) {
+  items.forEach((item) => {
+    const meta = { name: item.name, size: item.size, url: item.url, ossId: item.ossId };
+    if (item.url) metaCache.set(item.url, meta);
+    if (item.ossId) metaCache.set(item.ossId, meta);
+  });
 }
 
-/** 信封 → t-upload 语义：code=200 取 webURI，否则给出错误文案 */
-const formatResponse: UploadProps['formatResponse'] = (response) => {
-  const url = extractUrl(response);
-  if (url) return { url };
-  const msg = (response as { msg?: string } | null)?.msg;
-  return { error: msg || '上传失败' };
-};
+const splitHttp = /,(?=http)/;
+watch(
+  () => props.modelValue,
+  async (val) => {
+    if (val) {
+      // 首先将值转为数组
+      let list: any[];
+      if (Array.isArray(val)) {
+        list = val;
+      } else if (props.mode === 'url') {
+        // gosilite 回显：会话缓存 → 台账按 key 查询（无权限返回空）→ URL 文件名兜底
+        const urls = val.split(splitHttp);
+        const tempMap = await listByUrls(urls);
+        list = urls.map((url: string) => {
+          const cached = metaCache.get(url);
+          const oss = tempMap.get(url);
+          return (
+            (oss && {
+              name: oss.originalName,
+              status: 'success',
+              size: oss.size,
+              uploadTime: oss.createdAt,
+              url: oss.url,
+              ossId: oss.id,
+            }) ||
+            (cached && {
+              name: cached.name,
+              status: 'success',
+              size: cached.size,
+              url,
+              ossId: cached.ossId,
+            }) || { name: getHttpFileName(url), status: 'success', size: 0, url }
+          );
+        });
+      } else {
+        // mode='id'：会话缓存 → 逐个查台账 → id 兜底
+        const tempMap = await listByIds(val);
+        list = String(val)
+          .split(',')
+          .filter(Boolean)
+          .map((id) => {
+            const cached = metaCache.get(id);
+            const oss = tempMap.get(id);
+            return (
+              (oss && {
+                name: oss.originalName,
+                status: 'success',
+                size: oss.size,
+                uploadTime: oss.createdAt,
+                url: oss.url,
+                ossId: oss.id,
+              }) ||
+              (cached && {
+                name: cached.name,
+                status: 'success',
+                size: cached.size,
+                url: cached.url,
+                ossId: cached.ossId,
+              }) || { name: id, status: 'success', size: 0, url: '' }
+            );
+          });
+      }
+      // 值已在异步等待期间变化：丢弃过期回显，避免覆盖新状态
+      if (props.modelValue !== val) return;
+      // 然后将数组转为对象数组
+      fileList.value = list.map((item: any) => {
+        // 字符串回显处理 如果此处存的是url可直接回显 如果存的是id需要调用接口查出来
+        if (typeof item === 'string') {
+          item = { name: getHttpFileName(item), status: 'success', url: item };
+        } else {
+          item = {
+            name: item.name,
+            status: item.status,
+            size: item.size,
+            uploadTime: item.uploadTime,
+            url: item.url,
+            ossId: item.ossId,
+          };
+        }
+        return item;
+      });
+    } else {
+      fileList.value = [];
+    }
+  },
+  { deep: true, immediate: true },
+);
 
-const handleSuccess: UploadProps['onSuccess'] = (ctx) => {
-  const url = extractUrl(ctx.response) ?? ctx.file?.url ?? '';
-  if (!url) return;
-  emit('update:url', url);
-  emit('success', { url, response: ctx.response });
-  files.value = [];
-};
-
-const handleFail: UploadProps['onFail'] = (opts) => {
-  files.value = [];
-  // formatResponse 失败时 t-upload 透传的是 { error }（内含从信封提取的 msg），优先取它
-  const resp = opts.response as { error?: string; msg?: string } | null;
-  const msg =
-    resp?.error ||
-    resp?.msg ||
-    `文件 ${opts.file?.name ?? ''} 上传失败`;
-  MessagePlugin.error(msg);
-  emit('error', opts);
-};
-
-const handleValidate: UploadProps['onValidate'] = (ctx) => {
-  if (ctx.type === 'FILE_OVER_SIZE_LIMIT') {
-    MessagePlugin.warning(`图片大小不超过 ${props.maxSizeMb} MB`);
+// 有文件数量超出时会触发，文件大小超出限制、文件同名时会触发等场景。注意如果设置允许上传同名文件，则此事件不会触发
+const onValidate = (params: { type: UploadValidateType; files: UploadFile[] }) => {
+  const { files, type } = params;
+  if (type === 'FILE_OVER_SIZE_LIMIT') {
+    MessagePlugin.warning(`${files.map((t) => t.name).join('、')} 等文件大小超出限制，已自动过滤`, 5000);
+  } else if (type === 'FILES_OVER_LENGTH_LIMIT') {
+    MessagePlugin.warning('文件数量超出限制，仅上传未超出数量的文件');
+  } else if (type === 'FILTER_FILE_SAME_NAME') {
+    // 如果希望支持上传同名文件，请设置 allowUploadDuplicateFile={true}
+    MessagePlugin.warning('不允许上传同名文件');
   }
 };
+
+// 上传前：先确保 token 新鲜（t-upload 原生 XHR 绕过 axios 401→refresh，token 过期会直接 401）
+async function handleBeforeUpload(file: UploadFile) {
+  try {
+    await userStore.ensureFreshAccessToken();
+  } catch {
+    // refresh 失败时 store 已处理跳登录，中止上传
+    return false;
+  }
+  const fileName = file.name ?? '';
+  const fileType = file.type ?? '';
+  let isImg: boolean;
+  if (props.fileType?.length) {
+    let fileExtension = '';
+    if (fileName.includes('.')) {
+      fileExtension = getHttpFileSuffix(fileName);
+    }
+    isImg = props.fileType.some((type) => {
+      if (fileType.includes(type)) return true;
+      return !!fileExtension && fileExtension.includes(type);
+    });
+  } else {
+    isImg = fileType.includes('image');
+  }
+  if (!isImg) {
+    MessagePlugin.error(`文件格式不正确, 请上传${props.fileType.join('/')}图片格式文件!`);
+    return false;
+  }
+  if (fileName.includes(',')) {
+    MessagePlugin.error('文件名不正确，不能包含英文逗号!');
+    return false;
+  }
+  // 压缩图片，开启压缩并且大于指定的压缩大小时才压缩
+  if (props.compressSupport && (file.size ?? 0) / 1024 > props.compressTargetSize) {
+    const blob = await compressAccurately(file.raw!, props.compressTargetSize);
+    file.raw = blobToFile(blob, fileName, fileType);
+    file.size = file.raw.size;
+  }
+  return true;
+}
+
+/**
+ * 单文件上传结束回调（multiple 且一文件一请求时逐个触发）。
+ * gosilite 信封 {code,msg,data:{id,url,originalName,size}}：code!==200 时 HTTP 仍为 200，t-upload 视为成功，此处判错提示。
+ */
+function handleOneUploadSuccess(context: Pick<SuccessContext, 'e' | 'file' | 'response' | 'XMLHttpRequest'>) {
+  const response = context.response as { code?: number; msg?: string; data?: { originalName?: string } } | null;
+  if (response?.code !== 200) {
+    MessagePlugin.error(response?.msg || '上传失败');
+  } else if (props.showSuccessMessage) {
+    MessagePlugin.success(`文件【${response.data?.originalName ?? context.file?.name}】上传成功！`);
+  }
+}
+
+// 单文件失败回调（HTTP 层失败：响应体可能有业务 msg）
+function handleUploadError(options: { response?: { msg?: string } | null; XMLHttpRequest?: XMLHttpRequest }) {
+  let msg = options?.response?.msg;
+  if (!msg && options?.XMLHttpRequest?.responseText) {
+    try {
+      msg = (JSON.parse(options.XMLHttpRequest.responseText) as { msg?: string }).msg;
+    } catch {
+      // 非 JSON 响应（如网关 HTML 页）走兜底文案
+    }
+  }
+  MessagePlugin.error(msg || '上传图片失败');
+}
+
+// 上传成功回调（multiple 多请求：results 为逐文件结果，含成功与失败）
+function handleUploadSuccess(context: SuccessContext) {
+  const uploadList = (context.results ?? [])
+    .filter((value) => value.response?.code === 200 && value.response?.data?.url)
+    .map<SUploadSuccessFile>((value) => ({
+      name: value.response?.data?.originalName ?? '',
+      url: value.response?.data?.url ?? '',
+      ossId: value.response?.data?.id,
+      size: value.response?.data?.size,
+    }));
+  cacheMeta(uploadList);
+  uploadedSuccessfully(uploadList);
+  emit('success', uploadList);
+}
+
+// 删除图片
+function handleDelete({ file }: UploadRemoveContext) {
+  const { ossId, name } = file as UploadFile & { ossId?: string };
+  // 直传清理（ruoyi supportSelectFile=false 语义）：默认关闭，开启且无权限时静默跳过
+  if (props.deleteRemoteOnRemove && ossId) {
+    delOss(String(ossId))
+      .then(() => {
+        MessagePlugin.success(`文件【${name}】删除成功！`);
+      })
+      .catch(() => undefined);
+  }
+  const value = listToString(fileList.value);
+  emit('update:model-value', value);
+  emit('change', value);
+}
+
+/**
+ * 上传结束处理。t-upload 成功后已把文件写入 fileList（但 url 仅当信封顶层有 url 才设置，
+ * gosilite url 在 data 内 → 新文件 url 为 undefined）：先滤掉未带 url 的本批新文件，再并入
+ * 从信封映射出的 uploadList，避免重复条目（ruoyi 同款机制，依赖其无 formatResponse 的原生信封透传）。
+ */
+function uploadedSuccessfully(uploadList: SUploadSuccessFile[]) {
+  fileList.value = fileList.value.filter((f) => f.url !== undefined).concat(uploadList);
+  const value = listToString(fileList.value);
+  emit('update:model-value', value);
+  emit('change', value);
+}
+
+// 对象转成指定字符串分隔
+function listToString(list: UploadFile[], separator?: string) {
+  let strs = '';
+  separator = separator || ',';
+  for (const i in list) {
+    if (props.mode === 'url') {
+      if (list[i].url && list[i].url.indexOf('blob:') !== 0) {
+        strs += list[i].url + separator;
+      }
+    } else if (props.mode === 'id') {
+      if (list[i].ossId && list[i].url && list[i].url.indexOf('blob:') !== 0) {
+        strs += list[i].ossId + separator;
+      }
+    }
+  }
+  return strs !== '' ? strs.substring(0, strs.length - 1) : '';
+}
 </script>
-<style lang="less" scoped>
-.s-upload-image {
-  position: relative;
-  display: inline-block;
-  overflow: hidden;
-  border-radius: 50%;
-  cursor: pointer;
-
-  &.is-disabled {
-    cursor: not-allowed;
-  }
-
-  &__mask {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgb(0 0 0 / 45%);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  &:hover &__mask {
-    opacity: 1;
-  }
-
-  &__mask-text {
-    color: #fff;
-    font-size: var(--td-font-size-body-small, 12px);
-    text-align: center;
-    padding: 0 4px;
-  }
-}
-</style>

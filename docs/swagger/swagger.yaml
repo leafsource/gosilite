@@ -56,6 +56,109 @@ definitions:
       title:
         type: string
     type: object
+  oss.OssIdsRequest:
+    properties:
+      ids:
+        items:
+          type: integer
+        type: array
+    type: object
+  oss.OssSaveRequest:
+    properties:
+      id:
+        type: integer
+      isLock:
+        type: boolean
+      originalName:
+        type: string
+    type: object
+  ossconfig.OssConfigIdsRequest:
+    properties:
+      ids:
+        items:
+          type: integer
+        type: array
+    type: object
+  ossconfig.OssConfigSaveRequest:
+    properties:
+      accessKey:
+        type: string
+      accessPolicy:
+        type: string
+      bucketName:
+        type: string
+      configKey:
+        type: string
+      domain:
+        type: string
+      endpoint:
+        type: string
+      id:
+        type: integer
+      isHttps:
+        type: string
+      prefix:
+        type: string
+      region:
+        type: string
+      remark:
+        type: string
+      secretKey:
+        type: string
+    type: object
+  ossconfig.OssConfigStatusRequest:
+    properties:
+      id:
+        type: integer
+    type: object
+  ossconfig.OssConfigTestRequest:
+    properties:
+      accessKey:
+        type: string
+      bucketName:
+        type: string
+      endpoint:
+        type: string
+      region:
+        type: string
+      secretKey:
+        type: string
+    type: object
+  ossrule.OssRuleIdsRequest:
+    properties:
+      ids:
+        items:
+          type: integer
+        type: array
+    type: object
+  ossrule.OssRuleOverwriteRequest:
+    properties:
+      id:
+        type: integer
+      isOverwrite:
+        type: string
+    type: object
+  ossrule.OssRuleSaveRequest:
+    properties:
+      domain:
+        type: string
+      id:
+        type: integer
+      isDefault:
+        type: string
+      mimeType:
+        type: string
+      remark:
+        type: string
+      rule:
+        type: string
+      ruleName:
+        type: string
+      ruleSort:
+        type: integer
+      status:
+        type: string
+    type: object
   syscfg.ConfigSaveRequest:
     properties:
       configKey:
@@ -286,12 +389,10 @@ definitions:
       refreshToken:
         type: string
     type: object
-  user.UserUpdateAvatarRequest:
+  user.UpdateProfileAvatarRequest:
     properties:
-      avatar:
-        items:
-          type: integer
-        type: array
+      fileId:
+        type: integer
     type: object
 info:
   contact: {}
@@ -299,6 +400,43 @@ info:
   title: SkyX Cloud API
   version: 1.0.0
 paths:
+  /common/file/download:
+    get:
+      description: 统一文件下载接口（按台账 id 流式下载）
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+      summary: 统一文件下载
+      tags:
+      - 系统管理
+  /common/file/upload:
+    post:
+      description: 统一文件上传接口（写桶+自动记录文件台账，登录即可）
+      parameters:
+      - description: 上传文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 统一文件上传
+      tags:
+      - 系统管理
   /menu/routes:
     get:
       description: 获取前端路由接口
@@ -1293,6 +1431,20 @@ paths:
       summary: SQL 监控
       tags:
       - 监控
+  /system/monitor/storage:
+    get:
+      description: 对象存储配置逐条探活接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 存储概览
+      tags:
+      - 监控
   /system/monitor/uri:
     get:
       description: URI 访问统计接口
@@ -1550,6 +1702,418 @@ paths:
       summary: 操作日志列表
       tags:
       - 日志
+  /system/oss:
+    delete:
+      consumes:
+      - application/json
+      description: OSS文件台账删除接口（锁定文件拒绝）
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/oss.OssIdsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 文件删除
+      tags:
+      - 系统管理
+    get:
+      description: OSS文件台账详情接口
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 文件详情
+      tags:
+      - 系统管理
+    put:
+      consumes:
+      - application/json
+      description: OSS文件台账修改接口（原名/锁定）
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/oss.OssSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 文件修改
+      tags:
+      - 系统管理
+  /system/oss/config:
+    delete:
+      consumes:
+      - application/json
+      description: 对象存储配置删除接口（默认配置不可删）
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ossconfig.OssConfigIdsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除OSS配置
+      tags:
+      - 系统管理
+    get:
+      description: 对象存储配置详情接口
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: OSS配置详情
+      tags:
+      - 系统管理
+    post:
+      consumes:
+      - application/json
+      description: 对象存储配置新增接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ossconfig.OssConfigSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 新增OSS配置
+      tags:
+      - 系统管理
+    put:
+      consumes:
+      - application/json
+      description: 对象存储配置修改接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ossconfig.OssConfigSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 修改OSS配置
+      tags:
+      - 系统管理
+  /system/oss/config/list:
+    get:
+      description: 对象存储配置分页列表接口
+      parameters:
+      - description: configKey / endpoint 模糊
+        in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: OSS配置列表
+      tags:
+      - 系统管理
+  /system/oss/config/status:
+    put:
+      consumes:
+      - application/json
+      description: 对象存储配置设默认接口（切换即时生效）
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ossconfig.OssConfigStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 设为默认存储配置
+      tags:
+      - 系统管理
+  /system/oss/config/test:
+    post:
+      consumes:
+      - application/json
+      description: 对象存储配置连通测试接口（临时客户端探活，不写库）
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ossconfig.OssConfigTestRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: OSS配置连通测试
+      tags:
+      - 系统管理
+  /system/oss/list:
+    get:
+      description: OSS文件台账分页列表接口
+      parameters:
+      - description: yyyy-MM-dd HH:mm:ss 起止，缺省=不限
+        in: query
+        name: beginTime
+        type: string
+      - description: 上传人（create_by）
+        in: query
+        name: createBy
+        type: string
+      - in: query
+        name: endTime
+        type: string
+      - description: 小写后缀，逗号分隔
+        in: query
+        name: fileSuffix
+        type: string
+      - in: query
+        name: originalName
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 文件管理列表
+      tags:
+      - 系统管理
+  /system/oss/rule:
+    delete:
+      consumes:
+      - application/json
+      description: 删除OSS处理规则接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ossrule.OssRuleIdsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除OSS处理规则
+      tags:
+      - 系统管理
+    get:
+      description: OSS处理规则详情接口
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: OSS处理规则详情
+      tags:
+      - 系统管理
+    post:
+      consumes:
+      - application/json
+      description: 新增OSS处理规则接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ossrule.OssRuleSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 新增OSS处理规则
+      tags:
+      - 系统管理
+    put:
+      consumes:
+      - application/json
+      description: 修改OSS处理规则接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ossrule.OssRuleSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 修改OSS处理规则
+      tags:
+      - 系统管理
+  /system/oss/rule/cache:
+    delete:
+      description: 刷新OSS处理规则缓存接口
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 刷新OSS处理规则缓存
+      tags:
+      - 系统管理
+  /system/oss/rule/list:
+    get:
+      description: OSS处理规则分页列表接口
+      parameters:
+      - in: query
+        name: domain
+        type: string
+      - description: 缺省=全部；Y=默认 N=非默认
+        in: query
+        name: isDefault
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: ruleName
+        type: string
+      - description: 缺省=全部；1=启用 0=停用
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: OSS处理规则列表
+      tags:
+      - 系统管理
+  /system/oss/rule/overwrite:
+    put:
+      consumes:
+      - application/json
+      description: 规则覆盖字段值修改接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/ossrule.OssRuleOverwriteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 规则覆盖字段值修改
+      tags:
+      - 系统管理
   /system/post:
     delete:
       description: 岗位接口
@@ -1756,87 +2320,6 @@ paths:
             additionalProperties: true
             type: object
       summary: 角色列表
-      tags:
-      - 系统管理
-  /system/storage/info:
-    get:
-      description: 存储概览接口
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-      summary: 存储概览
-      tags:
-      - 系统管理
-  /system/storage/list:
-    get:
-      description: 存储对象列表接口
-      parameters:
-      - description: key 包含模糊
-        in: query
-        name: keyword
-        type: string
-      - in: query
-        name: page
-        type: integer
-      - in: query
-        name: pageSize
-        type: integer
-      - description: key 前缀过滤
-        in: query
-        name: prefix
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-      summary: 存储对象列表
-      tags:
-      - 系统管理
-  /system/storage/object:
-    delete:
-      description: 删除存储对象接口
-      parameters:
-      - in: query
-        name: key
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-      summary: 删除存储对象
-      tags:
-      - 系统管理
-  /system/storage/upload:
-    post:
-      description: 上传存储对象接口
-      parameters:
-      - description: 上传文件
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-      summary: 上传存储对象
       tags:
       - 系统管理
   /system/user:
@@ -2060,6 +2543,29 @@ paths:
       summary: 获取个人信息
       tags:
       - 用户
+  /user/profile/avatar:
+    put:
+      consumes:
+      - application/json
+      description: 按统一文件服务返回的文件 id 更新头像（服务端回查台账防任意 url）
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateProfileAvatarRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 更新头像
+      tags:
+      - 用户
   /user/refresh:
     post:
       description: 刷新访问令牌接口
@@ -2079,27 +2585,6 @@ paths:
             additionalProperties: true
             type: object
       summary: 刷新访问令牌
-      tags:
-      - 用户
-  /user/update/upload_avatar:
-    post:
-      description: 上传头像接口
-      parameters:
-      - description: 请求参数
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/user.UserUpdateAvatarRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-      summary: 上传头像
       tags:
       - 用户
 securityDefinitions:

@@ -24,10 +24,8 @@ func Register(r *server.Hertz) {
 		_user.POST("/logout", append(_logoutMw(), user.Logout)...)
 		_user.POST("/password", append(_changepasswordMw(), user.ChangePassword)...)
 		_user.GET("/profile", append(_getprofileMw(), user.GetProfile)...)
+		_profile := _user.Group("/profile", _profileMw()...)
+		_profile.PUT("/avatar", append(_updateprofileavatarMw(), user.UpdateProfileAvatar)...)
 		_user.POST("/refresh", append(_refreshMw(), user.Refresh)...)
-		{
-			_update := _user.Group("/update", _updateMw()...)
-			_update.POST("/upload_avatar", append(_updateavatarMw(), user.UpdateAvatar)...)
-		}
 	}
 }

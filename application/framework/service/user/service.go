@@ -20,12 +20,15 @@ type Service struct {
 	sessions *SessionStore
 	posts    repository.IPostRepository
 	roleRBAC repository.IRoleRBACRepository
+	// ossFileRepo 台账仓储：按 fileId 回查对象 key 更新头像（spec S2.11 统一文件服务）
+	ossFileRepo repository.IOssFileRepository
 }
 
 // NewService builds a user service with explicit dependencies.
 func NewService(db *gorm.DB, imageOSS imagex.ImageX, cacheClient cache.CacheClient) *Service {
 	return &Service{
-		repo:     repository.NewSystemUserRepository(db),
+		repo:        repository.NewSystemUserRepository(db),
+		ossFileRepo: repository.NewOssFileRepository(db),
 		imageOSS: imageOSS,
 		sessions: NewSessionStore(cacheClient),
 		posts:    repository.NewPostRepository(db),

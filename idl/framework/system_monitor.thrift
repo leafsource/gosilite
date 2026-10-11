@@ -133,6 +133,23 @@ struct HttpMonitorResponse {
     3: i64 totalCount
 }
 
+// 存储概览项：system_oss_config 单条配置的探活结果
+struct StorageOverviewItem {
+    1: string configKey
+    2: string endpoint
+    3: string bucketName
+    4: string domain
+    // 是否默认配置
+    5: bool isDefault
+    6: bool connected
+    7: string message
+}
+
+// 存储概览：全部 OSS 配置逐条探活（spec system-oss 修订：概览迁至数据监控）
+struct StorageOverviewResponse {
+    1: list<StorageOverviewItem> list
+}
+
 service SystemMonitorController {
     OnlineListResponse OnlineList(1: OnlineListRequest req)(api.get = "/system/online/list")
     i32 OnlineForce(1: OnlineForceRequest req)(api.post = "/system/online/force")
@@ -142,6 +159,7 @@ service SystemMonitorController {
     FirewallResponse Firewall()(api.get = "/system/monitor/firewall")
     UriListResponse UriList()(api.get = "/system/monitor/uri")
     HttpMonitorResponse HttpMonitor()(api.get = "/system/monitor/http")
+    StorageOverviewResponse StorageOverview()(api.get = "/system/monitor/storage")
 }
 
 // ===== 缓存监控（三栏：前缀 / 键 / 值） =====

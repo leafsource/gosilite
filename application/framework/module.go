@@ -9,8 +9,11 @@ import (
 	frameworkLogRouter "gosilite/api/router/framework/log"
 	frameworkMenuRouter "gosilite/api/router/framework/menu"
 	frameworkMonitorRouter "gosilite/api/router/framework/monitor"
+	frameworkCommonFileRouter "gosilite/api/router/framework/commonfile"
 	frameworkNoticeRouter "gosilite/api/router/framework/notice"
-	frameworkStorageRouter "gosilite/api/router/framework/storage"
+	frameworkOssRouter "gosilite/api/router/framework/oss"
+	frameworkOssConfigRouter "gosilite/api/router/framework/ossconfig"
+	frameworkOssRuleRouter "gosilite/api/router/framework/ossrule"
 	frameworkSyscfgRouter "gosilite/api/router/framework/syscfg"
 	frameworkSyscfgGlobalRouter "gosilite/api/router/framework/syscfgglobal"
 	frameworkSystemRouter "gosilite/api/router/framework/system"
@@ -22,9 +25,11 @@ import (
 	"gosilite/application/framework/service/menu"
 	"gosilite/application/framework/service/monitor"
 	"gosilite/application/framework/service/notice"
+	"gosilite/application/framework/service/ossconfig"
+	"gosilite/application/framework/service/ossfile"
+	"gosilite/application/framework/service/ossrule"
 	"gosilite/application/framework/service/post"
 	"gosilite/application/framework/service/role"
-	"gosilite/application/framework/service/storage"
 	"gosilite/application/framework/service/syslog"
 	"gosilite/application/framework/service/user"
 	"gosilite/application/infra"
@@ -55,7 +60,12 @@ func (m *Module) Init(ctx context.Context, deps *infra.AppDependencies) error {
 	syslog.InitService(repository.NewSysLogRepository(deps.DB))
 	monitor.InitService(deps.DB, deps.Cache)
 	monitor.InitCacheService(deps.Cache)
-	storage.InitService(deps.Storage)
+	// 对象存储三件套（spec system-oss）：
+	// ossconfig 变更 → StorageCtl.Invalidate 使默认配置即时生效（S2.4）
+	ossconfig.InitService(repository.NewOssConfigRepository(deps.DB), deps.StorageCtl.Invalidate)
+	ossrule.InitService(repository.NewOssRuleRepository(deps.DB))
+	// ossfile 依赖默认配置客户端 + 规则消费（装饰 VO 的 ruleUrls）
+	ossfile.InitService(repository.NewOssFileRepository(deps.DB), deps.StorageCtl, ossrule.SystemOssRuleSVC)
 	return nil
 }
 
@@ -68,7 +78,11 @@ func (m *Module) RegisterRoutes(r *server.Hertz) {
 	// 免登录全局参数：独立 IDL 文件生成的独立 Register（rootMw=nil），spec: config-consumption S2.2
 	frameworkSyscfgGlobalRouter.Register(r)
 	frameworkNoticeRouter.Register(r)
+	// 统一文件服务（spec system-oss S2.11）：登录即可的通用上传/下载
+	frameworkCommonFileRouter.Register(r)
 	frameworkLogRouter.Register(r)
 	frameworkMonitorRouter.Register(r)
-	frameworkStorageRouter.Register(r)
+	frameworkOssConfigRouter.Register(r)
+	frameworkOssRuleRouter.Register(r)
+	frameworkOssRouter.Register(r)
 }

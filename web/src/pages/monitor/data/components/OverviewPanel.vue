@@ -61,18 +61,42 @@
         </div>
       </div>
     </section>
+
+    <!-- ===== 存储（OSS 配置逐条探活，spec system-oss 修订） ===== -->
+    <section class="ov-section">
+      <h3 class="ov-section__title">存储（对象存储配置）</h3>
+      <div v-if="storageList.length" class="ov-grid">
+        <div v-for="item in storageList" :key="item.configKey" class="ov-card">
+          <div class="ov-card__label">
+            {{ item.configKey }}
+            <t-tag v-if="item.isDefault" theme="success" size="small" variant="light">默认</t-tag>
+          </div>
+          <div class="ov-card__value" :style="{ color: item.connected ? C.teal : '#f54a45' }">
+            {{ item.connected ? '连通' : '异常' }}
+          </div>
+          <div class="ov-card__sub" :title="item.endpoint">
+            {{ item.endpoint }} · {{ item.bucketName || '—' }}
+          </div>
+          <div v-if="item.message && !item.connected" class="ov-storage__error" :title="item.message">
+            {{ item.message }}
+          </div>
+        </div>
+      </div>
+      <div v-else class="ov-storage__empty">暂无存储配置</div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 
-import { getDatasource, getServer } from '@/api/system/monitor';
-import type { DatasourceDTO, ServerDTO } from '@/api/system/monitorModel';
+import { getDatasource, getServer, getStorageOverview } from '@/api/system/monitor';
+import type { DatasourceDTO, ServerDTO, StorageOverviewItem } from '@/api/system/monitorModel';
 
 const loading = ref(false);
 const datasource = ref<DatasourceDTO | null>(null);
 const server = ref<ServerDTO | null>(null);
+const storageList = ref<StorageOverviewItem[]>([]);
 
 /** 参考图色板 */
 const C = {
@@ -187,9 +211,14 @@ const poolStatus = computed(() => {
 async function load() {
   loading.value = true;
   try {
-    const [d, s] = await Promise.all([getDatasource(), getServer()]);
+    const [d, s, st] = await Promise.all([
+      getDatasource(),
+      getServer(),
+      getStorageOverview().catch(() => ({ list: [] as StorageOverviewItem[] })),
+    ]);
     datasource.value = d;
     server.value = s;
+    storageList.value = st.list || [];
   } finally {
     loading.value = false;
   }
@@ -340,5 +369,23 @@ onMounted(load);
 
 .ov-dot {
   color: #c9cdd4;
+}
+</style>
+
+<style scoped>
+.ov-storage__error {
+  overflow: hidden;
+  margin-top: 4px;
+  color: var(--td-error-color);
+  font-size: 11px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ov-storage__empty {
+  padding: 12px 0;
+  color: var(--td-text-color-placeholder);
+  font-size: 13px;
 }
 </style>

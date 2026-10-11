@@ -735,7 +735,8 @@
       "roles": "角色",
       "uploadAvatar": "更换头像",
       "avatarUpdated": "头像已更新",
-      "changePassword": "修改密码"
+      "changePassword": "修改密码",
+      "uploadFailed": "上传失败"
     },
     "changePassword": {
       "title": "修改密码",

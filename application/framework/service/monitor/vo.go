@@ -101,3 +101,19 @@ type HttpMonitorVO struct {
 	TopLatency []*HttpLatencyVO `json:"topLatency"`
 	TotalCount int64            `json:"totalCount"`
 }
+
+// StorageOverviewVO 存储概览：单条 OSS 配置的探活结果
+type StorageOverviewVO struct {
+	ConfigKey  string `json:"configKey"`
+	Endpoint   string `json:"endpoint"`
+	BucketName string `json:"bucketName"`
+	Domain     string `json:"domain"`
+	IsDefault  bool   `json:"isDefault"`
+	Connected  bool   `json:"connected"`
+	Message    string `json:"message"`
+}
+
+// StorageOverviewListVO 存储概览：全部配置
+type StorageOverviewListVO struct {
+	List []*StorageOverviewVO `json:"list"`
+}

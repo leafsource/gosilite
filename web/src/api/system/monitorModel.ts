@@ -99,3 +99,18 @@ export interface HttpMonitorResponse {
   topLatency: HttpLatencyDTO[];
   totalCount: number;
 }
+
+// 存储概览：单条 OSS 配置探活（spec system-oss 修订：概览迁至数据监控）
+export interface StorageOverviewItem {
+  configKey: string;
+  endpoint: string;
+  bucketName: string;
+  domain: string;
+  isDefault: boolean;
+  connected: boolean;
+  message: string;
+}
+
+export interface StorageOverviewResponse {
+  list: StorageOverviewItem[];
+}

@@ -40,6 +40,7 @@ func Register(r *server.Hertz) {
 			_monitor.GET("/http", append(_httpmonitorMw(), monitor.HttpMonitor)...)
 			_monitor.GET("/server", append(_serverMw(), monitor.Server)...)
 			_monitor.GET("/sql", append(_sqlmonitorMw(), monitor.SqlMonitor)...)
+			_monitor.GET("/storage", append(_storageoverviewMw(), monitor.StorageOverview)...)
 			_monitor.GET("/uri", append(_urilistMw(), monitor.UriList)...)
 		}
 		{

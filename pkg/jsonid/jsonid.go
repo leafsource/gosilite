@@ -21,6 +21,7 @@ var idKeys = map[string]struct{}{
 	"id": {}, "parentId": {}, "userId": {}, "deptId": {},
 	"roleId": {}, "menuId": {}, "postId": {}, "leaderId": {},
 	"roleIds": {}, "postIds": {}, "menuIds": {}, "deptIds": {}, "ids": {},
+	"fileId": {},
 }
 
 func isIDKey(k string) bool {

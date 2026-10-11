@@ -733,7 +733,8 @@
       "roles": "Roles",
       "uploadAvatar": "Change Avatar",
       "avatarUpdated": "Avatar updated",
-      "changePassword": "Change Password"
+      "changePassword": "Change Password",
+      "uploadFailed": "Upload failed"
     },
     "changePassword": {
       "title": "Change Password",

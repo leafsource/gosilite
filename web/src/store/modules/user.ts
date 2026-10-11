@@ -62,6 +62,25 @@ export const useUserStore = defineStore('user', {
         permissions: res.permissions ?? [],
       };
     },
+    /**
+     * 上传前确保 token 新鲜（t-upload 原生 XHR 绕过 axios 401→refresh 拦截器，
+     * token 过期会直接 401）：解析本 token exp，距过期 <60s 才走单飞刷新。
+     */
+    async ensureFreshAccessToken(): Promise<string> {
+      if (!this.token) {
+        return this.refreshAccessToken();
+      }
+      try {
+        const payload = JSON.parse(atob(this.token.split('.')[1] || ''));
+        const expSec = Number(payload.exp || 0);
+        if (expSec * 1000 - Date.now() > 60_000) {
+          return this.token;
+        }
+      } catch {
+        // 解析失败按临期处理，交给刷新
+      }
+      return this.refreshAccessToken();
+    },
     async refreshAccessToken(): Promise<string> {
       if (!this.refreshToken) {
         this.clearSession();

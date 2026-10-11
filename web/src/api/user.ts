@@ -77,3 +77,8 @@ export function changePassword(data: ChangePasswordParams) {
 export function fetchProfile() {
   return request.get<ProfileResponse>({ url: Api.Profile });
 }
+
+/** 更新头像（统一文件服务第二步：fileId 来自 /common/file/upload，spec S2.11） */
+export function updateProfileAvatar(fileId: string) {
+  return request.put<{ avatarURL: string }>({ url: '/user/profile/avatar', data: { fileId } });
+}

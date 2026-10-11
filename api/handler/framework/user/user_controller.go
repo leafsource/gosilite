@@ -10,14 +10,11 @@ import (
 	"gosilite/pkg/errorx"
 	R "gosilite/pkg/utils/response"
 	"gosilite/types/errno"
-	"io"
-	"strings"
 	"time"
 
 	user "gosilite/api/model/framework/user"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/hlog"
 )
 
 // Login godoc
@@ -75,58 +72,6 @@ func GetProfile(ctx context.Context, c *app.RequestContext) {
 	R.SuccessWithData(ctx, c, toProfileResponse(profile))
 }
 
-// UpdateAvatar .
-// @Summary 上传头像
-// @Description 上传头像接口
-// @Tags 用户
-// @Produce json
-// @Param data body user.UserUpdateAvatarRequest true "请求参数"
-// @Success 200 {object} map[string]interface{}
-// @Router /user/update/upload_avatar [POST]
-func UpdateAvatar(ctx context.Context, c *app.RequestContext) {
-	var err error
-	var req user.UserUpdateAvatarRequest
-
-	// Get the uploaded file
-	file, err := c.FormFile("avatar")
-	if err != nil {
-		hlog.CtxErrorf(ctx, "Get Avatar Fail failed, err=%v", err)
-		R.InvalidParamRequestResponse(c, "missing avatar file")
-		return
-	}
-	// Check file type
-	if !strings.HasPrefix(file.Header.Get("Content-Type"), "image/") {
-		R.InvalidParamRequestResponse(c, "invalid file type, only image allowed")
-		return
-	}
-	// Read file content
-	src, err := file.Open()
-	if err != nil {
-		R.Error(ctx, c, err)
-		return
-	}
-	defer src.Close()
-
-	fileContent, err := io.ReadAll(src)
-	if err != nil {
-		R.Error(ctx, c, err)
-		return
-	}
-
-	req.Avatar = fileContent
-	mimeType := file.Header.Get("Content-Type")
-	ext := strings.Split(mimeType, "/")[1]
-
-	avatarURL, err := userService.SystemUserSVC.UpdateAvatar(ctx, ctxutil.GetLoginUserID(ctx), ext, req.Avatar)
-	if err != nil {
-		R.Error(ctx, c, err)
-		return
-	}
-
-	R.SuccessWithData(ctx, c, &user.UserUpdateAvatarResponse{
-		WebURI: avatarURL,
-	})
-}
 
 // Refresh .
 // @Summary 刷新访问令牌
@@ -230,4 +175,33 @@ func ChangePassword(ctx context.Context, c *app.RequestContext) {
 	}
 
 	R.SuccessWithData(ctx, c, nil)
+}
+
+
+// UpdateProfileAvatar 按台账 fileId 更新头像（统一文件服务第二步，spec S2.11）
+// @Summary 更新头像
+// @Description 按统一文件服务返回的文件 id 更新头像（服务端回查台账防任意 url）
+// @Tags 用户
+// @Accept json
+// @Produce json
+// @Param data body user.UpdateProfileAvatarRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /user/profile/avatar [PUT]
+func UpdateProfileAvatar(ctx context.Context, c *app.RequestContext) {
+	var req user.UpdateProfileAvatarRequest
+	if err := c.BindAndValidate(&req); err != nil {
+		R.InvalidParamRequestResponse(c, err.Error())
+		return
+	}
+	login := ctxutil.GetLoginUser(ctx)
+	if login == nil {
+		R.InvalidParamRequestResponse(c, "login required")
+		return
+	}
+	avatarURL, err := userService.SystemUserSVC.UpdateAvatarByFileId(ctx, login.ID, req.FileId)
+	if err != nil {
+		R.Error(ctx, c, err)
+		return
+	}
+	R.SuccessWithData(ctx, c, &user.UpdateProfileAvatarResponse{AvatarURL: avatarURL})
 }

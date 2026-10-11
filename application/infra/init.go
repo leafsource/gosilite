@@ -11,6 +11,7 @@ import (
 	"gosilite/application/infra/imagex"
 	"gosilite/application/infra/orm/impl/postgres"
 	"gosilite/application/infra/storage"
+	"gosilite/application/infra/storage/dynamic"
 	"gosilite/application/infra/storage/impl/s3"
 	"gosilite/conf"
 
@@ -19,10 +20,12 @@ import (
 )
 
 type AppDependencies struct {
-	DB       *gorm.DB
-	Cache    cache.CacheClient
-	Storage  storage.Storage
-	ImageOSS imagex.ImageX
+	DB      *gorm.DB
+	Cache   cache.CacheClient
+	Storage storage.Storage
+	// StorageCtl 动态存储控制器：OSS 配置服务变更后调 Invalidate() 使默认配置即时生效
+	StorageCtl *dynamic.Controller
+	ImageOSS   imagex.ImageX
 }
 
 func Init(ctx context.Context) (*AppDependencies, error) {
@@ -63,11 +66,13 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 	// 初始化日志
 	// 初始化配置
 
-	//初始化Storage
-	deps.Storage, err = s3.New(ctx, conf.Storage.AccessKey, conf.Storage.SecretKey, conf.Storage.BucketName, conf.Storage.Endpoint, conf.Storage.Region)
+	//初始化Storage：conf 构造兜底客户端；默认配置优先读 system_oss_config（spec system-oss S2.3）
+	fallback, err := s3.New(ctx, conf.Storage.AccessKey, conf.Storage.SecretKey, conf.Storage.BucketName, conf.Storage.Endpoint, conf.Storage.Region)
 	if err != nil {
 		return nil, fmt.Errorf("init storage failed: %w", err)
 	}
+	deps.StorageCtl = dynamic.New(dynamic.DBResolver(deps.DB), fallback).WithKeyResolver(dynamic.DBKeyResolver(deps.DB))
+	deps.Storage = deps.StorageCtl
 	deps.ImageOSS, err = s3.NewStorageImagex(ctx, conf.Storage.AccessKey, conf.Storage.SecretKey, conf.Storage.BucketName, conf.Storage.Endpoint, conf.Storage.Region, conf.Storage.Domain)
 	if err != nil {
 		return nil, fmt.Errorf("init image storage failed: %w", err)

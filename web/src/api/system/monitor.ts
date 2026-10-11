@@ -6,6 +6,7 @@ import type {
   HttpMonitorResponse,
   ServerDTO,
   SqlMonitorResponse,
+  StorageOverviewResponse,
   UriListResponse,
 } from './monitorModel';
 
@@ -31,4 +32,9 @@ export function getUriList() {
 
 export function getHttpMonitor() {
   return request.get<HttpMonitorResponse>({ url: '/system/monitor/http' });
+}
+
+// 存储概览：全部 OSS 配置逐条探活
+export function getStorageOverview() {
+  return request.get<StorageOverviewResponse>({ url: '/system/monitor/storage' });
 }

@@ -4,11 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"gosilite/application/base/ctxutil"
-	"gosilite/application/infra/imagex"
 	"gosilite/pkg/bcrypt"
 	"gosilite/pkg/errorx"
 	"gosilite/types/errno"
@@ -69,21 +67,24 @@ func (s *Service) GetProfile(ctx context.Context) (*ProfileVO, error) {
 	}, nil
 }
 
-func (s *Service) UpdateAvatar(ctx context.Context, userId int64, ext string, image []byte) (url string, err error) {
-	avatarKey := "user_avatar/" + strconv.FormatInt(userId, 10) + "." + ext
-	imageResult, err := s.imageOSS.Upload(ctx, image, imagex.WithStoreKey(avatarKey))
+// UpdateAvatarByFileId 统一文件服务两步链路第二步（spec S2.11）：
+// 按 /common/file/upload 返回的台账 fileId 回查对象 key 写入 avatar_url
+// （保持相对 uri 语义，GetProfile 现有 GetResourceURL 转换零改动；服务端回查防客户端塞任意 url）。
+func (s *Service) UpdateAvatarByFileId(ctx context.Context, userId, fileId int64) (string, error) {
+	if s.ossFileRepo == nil {
+		return "", errorx.New(errno.ErrUserInvalidParamCode, errorx.KV("msg", "file repo not ready"))
+	}
+	file, err := s.ossFileRepo.GetByID(ctx, fileId)
 	if err != nil {
+		return "", errorx.New(errno.ErrUserInvalidParamCode, errorx.KV("msg", "file not found"))
+	}
+	if err := s.repo.UpdateAvatar(ctx, userId, file.FileName); err != nil {
 		return "", err
 	}
-
-	err = s.repo.UpdateAvatar(ctx, userId, imageResult.FileInfo.Uri)
+	resource, err := s.imageOSS.GetResourceURL(ctx, file.FileName)
 	if err != nil {
-		return "", err
-	}
-
-	resource, err := s.imageOSS.GetResourceURL(ctx, imageResult.FileInfo.Uri)
-	if err != nil {
-		return "", err
+		// 台账 key 已写入，URL 转换失败返回 key 兜底
+		return file.FileName, nil
 	}
 	return resource.URL, nil
 }

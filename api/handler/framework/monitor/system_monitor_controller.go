@@ -132,3 +132,31 @@ func UriList(ctx context.Context, c *app.RequestContext) {
 func HttpMonitor(ctx context.Context, c *app.RequestContext) {
 	R.SuccessWithData(ctx, c, toHttpMonitorDTO(monitorService.SystemMonitorSVC.HttpMonitor()))
 }
+
+// StorageOverview 存储概览：全部 OSS 配置逐条探活。
+// @Summary 存储概览
+// @Description 对象存储配置逐条探活接口
+// @Tags 监控
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router /system/monitor/storage [GET]
+func StorageOverview(ctx context.Context, c *app.RequestContext) {
+	vo, err := monitorService.SystemMonitorSVC.StorageOverview(ctx)
+	if err != nil {
+		R.Error(ctx, c, err)
+		return
+	}
+	items := make([]*monitor.StorageOverviewItem, 0, len(vo.List))
+	for _, it := range vo.List {
+		items = append(items, &monitor.StorageOverviewItem{
+			ConfigKey:  it.ConfigKey,
+			Endpoint:   it.Endpoint,
+			BucketName: it.BucketName,
+			Domain:     it.Domain,
+			IsDefault:  it.IsDefault,
+			Connected:  it.Connected,
+			Message:    it.Message,
+		})
+	}
+	R.SuccessWithData(ctx, c, &monitor.StorageOverviewResponse{List: items})
+}

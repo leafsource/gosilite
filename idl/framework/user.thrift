@@ -34,14 +34,13 @@ struct LoginUserResponse {
     3: required list<string> permissions
 }
 
-// 更新头像请求
-struct UserUpdateAvatarRequest {
-    1: required binary avatar
+// 更新头像（统一文件服务两步链路第二步）：按台账 fileId 回查 key 更新 avatar_url
+struct UpdateProfileAvatarRequest {
+    1: required i64 fileId
 }
 
-// 更新头像响应
-struct UserUpdateAvatarResponse {
-    1: required string webURI
+struct UpdateProfileAvatarResponse {
+    1: required string avatarURL
 }
 
 
@@ -89,6 +88,6 @@ service UserController {
     // 修改密码
     ChangePasswordRequest ChangePassword(1: ChangePasswordRequest req)(api.post="/user/password")
 
-    // 更新头像
-    UserUpdateAvatarResponse UpdateAvatar(1: UserUpdateAvatarRequest req)(api.post="/user/update/upload_avatar")
+    // 更新头像（fileId 来自 /common/file/upload，服务端回查台账防客户端塞任意 url）
+    UpdateProfileAvatarResponse UpdateProfileAvatar(1: UpdateProfileAvatarRequest req)(api.put="/user/profile/avatar")
 }

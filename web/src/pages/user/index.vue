@@ -4,12 +4,14 @@
       <t-col :flex="1">
         <t-card class="profile-card" :bordered="false">
           <div class="profile-card__avatar">
+            <!-- limit=1：单头像磁贴（达到 max 时隐藏新增框，避免多余入口）；
+                 换头像流程 = hover 删除（X）→ 新增框出现 → 上传新图（服务端无清空头像接口，
+                 删除仅清本地，刷新即恢复；上传失败回退服务端原头像） -->
             <s-upload-image
-              :action="UPLOAD_AVATAR_ACTION"
-              field="avatar"
-              :url="avatarUrl"
-              size="96px"
-              :upload-text="t('pages.user.uploadAvatar')"
+              v-model="avatarValue"
+              :limit="1"
+              :is-show-tip="false"
+              :show-image-file-name="false"
               @success="onAvatarSuccess"
             />
           </div>
@@ -42,11 +44,7 @@
               {{ profile?.mobilePhone || noValue }}
             </t-descriptions-item>
             <t-descriptions-item :label="t('pages.user.state')">
-              <s-tag-dict
-                v-if="profile?.state"
-                dict-type="sys_state"
-                :value="profile.state"
-              />
+              <s-tag-dict v-if="profile?.state" dict-type="sys_state" :value="profile.state" />
               <span v-else>{{ noValue }}</span>
             </t-descriptions-item>
             <t-descriptions-item :label="t('pages.user.createdAt')">
@@ -54,13 +52,7 @@
             </t-descriptions-item>
             <t-descriptions-item :label="t('pages.user.roles')" :span="2">
               <template v-if="roleTags.length">
-                <t-tag
-                  v-for="role in roleTags"
-                  :key="role"
-                  theme="primary"
-                  variant="light"
-                  class="info-card__role"
-                >
+                <t-tag v-for="role in roleTags" :key="role" theme="primary" variant="light" class="info-card__role">
                   {{ role }}
                 </t-tag>
               </template>
@@ -74,22 +66,21 @@
     <change-password-dialog ref="changePwdRef" />
   </div>
 </template>
-
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
 import { MessagePlugin } from 'tdesign-vue-next';
+import { computed, onMounted, ref, watch } from 'vue';
 
-import { fetchProfile } from '@/api/user';
 import type { ProfileResponse } from '@/api/user';
-import ChangePasswordDialog from '@/layouts/components/ChangePasswordDialog.vue';
-import SUploadImage from '@/components/s-upload-image/index.vue';
+import { fetchProfile, updateProfileAvatar } from '@/api/user';
 import STagDict from '@/components/s-tag-dict/index.vue';
+import type { SUploadSuccessFile } from '@/components/s-upload-image/index.vue';
+import SUploadImage from '@/components/s-upload-image/index.vue';
+import ChangePasswordDialog from '@/layouts/components/ChangePasswordDialog.vue';
 import { t } from '@/locales';
 import { useUserStore } from '@/store';
 
 defineOptions({ name: 'UserIndex' });
 
-const UPLOAD_AVATAR_ACTION = '/user/update/upload_avatar';
 const noValue = '-';
 
 const userStore = useUserStore();
@@ -98,9 +89,16 @@ const changePwdRef = ref<{ open: () => void }>();
 
 /** 头像单源：登录态 userInfo（上传成功后由 getUserInfo 刷新） */
 const avatarUrl = computed(() => userStore.userInfo.avatarURL || '');
-const displayName = computed(
-  () => profile.value?.username || userStore.userInfo.name || noValue,
+/** 组件 v-model 本地值：上传/移除即时反馈，avatarUrl 变化时回写对齐服务端 */
+const avatarValue = ref('');
+watch(
+  avatarUrl,
+  (v) => {
+    avatarValue.value = v;
+  },
+  { immediate: true },
 );
+const displayName = computed(() => profile.value?.username || userStore.userInfo.name || noValue);
 const roleTags = computed(() => userStore.userInfo.roles ?? []);
 
 async function loadProfile() {
@@ -112,7 +110,21 @@ async function loadProfile() {
   }
 }
 
-async function onAvatarSuccess() {
+// 统一文件服务两步链路（spec S2.11）：common 上传拿 fileId → 按 id 更新头像（服务端回查台账）
+async function onAvatarSuccess(files: SUploadSuccessFile[]) {
+  const fileId = files[0]?.ossId;
+  if (!fileId) {
+    MessagePlugin.error(t('pages.user.uploadFailed'));
+    return;
+  }
+  try {
+    await updateProfileAvatar(fileId);
+  } catch (e) {
+    MessagePlugin.error((e as Error).message || t('pages.user.uploadFailed'));
+    // 更新失败：回退展示服务端原头像，避免本地显示与实际不一致
+    avatarValue.value = avatarUrl.value;
+    return;
+  }
   await Promise.all([userStore.getUserInfo(), loadProfile()]);
   MessagePlugin.success(t('pages.user.avatarUpdated'));
 }
@@ -123,7 +135,6 @@ onMounted(() => {
   userStore.getUserInfo().catch(() => undefined);
 });
 </script>
-
 <style lang="less" scoped>
 .user-page {
   width: 100%;
@@ -137,6 +148,13 @@ onMounted(() => {
 
   &__avatar {
     margin-bottom: var(--td-comp-margin-l, 16px);
+
+    // t-upload 图片列表为 flex + gap：Vue 模板的空白文本节点会成为 flex item 多占一格 gap，
+    // 单磁贴 shrink-wrap 时被右侧 gap 拉偏（实测相对卡片中心左偏 8px）；gap 置 0 后单图自然居中
+    :deep(.t-upload__card) {
+      gap: 0;
+      justify-content: center;
+    }
   }
 
   &__name {

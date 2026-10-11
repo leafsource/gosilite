@@ -1340,31 +1340,31 @@ func (p *LoginUserResponse) String() string {
 
 }
 
-// 更新头像请求
-type UserUpdateAvatarRequest struct {
-	Avatar []byte `thrift:"avatar,1,required" form:"avatar,required" json:"avatar,required" query:"avatar,required"`
+// 更新头像（统一文件服务两步链路第二步）：按台账 fileId 回查 key 更新 avatar_url
+type UpdateProfileAvatarRequest struct {
+	FileId int64 `thrift:"fileId,1,required" form:"fileId,required" json:"fileId,required" query:"fileId,required"`
 }
 
-func NewUserUpdateAvatarRequest() *UserUpdateAvatarRequest {
-	return &UserUpdateAvatarRequest{}
+func NewUpdateProfileAvatarRequest() *UpdateProfileAvatarRequest {
+	return &UpdateProfileAvatarRequest{}
 }
 
-func (p *UserUpdateAvatarRequest) InitDefault() {
+func (p *UpdateProfileAvatarRequest) InitDefault() {
 }
 
-func (p *UserUpdateAvatarRequest) GetAvatar() (v []byte) {
-	return p.Avatar
+func (p *UpdateProfileAvatarRequest) GetFileId() (v int64) {
+	return p.FileId
 }
 
-var fieldIDToName_UserUpdateAvatarRequest = map[int16]string{
-	1: "avatar",
+var fieldIDToName_UpdateProfileAvatarRequest = map[int16]string{
+	1: "fileId",
 }
 
-func (p *UserUpdateAvatarRequest) Read(iprot thrift.TProtocol) (err error) {
+func (p *UpdateProfileAvatarRequest) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
-	var issetAvatar bool = false
+	var issetFileId bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -1381,11 +1381,11 @@ func (p *UserUpdateAvatarRequest) Read(iprot thrift.TProtocol) (err error) {
 
 		switch fieldId {
 		case 1:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetAvatar = true
+				issetFileId = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -1402,7 +1402,7 @@ func (p *UserUpdateAvatarRequest) Read(iprot thrift.TProtocol) (err error) {
 		goto ReadStructEndError
 	}
 
-	if !issetAvatar {
+	if !issetFileId {
 		fieldId = 1
 		goto RequiredFieldNotSetError
 	}
@@ -1412,7 +1412,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserUpdateAvatarRequest[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UpdateProfileAvatarRequest[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -1421,24 +1421,24 @@ ReadFieldEndError:
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UserUpdateAvatarRequest[fieldId]))
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UpdateProfileAvatarRequest[fieldId]))
 }
 
-func (p *UserUpdateAvatarRequest) ReadField1(iprot thrift.TProtocol) error {
+func (p *UpdateProfileAvatarRequest) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field []byte
-	if v, err := iprot.ReadBinary(); err != nil {
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
-		_field = []byte(v)
+		_field = v
 	}
-	p.Avatar = _field
+	p.FileId = _field
 	return nil
 }
 
-func (p *UserUpdateAvatarRequest) Write(oprot thrift.TProtocol) (err error) {
+func (p *UpdateProfileAvatarRequest) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
-	if err = oprot.WriteStructBegin("UserUpdateAvatarRequest"); err != nil {
+	if err = oprot.WriteStructBegin("UpdateProfileAvatarRequest"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -1464,11 +1464,11 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *UserUpdateAvatarRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("avatar", thrift.STRING, 1); err != nil {
+func (p *UpdateProfileAvatarRequest) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("fileId", thrift.I64, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteBinary([]byte(p.Avatar)); err != nil {
+	if err := oprot.WriteI64(p.FileId); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1481,39 +1481,38 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *UserUpdateAvatarRequest) String() string {
+func (p *UpdateProfileAvatarRequest) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("UserUpdateAvatarRequest(%+v)", *p)
+	return fmt.Sprintf("UpdateProfileAvatarRequest(%+v)", *p)
 
 }
 
-// 更新头像响应
-type UserUpdateAvatarResponse struct {
-	WebURI string `thrift:"webURI,1,required" form:"webURI,required" json:"webURI,required" query:"webURI,required"`
+type UpdateProfileAvatarResponse struct {
+	AvatarURL string `thrift:"avatarURL,1,required" form:"avatarURL,required" json:"avatarURL,required" query:"avatarURL,required"`
 }
 
-func NewUserUpdateAvatarResponse() *UserUpdateAvatarResponse {
-	return &UserUpdateAvatarResponse{}
+func NewUpdateProfileAvatarResponse() *UpdateProfileAvatarResponse {
+	return &UpdateProfileAvatarResponse{}
 }
 
-func (p *UserUpdateAvatarResponse) InitDefault() {
+func (p *UpdateProfileAvatarResponse) InitDefault() {
 }
 
-func (p *UserUpdateAvatarResponse) GetWebURI() (v string) {
-	return p.WebURI
+func (p *UpdateProfileAvatarResponse) GetAvatarURL() (v string) {
+	return p.AvatarURL
 }
 
-var fieldIDToName_UserUpdateAvatarResponse = map[int16]string{
-	1: "webURI",
+var fieldIDToName_UpdateProfileAvatarResponse = map[int16]string{
+	1: "avatarURL",
 }
 
-func (p *UserUpdateAvatarResponse) Read(iprot thrift.TProtocol) (err error) {
+func (p *UpdateProfileAvatarResponse) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
-	var issetWebURI bool = false
+	var issetAvatarURL bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -1534,7 +1533,7 @@ func (p *UserUpdateAvatarResponse) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
-				issetWebURI = true
+				issetAvatarURL = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -1551,7 +1550,7 @@ func (p *UserUpdateAvatarResponse) Read(iprot thrift.TProtocol) (err error) {
 		goto ReadStructEndError
 	}
 
-	if !issetWebURI {
+	if !issetAvatarURL {
 		fieldId = 1
 		goto RequiredFieldNotSetError
 	}
@@ -1561,7 +1560,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserUpdateAvatarResponse[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UpdateProfileAvatarResponse[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -1570,10 +1569,10 @@ ReadFieldEndError:
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 RequiredFieldNotSetError:
-	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UserUpdateAvatarResponse[fieldId]))
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_UpdateProfileAvatarResponse[fieldId]))
 }
 
-func (p *UserUpdateAvatarResponse) ReadField1(iprot thrift.TProtocol) error {
+func (p *UpdateProfileAvatarResponse) ReadField1(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -1581,13 +1580,13 @@ func (p *UserUpdateAvatarResponse) ReadField1(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.WebURI = _field
+	p.AvatarURL = _field
 	return nil
 }
 
-func (p *UserUpdateAvatarResponse) Write(oprot thrift.TProtocol) (err error) {
+func (p *UpdateProfileAvatarResponse) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
-	if err = oprot.WriteStructBegin("UserUpdateAvatarResponse"); err != nil {
+	if err = oprot.WriteStructBegin("UpdateProfileAvatarResponse"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -1613,11 +1612,11 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *UserUpdateAvatarResponse) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("webURI", thrift.STRING, 1); err != nil {
+func (p *UpdateProfileAvatarResponse) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("avatarURL", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.WebURI); err != nil {
+	if err := oprot.WriteString(p.AvatarURL); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1630,11 +1629,11 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *UserUpdateAvatarResponse) String() string {
+func (p *UpdateProfileAvatarResponse) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("UserUpdateAvatarResponse(%+v)", *p)
+	return fmt.Sprintf("UpdateProfileAvatarResponse(%+v)", *p)
 
 }
 
@@ -2463,8 +2462,8 @@ type UserController interface {
 	Logout(ctx context.Context, req *LogoutRequest) (r *LogoutRequest, err error)
 	// 修改密码
 	ChangePassword(ctx context.Context, req *ChangePasswordRequest) (r *ChangePasswordRequest, err error)
-	// 更新头像
-	UpdateAvatar(ctx context.Context, req *UserUpdateAvatarRequest) (r *UserUpdateAvatarResponse, err error)
+	// 更新头像（fileId 来自 /common/file/upload，服务端回查台账防客户端塞任意 url）
+	UpdateProfileAvatar(ctx context.Context, req *UpdateProfileAvatarRequest) (r *UpdateProfileAvatarResponse, err error)
 }
 
 type UserControllerClient struct {
@@ -2545,11 +2544,11 @@ func (p *UserControllerClient) ChangePassword(ctx context.Context, req *ChangePa
 	}
 	return _result.GetSuccess(), nil
 }
-func (p *UserControllerClient) UpdateAvatar(ctx context.Context, req *UserUpdateAvatarRequest) (r *UserUpdateAvatarResponse, err error) {
-	var _args UserControllerUpdateAvatarArgs
+func (p *UserControllerClient) UpdateProfileAvatar(ctx context.Context, req *UpdateProfileAvatarRequest) (r *UpdateProfileAvatarResponse, err error) {
+	var _args UserControllerUpdateProfileAvatarArgs
 	_args.Req = req
-	var _result UserControllerUpdateAvatarResult
-	if err = p.Client_().Call(ctx, "UpdateAvatar", &_args, &_result); err != nil {
+	var _result UserControllerUpdateProfileAvatarResult
+	if err = p.Client_().Call(ctx, "UpdateProfileAvatar", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
@@ -2581,7 +2580,7 @@ func NewUserControllerProcessor(handler UserController) *UserControllerProcessor
 	self.AddToProcessorMap("Refresh", &userControllerProcessorRefresh{handler: handler})
 	self.AddToProcessorMap("Logout", &userControllerProcessorLogout{handler: handler})
 	self.AddToProcessorMap("ChangePassword", &userControllerProcessorChangePassword{handler: handler})
-	self.AddToProcessorMap("UpdateAvatar", &userControllerProcessorUpdateAvatar{handler: handler})
+	self.AddToProcessorMap("UpdateProfileAvatar", &userControllerProcessorUpdateProfileAvatar{handler: handler})
 	return self
 }
 func (p *UserControllerProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -2890,16 +2889,16 @@ func (p *userControllerProcessorChangePassword) Process(ctx context.Context, seq
 	return true, err
 }
 
-type userControllerProcessorUpdateAvatar struct {
+type userControllerProcessorUpdateProfileAvatar struct {
 	handler UserController
 }
 
-func (p *userControllerProcessorUpdateAvatar) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := UserControllerUpdateAvatarArgs{}
+func (p *userControllerProcessorUpdateProfileAvatar) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := UserControllerUpdateProfileAvatarArgs{}
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("UpdateAvatar", thrift.EXCEPTION, seqId)
+		oprot.WriteMessageBegin("UpdateProfileAvatar", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -2908,11 +2907,11 @@ func (p *userControllerProcessorUpdateAvatar) Process(ctx context.Context, seqId
 
 	iprot.ReadMessageEnd()
 	var err2 error
-	result := UserControllerUpdateAvatarResult{}
-	var retval *UserUpdateAvatarResponse
-	if retval, err2 = p.handler.UpdateAvatar(ctx, args.Req); err2 != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing UpdateAvatar: "+err2.Error())
-		oprot.WriteMessageBegin("UpdateAvatar", thrift.EXCEPTION, seqId)
+	result := UserControllerUpdateProfileAvatarResult{}
+	var retval *UpdateProfileAvatarResponse
+	if retval, err2 = p.handler.UpdateProfileAvatar(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing UpdateProfileAvatar: "+err2.Error())
+		oprot.WriteMessageBegin("UpdateProfileAvatar", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush(ctx)
@@ -2920,7 +2919,7 @@ func (p *userControllerProcessorUpdateAvatar) Process(ctx context.Context, seqId
 	} else {
 		result.Success = retval
 	}
-	if err2 = oprot.WriteMessageBegin("UpdateAvatar", thrift.REPLY, seqId); err2 != nil {
+	if err2 = oprot.WriteMessageBegin("UpdateProfileAvatar", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -4576,35 +4575,35 @@ func (p *UserControllerChangePasswordResult) String() string {
 
 }
 
-type UserControllerUpdateAvatarArgs struct {
-	Req *UserUpdateAvatarRequest `thrift:"req,1"`
+type UserControllerUpdateProfileAvatarArgs struct {
+	Req *UpdateProfileAvatarRequest `thrift:"req,1"`
 }
 
-func NewUserControllerUpdateAvatarArgs() *UserControllerUpdateAvatarArgs {
-	return &UserControllerUpdateAvatarArgs{}
+func NewUserControllerUpdateProfileAvatarArgs() *UserControllerUpdateProfileAvatarArgs {
+	return &UserControllerUpdateProfileAvatarArgs{}
 }
 
-func (p *UserControllerUpdateAvatarArgs) InitDefault() {
+func (p *UserControllerUpdateProfileAvatarArgs) InitDefault() {
 }
 
-var UserControllerUpdateAvatarArgs_Req_DEFAULT *UserUpdateAvatarRequest
+var UserControllerUpdateProfileAvatarArgs_Req_DEFAULT *UpdateProfileAvatarRequest
 
-func (p *UserControllerUpdateAvatarArgs) GetReq() (v *UserUpdateAvatarRequest) {
+func (p *UserControllerUpdateProfileAvatarArgs) GetReq() (v *UpdateProfileAvatarRequest) {
 	if !p.IsSetReq() {
-		return UserControllerUpdateAvatarArgs_Req_DEFAULT
+		return UserControllerUpdateProfileAvatarArgs_Req_DEFAULT
 	}
 	return p.Req
 }
 
-var fieldIDToName_UserControllerUpdateAvatarArgs = map[int16]string{
+var fieldIDToName_UserControllerUpdateProfileAvatarArgs = map[int16]string{
 	1: "req",
 }
 
-func (p *UserControllerUpdateAvatarArgs) IsSetReq() bool {
+func (p *UserControllerUpdateProfileAvatarArgs) IsSetReq() bool {
 	return p.Req != nil
 }
 
-func (p *UserControllerUpdateAvatarArgs) Read(iprot thrift.TProtocol) (err error) {
+func (p *UserControllerUpdateProfileAvatarArgs) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -4650,7 +4649,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserControllerUpdateAvatarArgs[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserControllerUpdateProfileAvatarArgs[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -4660,8 +4659,8 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *UserControllerUpdateAvatarArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewUserUpdateAvatarRequest()
+func (p *UserControllerUpdateProfileAvatarArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewUpdateProfileAvatarRequest()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -4669,9 +4668,9 @@ func (p *UserControllerUpdateAvatarArgs) ReadField1(iprot thrift.TProtocol) erro
 	return nil
 }
 
-func (p *UserControllerUpdateAvatarArgs) Write(oprot thrift.TProtocol) (err error) {
+func (p *UserControllerUpdateProfileAvatarArgs) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
-	if err = oprot.WriteStructBegin("UpdateAvatar_args"); err != nil {
+	if err = oprot.WriteStructBegin("UpdateProfileAvatar_args"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -4697,7 +4696,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *UserControllerUpdateAvatarArgs) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *UserControllerUpdateProfileAvatarArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -4714,43 +4713,43 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *UserControllerUpdateAvatarArgs) String() string {
+func (p *UserControllerUpdateProfileAvatarArgs) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("UserControllerUpdateAvatarArgs(%+v)", *p)
+	return fmt.Sprintf("UserControllerUpdateProfileAvatarArgs(%+v)", *p)
 
 }
 
-type UserControllerUpdateAvatarResult struct {
-	Success *UserUpdateAvatarResponse `thrift:"success,0,optional"`
+type UserControllerUpdateProfileAvatarResult struct {
+	Success *UpdateProfileAvatarResponse `thrift:"success,0,optional"`
 }
 
-func NewUserControllerUpdateAvatarResult() *UserControllerUpdateAvatarResult {
-	return &UserControllerUpdateAvatarResult{}
+func NewUserControllerUpdateProfileAvatarResult() *UserControllerUpdateProfileAvatarResult {
+	return &UserControllerUpdateProfileAvatarResult{}
 }
 
-func (p *UserControllerUpdateAvatarResult) InitDefault() {
+func (p *UserControllerUpdateProfileAvatarResult) InitDefault() {
 }
 
-var UserControllerUpdateAvatarResult_Success_DEFAULT *UserUpdateAvatarResponse
+var UserControllerUpdateProfileAvatarResult_Success_DEFAULT *UpdateProfileAvatarResponse
 
-func (p *UserControllerUpdateAvatarResult) GetSuccess() (v *UserUpdateAvatarResponse) {
+func (p *UserControllerUpdateProfileAvatarResult) GetSuccess() (v *UpdateProfileAvatarResponse) {
 	if !p.IsSetSuccess() {
-		return UserControllerUpdateAvatarResult_Success_DEFAULT
+		return UserControllerUpdateProfileAvatarResult_Success_DEFAULT
 	}
 	return p.Success
 }
 
-var fieldIDToName_UserControllerUpdateAvatarResult = map[int16]string{
+var fieldIDToName_UserControllerUpdateProfileAvatarResult = map[int16]string{
 	0: "success",
 }
 
-func (p *UserControllerUpdateAvatarResult) IsSetSuccess() bool {
+func (p *UserControllerUpdateProfileAvatarResult) IsSetSuccess() bool {
 	return p.Success != nil
 }
 
-func (p *UserControllerUpdateAvatarResult) Read(iprot thrift.TProtocol) (err error) {
+func (p *UserControllerUpdateProfileAvatarResult) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -4796,7 +4795,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserControllerUpdateAvatarResult[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserControllerUpdateProfileAvatarResult[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -4806,8 +4805,8 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *UserControllerUpdateAvatarResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewUserUpdateAvatarResponse()
+func (p *UserControllerUpdateProfileAvatarResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewUpdateProfileAvatarResponse()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -4815,9 +4814,9 @@ func (p *UserControllerUpdateAvatarResult) ReadField0(iprot thrift.TProtocol) er
 	return nil
 }
 
-func (p *UserControllerUpdateAvatarResult) Write(oprot thrift.TProtocol) (err error) {
+func (p *UserControllerUpdateProfileAvatarResult) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
-	if err = oprot.WriteStructBegin("UpdateAvatar_result"); err != nil {
+	if err = oprot.WriteStructBegin("UpdateProfileAvatar_result"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -4843,7 +4842,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *UserControllerUpdateAvatarResult) writeField0(oprot thrift.TProtocol) (err error) {
+func (p *UserControllerUpdateProfileAvatarResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
 		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
 			goto WriteFieldBeginError
@@ -4862,10 +4861,10 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
 }
 
-func (p *UserControllerUpdateAvatarResult) String() string {
+func (p *UserControllerUpdateProfileAvatarResult) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("UserControllerUpdateAvatarResult(%+v)", *p)
+	return fmt.Sprintf("UserControllerUpdateProfileAvatarResult(%+v)", *p)
 
 }

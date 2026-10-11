@@ -2,6 +2,7 @@ package monitor
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"runtime"
 	"sort"
@@ -10,6 +11,8 @@ import (
 
 	"gosilite/application/base/metrics"
 	"gosilite/application/infra/cache"
+	infraStorage "gosilite/application/infra/storage"
+	"gosilite/application/infra/storage/impl/s3"
 	"gosilite/conf"
 	dto "github.com/prometheus/client_model/go"
 	"gorm.io/gorm"
@@ -253,4 +256,50 @@ func labelValue(m *dto.Metric, name string) string {
 		}
 	}
 	return ""
+}
+
+// StorageOverview 存储概览：system_oss_config 全部配置逐条探活（spec system-oss 修订：概览迁至数据监控）。
+// 每条配置临时构建 S3 客户端 + List(limit=1)；构建/列举失败即 connected=false + message，不中断其余配置。
+func (s *Service) StorageOverview(ctx context.Context) (*StorageOverviewListVO, error) {
+	out := &StorageOverviewListVO{List: []*StorageOverviewVO{}}
+	if s.db == nil {
+		return out, nil
+	}
+	var rows []struct {
+		ConfigKey    string `gorm:"column:config_key"`
+		AccessKey    string `gorm:"column:access_key"`
+		SecretKey    string `gorm:"column:secret_key"`
+		BucketName   string `gorm:"column:bucket_name"`
+		Endpoint     string `gorm:"column:endpoint"`
+		Domain       string `gorm:"column:domain"`
+		Region       string `gorm:"column:region"`
+		Status       string `gorm:"column:status"`
+	}
+	if err := s.db.WithContext(ctx).Table("system_oss_config").
+		Select("config_key, access_key, secret_key, bucket_name, endpoint, domain, region, status").
+		Where("del_flag = 0").
+		Order("status DESC, id ASC").
+		Find(&rows).Error; err != nil {
+		return nil, err
+	}
+	for _, r := range rows {
+		item := &StorageOverviewVO{
+			ConfigKey:  r.ConfigKey,
+			Endpoint:   r.Endpoint,
+			BucketName: r.BucketName,
+			Domain:     r.Domain,
+			IsDefault:  r.Status == "1",
+		}
+		store, err := s3.New(ctx, r.AccessKey, r.SecretKey, r.BucketName, r.Endpoint, r.Region)
+		if err != nil {
+			item.Message = fmt.Sprintf("连接失败: %v", err)
+		} else if _, err := store.ListObjectsPaginated(ctx, &infraStorage.ListObjectsPaginatedInput{PageSize: 1}); err != nil {
+			item.Message = fmt.Sprintf("列举对象失败: %v", err)
+		} else {
+			item.Connected = true
+			item.Message = "连接正常"
+		}
+		out.List = append(out.List, item)
+	}
+	return out, nil
 }

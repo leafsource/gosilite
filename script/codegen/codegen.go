@@ -76,6 +76,18 @@ var generateConfig = map[string]map[string]map[string]any{
 			"repository": false,
 			"service":    false,
 		},
+		"system_oss_config": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_oss": {
+			"repository": false,
+			"service":    false,
+		},
+		"system_oss_rule": {
+			"repository": false,
+			"service":    false,
+		},
 		"system_oper_log": {
 			"repository": false,
 			"service":    false,
@@ -203,11 +215,24 @@ func GetCodegen() {
 			return f
 		}
 		var models []any
+		// 显式列类型覆盖：gorm gen 对个别列名推断有误（如 system_oss.service varchar 被判成 bool）
+		fieldTypes := map[string]map[string]string{
+			"system_oss": {"service": "string"},
+		}
 		for table, col2Model := range mapping {
-			opts := make([]gen.ModelOpt, 0, len(col2Model))
+			opts := make([]gen.ModelOpt, 0, len(col2Model)+1)
 			for column, m := range col2Model {
+				// "repository"/"service" 是本文件的生成开关（bool），不是列映射，跳过
+				if column == "repository" || column == "service" {
+					if _, isBool := m.(bool); isBool {
+						continue
+					}
+				}
 				cp := m
 				opts = append(opts, gen.FieldModify(genModify(column, cp)))
+			}
+			for column, typ := range fieldTypes[table] {
+				opts = append(opts, gen.FieldType(column, typ))
 			}
 			opts = append(opts, gen.FieldModify(timeModify))
 			models = append(models, g.GenerateModel(table, opts...))

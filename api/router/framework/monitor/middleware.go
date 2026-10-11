@@ -94,3 +94,7 @@ func _clearprefixMw() []app.HandlerFunc {
 func _prefixlistMw() []app.HandlerFunc {
 	return permission.HPermissions("system:cachemonitor:list")
 }
+
+func _storageoverviewMw() []app.HandlerFunc {
+	return permission.HPermissions("system:monitor:list")
+}

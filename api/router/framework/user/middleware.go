@@ -59,3 +59,12 @@ func _refreshMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _profileMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updateprofileavatarMw() []app.HandlerFunc {
+	return permission.Default()
+}
