@@ -1,14 +1,25 @@
 ---
 feature: project-docs
-status: in-progress
+status: delivered
 updated: 2026-10-11
 branch: develop
-commits:
+commits: 78cc5b2..420daa1
 ---
 
 # 项目文档（Hugo 站多页 · 面向新用户）
 
 ## Report
+
+**What was built** — 文档站新增一套面向新用户的完整项目文档，根级精简为 6 页：《概览》（技术栈/架构/仓库地图/能力清单）、《快速开始》（依赖→后端→前端→登录→验收→文档站）、《后端》（分层与 Module 约定 + 13 个 service 域逐模块 + 生成边界与迁移）、《前端》（目录/动态路由/API 层/18 组件表/11 页面域/开发规范）、《常见问题》（13 条 现象→原因→解法）、《参考》（命令速查、33 键配置表逐行对齐 conf.go 与 .env.example、信封与会话字段、菜单 id 速查含已删除 id 注记、Swag 最小集），外加迁入 `reference/` 的《Hugo × Hertz 集成》。原《开发指南》按约定拆并删除，首页卡片改指概览/快速开始。全部陈述以仓库代码/迁移/脚本为事实源，与 README、AGENTS 冲突处一律以代码为准并在文中标注。
+
+**Verification** — `script/build-docs.sh` 无 WARN；站内链接 169 条死链 0；事实抽查 11 项（账号/端口/env 变量/service 与组件清单/菜单 id/hertz 版本/信封字段/vite 代理等）全过；`WEB=1 ./script/check.sh` exit 0；独立 reviewer 30+ 处抽查报 1 critical（菜单 id 表混入已删除 id 12/40/48 系）+ 3 non-critical，全部修复后复审 4/4 PASS、无新 critical。
+
+**Journey log** —
+1. 4 个并行 subagent 按 spec 大纲分页撰写、事实源点名，效率与一致性兼得；统一由主控构建/死链检查，避免并发写 public 冲突。
+2. 三处仓库内过时表述被文档纠正（README Vite 5173→以 vite.config 3002 为准；AGENTS component 缺失 500→代码实为 404；spec 笔误 config_global→实为 system_config）——文档以代码为准是「无臆测」的核心。
+3. Hugo section 页 footer 用 `.File.ModTime` 直接崩溃（section 的 File 类型无该字段），改为「Lastmod 年份 <2 则只显站名」。
+4. 菜单 id 归源必须区分**基线 INSERT**（script/postgres.sql）与**迁移 UPDATE/DELETE**（0002 起），否则会把已删除 id 写进「当前存在」表——reviewer critical 的根因。
+5. dev-guide 的「约定速查」2 行落《前端》而非全在《参考》，属跨页合理归位（non-critical 记录在案）。
 
 ## [S1] Problem
 
@@ -68,9 +79,9 @@ content/
 
 ## Tasks
 
-- [ ] T1: 信息架构落地——6 页骨架 + weight、dev-guide 拆并删除、hugo-hertz 迁入 reference/、首页卡片与互链更新 — acceptance: build 后根级树 6 节点 + reference 1 子页；站内 href 全部可解析；无 `/docs/dev-guide/` 残留 (covers: S2.1)
-- [ ] T2: 撰写《概览》《快速开始》 — acceptance: 大纲要点全覆盖；命令/端口/账号与 README、conf.yaml 实测一致 (covers: S2.2, S2.3; depends: T1)
-- [ ] T3: 撰写《后端》（逐模块） — acceptance: 13 个 service 域与 application/framework/service 目录一一对应，权限码/表名来自迁移与 IDL (covers: S2.2, S2.3; depends: T1)
-- [ ] T4: 撰写《前端》 — acceptance: 组件清单与 web/src/components 一致，路由/代理规则与代码一致 (covers: S2.2, S2.3; depends: T1)
-- [ ] T5: 撰写《常见问题》《参考》 — acceptance: 配置变量表与 conf.go/.env.example 逐行一致；菜单 id 与迁移一致 (covers: S2.2, S2.3; depends: T1)
-- [ ] T6: 验收——死链脚本、事实抽查 ≥10 处、`WEB=1 ./script/check.sh`、独立 reviewer 无臆测核查 — acceptance: S2.4 五条全过 (covers: S2.4; depends: T2, T3, T4, T5)
+- [x] T1: 信息架构落地——6 页骨架 + weight、dev-guide 拆并删除、hugo-hertz 迁入 reference/、首页卡片与互链更新 — acceptance: build 后根级树 6 节点 + reference 1 子页；站内 href 全部可解析；无 `/docs/dev-guide/` 残留 (covers: S2.1)
+- [x] T2: 撰写《概览》《快速开始》 — acceptance: 大纲要点全覆盖；命令/端口/账号与 README、conf.yaml 实测一致 (covers: S2.2, S2.3; depends: T1)
+- [x] T3: 撰写《后端》（逐模块） — acceptance: 13 个 service 域与 application/framework/service 目录一一对应，权限码/表名来自迁移与 IDL (covers: S2.2, S2.3; depends: T1)
+- [x] T4: 撰写《前端》 — acceptance: 组件清单与 web/src/components 一致，路由/代理规则与代码一致 (covers: S2.2, S2.3; depends: T1)
+- [x] T5: 撰写《常见问题》《参考》 — acceptance: 配置变量表与 conf.go/.env.example 逐行一致；菜单 id 与迁移一致 (covers: S2.2, S2.3; depends: T1)
+- [x] T6: 验收——死链脚本、事实抽查 ≥10 处、`WEB=1 ./script/check.sh`、独立 reviewer 无臆测核查 — acceptance: S2.4 五条全过 (covers: S2.4; depends: T2, T3, T4, T5)
