@@ -116,8 +116,8 @@
       {{ block "main" . }}{{ end }}
       <p class="foot">
         {{- $mod := .Lastmod -}}
-        {{- if lt $mod.Year 2 }}{{ $mod = .File.ModTime }}{{ end -}}
-        最后修改于 {{ $mod.Format "2006-01-02" }} · {{ .Site.Title -}}
+        {{- if ge $mod.Year 2 }}最后修改于 {{ $mod.Format "2006-01-02" }} · {{ end -}}
+        {{ .Site.Title -}}
       </p>
     </main>
     <aside class="tp">
