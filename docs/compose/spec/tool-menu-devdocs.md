@@ -1,14 +1,25 @@
 ---
 feature: tool-menu-devdocs
-status: in-progress
+status: delivered
 updated: 2026-10-11
 branch: develop
-commits:
+commits: f88d456..8663a36
 ---
 
 # 系统工具菜单 + Hugo/Hertz 开发文档
 
 ## Report
+
+**What was built** — 新增顶级菜单「系统工具」（id 49，`/tool`），把「系统接口」4704 从系统监控原地改挂其下（id/权限/角色绑定不变，仅 component 迁 `tool/api/index`、页面名 ToolApi），并新增「开发文档」4901（`tool/docs/index`，iframe 内嵌 `/docs/`）。文档站由 `docs/hugo/` 的 Hugo 工程生成（扁平 content、自写极简 layouts、离线确定性构建），Hertz 在 main.go 用官方推荐的 `adaptor.HertzHandler` 包装标准库 `http.FileServer`（StripPrefix 后托管，不用 `app.FS`）挂在 `/docs`，根目录走 conf `docs.dir` / `GOSILITE_DOCS_DIR`；`/docs` 前缀加入 operlog 跳过名单。构建链：`script/bootstrap-hugo.sh`（pin hugo 0.167.0，linux 下载 tarball / darwin `go install` 源码构建）+ `script/build-docs.sh`（缺 hugo 打印 SKIP 且 exit 0），并挂入 `check.sh`；产物与 script/bin 均 gitignore。Vite 透传 `/docs` 代理到 8888。
+
+**Verification** — 迁移 0022 在 dev 库连续执行两遍幂等，SELECT 验证 49/4901 落库、4704.parent_id=49、绑定 2 条不变；`WEB=1 ./script/check.sh` exit 0（go test/vet/build + npm build + build docs）；触碰文件 eslint、`vue-tsc --noEmit` exit 0；curl `GET /docs`→301、`/docs/`→200、两子页 200、swagger 200、不存在路径 404；浏览器实测侧栏 系统监控下无系统接口、系统工具下两入口齐全，`/tool/api` 渲染 Swagger、`/tool/docs` 渲染 Hugo 首页、console 无 error；独立 reviewer 结论无 critical。
+
+**Journey log** —
+1. GitHub Release 资产 CDN 在本机仅 ~9KB/s 且 >0.152.2 起无 darwin tar.gz（仅 .pkg 要 sudo）：darwin 改走 `go install` 源码构建（goproxy.cn + checksum DB），linux 保留 tarball 路径。
+2. content 若放 `content/docs/` 会产出 `public/docs/*`，StripPrefix 后变成 `/docs/docs/*`：改为扁平 content + layouts 硬编码 `/docs/` 前缀。
+3. 曾误用 `curl -sI`（HEAD）验证 301 得到 404——Hertz 只注册了 GET；GET 复测 301 正常。
+4. 全仓 eslint 有大量既有失败（monitor/cache、data、online），属基线问题，本次只保证触碰文件干净。
+5. 残留风险已记入 Out of Scope：VisibleMenus 不补祖先（自定义角色只绑子菜单会丢菜单）、tabs-router persist 残留旧 /monitor/api 标签 404。
 
 ## [S1] Problem
 
@@ -74,8 +85,8 @@ id 选择：48/4801/4802 已被 0021 回收（历史存储菜单），改用空�
 
 ## Tasks
 
-- [ ] T1: 迁移 0022_system_tool.sql（49 M + 4704 改挂 + 4901 C + 角色绑定）— acceptance: dev 库执行幂等通过；`system_menu` 中 49/4901 存在、4704.parent_id=49 且 component=`tool/api/index`；4704 的 role_menu 绑定数不变 (covers: S2.1)
-- [ ] T2: Hugo 站点 docs/hugo + build-docs.sh/bootstrap-hugo.sh + gitignore — acceptance: 引导 hugo 后 `script/build-docs.sh` 产出 `docs/hugo/public/index.html`；无 hugo 时脚本 SKIP exit 0；构建产物不入 git (covers: S2.3, S2.5)
-- [ ] T3: main.go 托管 /docs + conf docs.dir + operlog 跳过 — acceptance: hugo 构建后 `curl /docs/` 200、`/docs` 301、未构建时 404；`go test ./...` 新增/既有用例绿 (covers: S2.4; depends: T2)
-- [ ] T4: 前端——api 页迁到 tool/、新增 tool/docs 页、vite 代理 /docs — acceptance: eslint+vue-tsc 绿；页面 name 为 ToolApi/ToolDocs 且与 genRouteName(fullPath) 一致 (covers: S2.2; depends: T1)
-- [ ] T5: 端到端验收——菜单树/双页冒烟 + `WEB=1 ./script/check.sh` — acceptance: S2.6 四条全过 (covers: S2.6; depends: T1, T2, T3, T4)
+- [x] T1: 迁移 0022_system_tool.sql（49 M + 4704 改挂 + 4901 C + 角色绑定）— acceptance: dev 库执行幂等通过；`system_menu` 中 49/4901 存在、4704.parent_id=49 且 component=`tool/api/index`；4704 的 role_menu 绑定数不变 (covers: S2.1)
+- [x] T2: Hugo 站点 docs/hugo + build-docs.sh/bootstrap-hugo.sh + gitignore — acceptance: 引导 hugo 后 `script/build-docs.sh` 产出 `docs/hugo/public/index.html`；无 hugo 时脚本 SKIP exit 0；构建产物不入 git (covers: S2.3, S2.5)
+- [x] T3: main.go 托管 /docs + conf docs.dir + operlog 跳过 — acceptance: hugo 构建后 `curl /docs/` 200、`/docs` 301、未构建时 404；`go test ./...` 新增/既有用例绿 (covers: S2.4; depends: T2)
+- [x] T4: 前端——api 页迁到 tool/、新增 tool/docs 页、vite 代理 /docs — acceptance: eslint+vue-tsc 绿；页面 name 为 ToolApi/ToolDocs 且与 genRouteName(fullPath) 一致 (covers: S2.2; depends: T1)
+- [x] T5: 端到端验收——菜单树/双页冒烟 + `WEB=1 ./script/check.sh` — acceptance: S2.6 四条全过 (covers: S2.6; depends: T1, T2, T3, T4)
