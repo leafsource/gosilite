@@ -1,6 +1,8 @@
 # gosilite 开发文档（Hugo 静态站）
 # 由 Hertz 通过 adaptor + http.FileServer 托管在 /docs/ 下（见 main.go）。
-baseURL = '/'
+# baseURL 带 /docs 前缀：.RelPermalink 等生成的站内链接自动落在 Hertz 托管路径下，
+# 避免 iframe 内点链接走出 /docs 被前端 SPA 兜底（套娃）。
+baseURL = '/docs/'
 title = 'gosilite 开发文档'
 publishDir = 'public'
 # 不需要 RSS/sitemap/taxonomy；站内链接在 layouts 中硬编码 /docs/ 前缀。

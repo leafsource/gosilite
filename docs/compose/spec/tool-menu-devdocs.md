@@ -21,6 +21,7 @@ commits: f88d456..58ded18
 4. 全仓 eslint 有大量既有失败（monitor/cache、data、online），属基线问题，本次只保证触碰文件干净。
 5. 残留风险已记入 Out of Scope：VisibleMenus 不补祖先（自定义角色只绑子菜单会丢菜单）、tabs-router persist 残留旧 /monitor/api 标签 404。
 6. Hugo `page.Fragments.Headings` 是**树**（根节点 Level=0，子级在 `.Headings`，文本字段 `.Title` 无 `.Plain`），不是平表——平表在 `HeadingsMap`/`Identifiers`（后者按字典序，不适合导航序）；调试技巧：模板里 `| jsonify` 一发定位字段。
+7. 嵌入 iframe 的坑：站内链接用 `.RelPermalink` 而 baseURL='/' 时会生成 `/dev-guide/`（无 `/docs` 前缀），在前端 origin 的 iframe 里被 Vite SPA 兜底成套娃中后台——`baseURL` 必须带 `/docs/`；另外 iframe 宽度（~700–900px）要当一等公民调断点，否则左栏整栏消失。
 
 ## [S1] Problem
 
@@ -83,7 +84,8 @@ id 选择：48/4801/4802 已被 0021 回收（历史存储菜单），改用空�
 - **布局**：`grid` 三栏——左栏站点页树（sticky、当前页高亮 `aria-current`、当前页下挂 h2 锚点子导航，数据取 `.Site.Home` + `.RegularPages.ByWeight` / `.Fragments.Headings` Level=2）；中栏正文（max-width 阅读宽）；右栏 `.TableOfContents` 本页目录（仅文章页）。
 - **标题锚点**：新增 `layouts/_default/_markup/render-heading.html`，渲染时注入 `#` 锚点链接（零 JS）。
 - **窄屏**：隐藏左右栏，页头 `<details>` 内嵌同一份页树 partial（`layouts/partials/nav-pages.html`，桌面/移动复用）。
-- 内容页 front matter 加 `weight` 固定排序；站内链接仍全部硬编码 `/docs/` 前缀。视觉沿用现有 token（品牌蓝 #0052d9、浅灰侧栏）。
+- 内容页 front matter 加 `weight` 固定排序；视觉沿用现有 token（品牌蓝 #0052d9、浅灰侧栏）。
+- **嵌入中后台修正（同日反馈）**：① `baseURL='/docs/'`——`.RelPermalink` 自动带 `/docs` 前缀，iframe 内点页树不再走出 `/docs` 被前端 SPA 兜底（否则套娃出第二个中后台）；② 左右栏通栏拉满 `min-height`（灰底铺到底，导航块自身 sticky），修短页上菜单灰底断半截；③ 断点改为 1100（右栏 TOC 藏）/520（真手机才收左栏进「目录」）——中后台 iframe 常见 700–900px 宽，左栏保持可见（≤1100 时收窄 220px）。
 
 ## [S3] Out of Scope
 

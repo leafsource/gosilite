@@ -29,11 +29,12 @@
     .mnav > summary::-webkit-details-marker { display: none; }
     .mnav[open] > .mnav-body { position: absolute; right: 0; top: calc(100% + 8px); width: min(78vw, 300px); max-height: 70vh; overflow: auto; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(31, 35, 41, .12); padding: 8px; }
 
-    /* 三栏 */
-    .shell { display: grid; grid-template-columns: 248px minmax(0, 1fr) 224px; max-width: 1440px; margin: 0 auto; align-items: start; }
+    /* 三栏：左右栏通栏铺满高度，导航块自身 sticky */
+    .shell { display: grid; grid-template-columns: 248px minmax(0, 1fr) 224px; max-width: 1440px; margin: 0 auto; min-height: calc(100vh - var(--hd-h)); }
 
     /* 左栏页树 */
-    .sb { position: sticky; top: var(--hd-h); max-height: calc(100vh - var(--hd-h)); overflow: auto; background: var(--side); border-right: 1px solid var(--line); padding: 18px 10px 40px; }
+    .sb { background: var(--side); border-right: 1px solid var(--line); }
+    .sb-in { position: sticky; top: var(--hd-h); max-height: calc(100vh - var(--hd-h)); overflow: auto; padding: 18px 10px 40px; }
     .np { list-style: none; margin: 0; padding: 0; }
     .np .np { padding-left: 12px; }
     .np-a { display: block; padding: 7px 12px; border-radius: 6px; color: #33415c; text-decoration: none; font-size: 14px; }
@@ -69,7 +70,8 @@
     .card span { font-size: 13px; color: var(--muted); }
 
     /* 右栏 TOC */
-    .tp { position: sticky; top: var(--hd-h); max-height: calc(100vh - var(--hd-h)); overflow: auto; padding: 32px 20px 40px 0; font-size: 13px; border-left: 1px solid transparent; }
+    .tp { border-left: 1px solid var(--line); }
+    .tp-in { position: sticky; top: var(--hd-h); max-height: calc(100vh - var(--hd-h)); overflow: auto; padding: 32px 20px 40px 16px; font-size: 13px; }
     .tp-title { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .04em; margin-bottom: 8px; }
     .tp nav > ul { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
     .tp nav ul ul { list-style: none; margin: 0; padding-left: 12px; }
@@ -80,11 +82,13 @@
     .foot { margin-top: 56px; font-size: 12px; color: #9aa5b8; }
 
     /* 响应式 */
+    /* 响应式：中后台 iframe 常见 ~700–900px，左栏一直保留（可收窄）；
+       仅真手机宽度才收进页头「目录」 */
     @media (max-width: 1100px) {
-      .shell { grid-template-columns: 240px minmax(0, 1fr); }
+      .shell { grid-template-columns: 220px minmax(0, 1fr); }
       .tp { display: none; }
     }
-    @media (max-width: 860px) {
+    @media (max-width: 520px) {
       .shell { grid-template-columns: 1fr; }
       .sb { display: none; }
       .mnav { display: block; }
@@ -103,15 +107,17 @@
     </details>
   </header>
   <div class="shell">
-    <aside class="sb">{{ partial "nav-pages.html" . }}</aside>
+    <aside class="sb"><div class="sb-in">{{ partial "nav-pages.html" . }}</div></aside>
     <main class="md">
       {{ block "main" . }}{{ end }}
       <p class="foot">由 Hugo 生成静态文件，Hertz 通过 adaptor + http.FileServer 托管。</p>
     </main>
     <aside class="tp">
       {{ if .IsPage }}
-        <div class="tp-title">本页目录</div>
-        {{ .TableOfContents }}
+        <div class="tp-in">
+          <div class="tp-title">本页目录</div>
+          {{ .TableOfContents }}
+        </div>
       {{ end }}
     </aside>
   </div>
