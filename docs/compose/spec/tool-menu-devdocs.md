@@ -3,7 +3,7 @@ feature: tool-menu-devdocs
 status: delivered
 updated: 2026-10-11
 branch: develop
-commits: f88d456..b1a68e4
+commits: f88d456..4c64282
 ---
 
 # 系统工具菜单 + Hugo/Hertz 开发文档
