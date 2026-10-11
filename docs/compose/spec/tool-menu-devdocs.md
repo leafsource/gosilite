@@ -1,6 +1,6 @@
 ---
 feature: tool-menu-devdocs
-status: delivered
+status: in-progress
 updated: 2026-10-11
 branch: develop
 commits: f88d456..8663a36
@@ -75,9 +75,18 @@ id 选择：48/4801/4802 已被 0021 回收（历史存储菜单），改用空�
 3. 浏览器：系统接口、开发文档两页 iframe 正常，keep-alive 缓存名匹配（无 500/白屏）。
 4. `WEB=1 ./script/check.sh` 全绿。
 
+### S2.7 文档站 Docsy 式布局（增补，2026-10-11）
+
+用户拍板：不引真 Docsy 主题（需 Hugo Extended + Node 构建链 + 联网依赖，破坏离线约束），在自写 layouts 上仿其**三栏结构**，纯模板零依赖零 JS：
+
+- **布局**：`grid` 三栏——左栏站点页树（sticky、当前页高亮 `aria-current`、当前页下挂 h2 锚点子导航，数据取 `.Site.Home` + `.RegularPages.ByWeight` / `.Fragments.Headings` Level=2）；中栏正文（max-width 阅读宽）；右栏 `.TableOfContents` 本页目录（仅文章页）。
+- **标题锚点**：新增 `layouts/_default/_markup/render-heading.html`，渲染时注入 `#` 锚点链接（零 JS）。
+- **窄屏**：隐藏左右栏，页头 `<details>` 内嵌同一份页树 partial（`layouts/partials/nav-pages.html`，桌面/移动复用）。
+- 内容页 front matter 加 `weight` 固定排序；站内链接仍全部硬编码 `/docs/` 前缀。视觉沿用现有 token（品牌蓝 #0052d9、浅灰侧栏）。
+
 ## [S3] Out of Scope
 
-- Hugo 主题美化、全文搜索、多语言、版本化文档。
+- 真 Docsy/其他 Hugo 主题引入、全文搜索、多语言、版本化文档；TOC scrollspy 滚动高亮（如需可后补十行内联 JS）。
 - `/docs` 鉴权/按角色授权（静态公开，与 swagger 同级）；文档内容的持续运营。
 - 生产部署形态（容器/CDN）与文档站 CI 自动发布。
 - 既有 `api-swagger-page` 行为变更（仅随菜单搬迁，不改其 iframe/权限逻辑）。
@@ -90,3 +99,4 @@ id 选择：48/4801/4802 已被 0021 回收（历史存储菜单），改用空�
 - [x] T3: main.go 托管 /docs + conf docs.dir + operlog 跳过 — acceptance: hugo 构建后 `curl /docs/` 200、`/docs` 301、未构建时 404；`go test ./...` 新增/既有用例绿 (covers: S2.4; depends: T2)
 - [x] T4: 前端——api 页迁到 tool/、新增 tool/docs 页、vite 代理 /docs — acceptance: eslint+vue-tsc 绿；页面 name 为 ToolApi/ToolDocs 且与 genRouteName(fullPath) 一致 (covers: S2.2; depends: T1)
 - [x] T5: 端到端验收——菜单树/双页冒烟 + `WEB=1 ./script/check.sh` — acceptance: S2.6 四条全过 (covers: S2.6; depends: T1, T2, T3, T4)
+- [ ] T6: Docsy 式三栏布局改版 — acceptance: 构建后三页均渲染左页树/右 TOC/标题锚点，当前页高亮正确，窄屏出 `<details>` 导航；`script/build-docs.sh` 无 WARN (covers: S2.7)

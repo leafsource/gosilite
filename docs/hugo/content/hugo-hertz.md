@@ -1,5 +1,6 @@
 ---
 title: "Hugo × Hertz 集成"
+weight: 1
 ---
 
 ## 核心思路

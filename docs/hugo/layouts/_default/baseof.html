@@ -5,44 +5,115 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} · {{ .Site.Title }}{{ end }}</title>
   <style>
-    :root { color-scheme: light; }
+    :root {
+      --brand: #0052d9;
+      --ink: #1f2329;
+      --muted: #5f6b7a;
+      --line: #e7eaef;
+      --side: #f7f8fa;
+      --hd-h: 56px;
+    }
     * { box-sizing: border-box; }
-    body { margin: 0; font: 15px/1.7 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #1f2329; background: #f7f8fa; }
-    .hd { position: sticky; top: 0; display: flex; align-items: center; gap: 24px; padding: 0 24px; height: 56px; background: #fff; border-bottom: 1px solid #e7eaef; z-index: 10; }
-    .hd .brand { font-weight: 600; font-size: 16px; color: #0052d9; text-decoration: none; }
-    .hd nav { display: flex; gap: 4px; }
-    .hd nav a { padding: 6px 12px; border-radius: 6px; color: #4b5b76; text-decoration: none; font-size: 14px; }
-    .hd nav a:hover { background: #f2f3f7; color: #0052d9; }
-    .wrap { max-width: 860px; margin: 0 auto; padding: 32px 24px 64px; }
-    h1 { font-size: 26px; margin: 8px 0 16px; }
-    h2 { font-size: 20px; margin: 32px 0 12px; padding-bottom: 8px; border-bottom: 1px solid #e7eaef; }
-    a { color: #0052d9; }
+    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--hd-h) + 16px); }
+    body { margin: 0; font: 15px/1.75 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--ink); background: #fff; }
+    a { color: var(--brand); }
+
+    /* 页头 */
+    .hd { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 16px; height: var(--hd-h); padding: 0 20px; background: #fff; border-bottom: 1px solid var(--line); }
+    .hd .brand { font-weight: 600; font-size: 16px; color: var(--brand); text-decoration: none; white-space: nowrap; }
+    .hd .tag { font-size: 12px; color: var(--muted); }
+
+    /* 移动端导航（窄屏显示，复用同一 partial） */
+    .mnav { display: none; margin-left: auto; position: relative; }
+    .mnav > summary { list-style: none; cursor: pointer; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; color: var(--muted); user-select: none; }
+    .mnav > summary::-webkit-details-marker { display: none; }
+    .mnav[open] > .mnav-body { position: absolute; right: 0; top: calc(100% + 8px); width: min(78vw, 300px); max-height: 70vh; overflow: auto; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(31, 35, 41, .12); padding: 8px; }
+
+    /* 三栏 */
+    .shell { display: grid; grid-template-columns: 248px minmax(0, 1fr) 224px; max-width: 1440px; margin: 0 auto; align-items: start; }
+
+    /* 左栏页树 */
+    .sb { position: sticky; top: var(--hd-h); max-height: calc(100vh - var(--hd-h)); overflow: auto; background: var(--side); border-right: 1px solid var(--line); padding: 18px 10px 40px; }
+    .np { list-style: none; margin: 0; padding: 0; }
+    .np .np { padding-left: 12px; }
+    .np-a { display: block; padding: 7px 12px; border-radius: 6px; color: #33415c; text-decoration: none; font-size: 14px; }
+    .np-a:hover { background: #eceff4; color: var(--brand); }
+    .np-a.is-active { background: #e8f0fe; color: var(--brand); font-weight: 600; }
+    .np-sub { list-style: none; margin: 2px 0 8px; padding: 0 0 0 12px; border-left: 1px solid var(--line); }
+    .np-sub li a { display: block; padding: 4px 12px; font-size: 13px; color: var(--muted); text-decoration: none; }
+    .np-sub li a:hover { color: var(--brand); }
+
+    /* 中栏正文 */
+    .md { min-width: 0; padding: 32px 44px 72px; }
+    .md h1 { font-size: 27px; line-height: 1.35; margin: 4px 0 18px; }
+    .md h2 { font-size: 20px; margin: 36px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+    .md h3 { font-size: 16.5px; margin: 26px 0 10px; }
+    .md p { margin: 10px 0; }
+    .md a.anchor { opacity: 0; margin-left: .35em; color: var(--muted); text-decoration: none; font-weight: 400; }
+    .md h2:hover a.anchor, .md h3:hover a.anchor, .md a.anchor:focus { opacity: 1; }
+    .md code { background: #eef1f6; border-radius: 4px; padding: 1px 6px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .md pre { background: #1f2329; color: #d7dbe2; border-radius: 8px; padding: 14px 16px; overflow-x: auto; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .md pre code { background: none; padding: 0; color: inherit; }
+    .md table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; }
+    .md th, .md td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .md th { background: var(--side); }
+    .md blockquote { margin: 12px 0; padding: 2px 14px; border-left: 3px solid var(--brand); background: var(--side); color: var(--muted); }
+    .md ul, .md ol { padding-left: 22px; }
+    .md li { margin: 4px 0; }
+
+    /* 首页卡片 */
     .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
-    .card { display: block; background: #fff; border: 1px solid #e7eaef; border-radius: 10px; padding: 18px; text-decoration: none; color: inherit; transition: border-color .15s; }
-    .card:hover { border-color: #0052d9; }
-    .card strong { display: block; font-size: 15px; margin-bottom: 6px; color: #0052d9; }
-    .card span { font-size: 13px; color: #6b7a99; }
-    code { background: #eef1f6; border-radius: 4px; padding: 1px 6px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
-    pre { background: #1f2329; color: #d7dbe2; border-radius: 8px; padding: 14px 16px; overflow-x: auto; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
-    pre code { background: none; padding: 0; color: inherit; }
-    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; }
-    th, td { border: 1px solid #e7eaef; padding: 8px 10px; text-align: left; }
-    th { background: #f2f3f7; }
-    .foot { margin-top: 48px; font-size: 12px; color: #9aa5b8; }
+    .card { display: block; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 18px; text-decoration: none; color: inherit; transition: border-color .15s; }
+    .card:hover { border-color: var(--brand); }
+    .card strong { display: block; font-size: 15px; margin-bottom: 6px; color: var(--brand); }
+    .card span { font-size: 13px; color: var(--muted); }
+
+    /* 右栏 TOC */
+    .tp { position: sticky; top: var(--hd-h); max-height: calc(100vh - var(--hd-h)); overflow: auto; padding: 32px 20px 40px 0; font-size: 13px; border-left: 1px solid transparent; }
+    .tp-title { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .04em; margin-bottom: 8px; }
+    .tp nav > ul { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .tp nav ul ul { list-style: none; margin: 0; padding-left: 12px; }
+    .tp nav a { display: block; padding: 4px 10px; color: var(--muted); text-decoration: none; line-height: 1.5; border-left: 2px solid transparent; margin-left: -1px; }
+    .tp nav a:hover { color: var(--brand); border-left-color: var(--brand); }
+    .tp nav ul > li > a { color: #33415c; }
+
+    .foot { margin-top: 56px; font-size: 12px; color: #9aa5b8; }
+
+    /* 响应式 */
+    @media (max-width: 1100px) {
+      .shell { grid-template-columns: 240px minmax(0, 1fr); }
+      .tp { display: none; }
+    }
+    @media (max-width: 860px) {
+      .shell { grid-template-columns: 1fr; }
+      .sb { display: none; }
+      .mnav { display: block; }
+      .md { padding: 24px 18px 56px; }
+      .cards { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
   <header class="hd">
     <a class="brand" href="/docs/">{{ .Site.Title }}</a>
-    <nav>
-      <a href="/docs/">首页</a>
-      <a href="/docs/hugo-hertz/">Hugo × Hertz</a>
-      <a href="/docs/dev-guide/">开发指南</a>
-    </nav>
+    <span class="tag">Hugo 生成 · Hertz 托管</span>
+    <details class="mnav">
+      <summary>目录</summary>
+      <div class="mnav-body">{{ partial "nav-pages.html" . }}</div>
+    </details>
   </header>
-  <main class="wrap">
-    {{ block "main" . }}{{ end }}
-    <p class="foot">由 Hugo 生成静态文件，Hertz 通过 adaptor + http.FileServer 托管。</p>
-  </main>
+  <div class="shell">
+    <aside class="sb">{{ partial "nav-pages.html" . }}</aside>
+    <main class="md">
+      {{ block "main" . }}{{ end }}
+      <p class="foot">由 Hugo 生成静态文件，Hertz 通过 adaptor + http.FileServer 托管。</p>
+    </main>
+    <aside class="tp">
+      {{ if .IsPage }}
+        <div class="tp-title">本页目录</div>
+        {{ .TableOfContents }}
+      {{ end }}
+    </aside>
+  </div>
 </body>
 </html>
