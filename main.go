@@ -117,14 +117,22 @@ func main() {
 
 	// 开发文档：Hugo 产物静态托管。官方推荐 adaptor 包装标准库 http.FileServer
 	//（原生 app.FS 维护状况不佳，勿用）；根目录 conf docs.dir（GOSILITE_DOCS_DIR 可覆盖）。
+	// no-cache：FileServer 仅带 Last-Modified，浏览器启发式缓存会让嵌入 iframe 吃到旧页。
 	docsDir := conf.Docs.Dir
 	if docsDir == "" {
 		docsDir = "docs/hugo/public"
 	}
-	h.GET("/docs", func(_ context.Context, ctx *app.RequestContext) {
+	docsFS := adaptor.HertzHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		http.StripPrefix("/docs", http.FileServer(http.Dir(docsDir))).ServeHTTP(w, r)
+	}))
+	redirectDocs := func(_ context.Context, ctx *app.RequestContext) {
 		ctx.Redirect(http.StatusMovedPermanently, []byte("/docs/"))
-	})
-	h.GET("/docs/*any", adaptor.HertzHandler(http.StripPrefix("/docs", http.FileServer(http.Dir(docsDir)))))
+	}
+	h.GET("/docs", redirectDocs)
+	h.HEAD("/docs", redirectDocs)
+	h.GET("/docs/*any", docsFS)
+	h.HEAD("/docs/*any", docsFS)
 
 	boot.MountRoutes(h)
 
