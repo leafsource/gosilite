@@ -1,18 +1,18 @@
 ---
 feature: tool-menu-devdocs
-status: in-progress
+status: delivered
 updated: 2026-10-11
 branch: develop
-commits: f88d456..8663a36
+commits: f88d456..58ded18
 ---
 
 # 系统工具菜单 + Hugo/Hertz 开发文档
 
 ## Report
 
-**What was built** — 新增顶级菜单「系统工具」（id 49，`/tool`），把「系统接口」4704 从系统监控原地改挂其下（id/权限/角色绑定不变，仅 component 迁 `tool/api/index`、页面名 ToolApi），并新增「开发文档」4901（`tool/docs/index`，iframe 内嵌 `/docs/`）。文档站由 `docs/hugo/` 的 Hugo 工程生成（扁平 content、自写极简 layouts、离线确定性构建），Hertz 在 main.go 用官方推荐的 `adaptor.HertzHandler` 包装标准库 `http.FileServer`（StripPrefix 后托管，不用 `app.FS`）挂在 `/docs`，根目录走 conf `docs.dir` / `GOSILITE_DOCS_DIR`；`/docs` 前缀加入 operlog 跳过名单。构建链：`script/bootstrap-hugo.sh`（pin hugo 0.167.0，linux 下载 tarball / darwin `go install` 源码构建）+ `script/build-docs.sh`（缺 hugo 打印 SKIP 且 exit 0），并挂入 `check.sh`；产物与 script/bin 均 gitignore。Vite 透传 `/docs` 代理到 8888。
+**What was built** — 新增顶级菜单「系统工具」（id 49，`/tool`），把「系统接口」4704 从系统监控原地改挂其下（id/权限/角色绑定不变，仅 component 迁 `tool/api/index`、页面名 ToolApi），并新增「开发文档」4901（`tool/docs/index`，iframe 内嵌 `/docs/`）。文档站由 `docs/hugo/` 的 Hugo 工程生成（扁平 content、自写极简 layouts、离线确定性构建），Hertz 在 main.go 用官方推荐的 `adaptor.HertzHandler` 包装标准库 `http.FileServer`（StripPrefix 后托管，不用 `app.FS`）挂在 `/docs`，根目录走 conf `docs.dir` / `GOSILITE_DOCS_DIR`；`/docs` 前缀加入 operlog 跳过名单。构建链：`script/bootstrap-hugo.sh`（pin hugo 0.167.0，linux 下载 tarball / darwin `go install` 源码构建）+ `script/build-docs.sh`（缺 hugo 打印 SKIP 且 exit 0），并挂入 `check.sh`；产物与 script/bin 均 gitignore。Vite 透传 `/docs` 代理到 8888。增补交付（S2.7）：文档站改为 Docsy 式三栏——左栏 sticky 页树（当前页高亮 + h2 锚点子导航）、中栏正文（`render-heading` 注入 `#` 标题锚点）、右栏本页 TOC，窄屏收进页头 `<details>`，纯模板零 JS 零新依赖。
 
-**Verification** — 迁移 0022 在 dev 库连续执行两遍幂等，SELECT 验证 49/4901 落库、4704.parent_id=49、绑定 2 条不变；`WEB=1 ./script/check.sh` exit 0（go test/vet/build + npm build + build docs）；触碰文件 eslint、`vue-tsc --noEmit` exit 0；curl `GET /docs`→301、`/docs/`→200、两子页 200、swagger 200、不存在路径 404；浏览器实测侧栏 系统监控下无系统接口、系统工具下两入口齐全，`/tool/api` 渲染 Swagger、`/tool/docs` 渲染 Hugo 首页、console 无 error；独立 reviewer 结论无 critical。
+**Verification** — 迁移 0022 在 dev 库连续执行两遍幂等，SELECT 验证 49/4901 落库、4704.parent_id=49、绑定 2 条不变；`WEB=1 ./script/check.sh` exit 0（go test/vet/build + npm build + build docs）；触碰文件 eslint、`vue-tsc --noEmit` exit 0；curl `GET /docs`→301、`/docs/`→200、两子页 200、swagger 200、不存在路径 404；浏览器实测侧栏 系统监控下无系统接口、系统工具下两入口齐全，`/tool/api` 渲染 Swagger、`/tool/docs` 渲染 Hugo 首页、console 无 error；独立 reviewer 结论无 critical。S2.7 增补验证：`build-docs.sh` 无 WARN；三页 DOM 确认左页树当前页高亮 + h2 子导航（4 项）、右 TOC 链接（4 项）、标题锚点（4 处）、首页无 TOC、移动端 `<details>` 内嵌同一 partial；浏览器截图目检三栏布局正常。
 
 **Journey log** —
 1. GitHub Release 资产 CDN 在本机仅 ~9KB/s 且 >0.152.2 起无 darwin tar.gz（仅 .pkg 要 sudo）：darwin 改走 `go install` 源码构建（goproxy.cn + checksum DB），linux 保留 tarball 路径。
@@ -20,6 +20,7 @@ commits: f88d456..8663a36
 3. 曾误用 `curl -sI`（HEAD）验证 301 得到 404——Hertz 只注册了 GET；GET 复测 301 正常。
 4. 全仓 eslint 有大量既有失败（monitor/cache、data、online），属基线问题，本次只保证触碰文件干净。
 5. 残留风险已记入 Out of Scope：VisibleMenus 不补祖先（自定义角色只绑子菜单会丢菜单）、tabs-router persist 残留旧 /monitor/api 标签 404。
+6. Hugo `page.Fragments.Headings` 是**树**（根节点 Level=0，子级在 `.Headings`，文本字段 `.Title` 无 `.Plain`），不是平表——平表在 `HeadingsMap`/`Identifiers`（后者按字典序，不适合导航序）；调试技巧：模板里 `| jsonify` 一发定位字段。
 
 ## [S1] Problem
 
@@ -99,4 +100,4 @@ id 选择：48/4801/4802 已被 0021 回收（历史存储菜单），改用空�
 - [x] T3: main.go 托管 /docs + conf docs.dir + operlog 跳过 — acceptance: hugo 构建后 `curl /docs/` 200、`/docs` 301、未构建时 404；`go test ./...` 新增/既有用例绿 (covers: S2.4; depends: T2)
 - [x] T4: 前端——api 页迁到 tool/、新增 tool/docs 页、vite 代理 /docs — acceptance: eslint+vue-tsc 绿；页面 name 为 ToolApi/ToolDocs 且与 genRouteName(fullPath) 一致 (covers: S2.2; depends: T1)
 - [x] T5: 端到端验收——菜单树/双页冒烟 + `WEB=1 ./script/check.sh` — acceptance: S2.6 四条全过 (covers: S2.6; depends: T1, T2, T3, T4)
-- [ ] T6: Docsy 式三栏布局改版 — acceptance: 构建后三页均渲染左页树/右 TOC/标题锚点，当前页高亮正确，窄屏出 `<details>` 导航；`script/build-docs.sh` 无 WARN (covers: S2.7)
+- [x] T6: Docsy 式三栏布局改版 — acceptance: 构建后三页均渲染左页树/右 TOC/标题锚点，当前页高亮正确，窄屏出 `<details>` 导航；`script/build-docs.sh` 无 WARN (covers: S2.7)
