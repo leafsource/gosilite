@@ -1,0 +1,11 @@
+# gosilite 开发文档（Hugo 静态站）
+# 由 Hertz 通过 adaptor + http.FileServer 托管在 /docs/ 下（见 main.go）。
+baseURL = '/'
+title = 'gosilite 开发文档'
+publishDir = 'public'
+# 不需要 RSS/sitemap/taxonomy；站内链接在 layouts 中硬编码 /docs/ 前缀。
+disableKinds = ['RSS', 'sitemap', 'taxonomy', 'term', 'robotsTXT']
+
+[markup.goldmark.renderer]
+  # 允许原文 HTML（图表/嵌入块）
+  unsafe = true

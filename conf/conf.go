@@ -25,6 +25,12 @@ type Config struct {
 	Redis    Redis    `yaml:"redis"`
 	Storage  Storage  `yaml:"storage"`
 	Monitor  Monitor  `yaml:"monitor"`
+	Docs     Docs     `yaml:"docs"`
+}
+
+// Docs 开发文档静态站（Hugo 产物）托管配置。
+type Docs struct {
+	Dir string `yaml:"dir"`
 }
 
 // Monitor 数据监控：指标出口与采集开关（业务热路径仅 O(1) 打点）。
@@ -166,6 +172,7 @@ func applyEnvOverrides(vars map[string]string) {
 	set("GOSILITE_STORAGE_SECRET_KEY", &conf.Storage.SecretKey)
 	set("GOSILITE_STORAGE_ENDPOINT", &conf.Storage.Endpoint)
 	set("GOSILITE_STORAGE_DOMAIN", &conf.Storage.Domain)
+	set("GOSILITE_DOCS_DIR", &conf.Docs.Dir)
 }
 
 func GetEnv() string {

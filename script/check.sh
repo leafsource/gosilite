@@ -21,4 +21,8 @@ if [ "${WEB:-0}" = "1" ]; then
   (cd web && npm run build)
 fi
 
+# 开发文档站（缺 hugo 时 SKIP，不阻塞验收；见 script/build-docs.sh）
+echo "==> build docs"
+./script/build-docs.sh
+
 echo "check OK"

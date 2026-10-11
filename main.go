@@ -115,6 +115,17 @@ func main() {
 	// swagger
 	h.GET("/swagger/*any", adaptor.HertzHandler(httpSwagger.WrapHandler))
 
+	// 开发文档：Hugo 产物静态托管。官方推荐 adaptor 包装标准库 http.FileServer
+	//（原生 app.FS 维护状况不佳，勿用）；根目录 conf docs.dir（GOSILITE_DOCS_DIR 可覆盖）。
+	docsDir := conf.Docs.Dir
+	if docsDir == "" {
+		docsDir = "docs/hugo/public"
+	}
+	h.GET("/docs", func(_ context.Context, ctx *app.RequestContext) {
+		ctx.Redirect(http.StatusMovedPermanently, []byte("/docs/"))
+	})
+	h.GET("/docs/*any", adaptor.HertzHandler(http.StripPrefix("/docs", http.FileServer(http.Dir(docsDir)))))
+
 	boot.MountRoutes(h)
 
 	// 退出前排空日志异步队列（有界批量写，见 application/framework/service/syslog）

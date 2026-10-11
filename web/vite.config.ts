@@ -54,6 +54,10 @@ export default ({ mode }: ConfigEnv): UserConfig => {
           target: 'http://127.0.0.1:8888/',
           rewrite: (path) => path.replace(new RegExp(`^${VITE_API_URL_PREFIX}`), ''),
         },
+        // Hugo 文档站由 Hertz 托管，路径原样透传
+        '/docs': {
+          target: 'http://127.0.0.1:8888/',
+        },
       },
     },
 

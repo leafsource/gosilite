@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} · {{ .Site.Title }}{{ end }}</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px/1.7 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #1f2329; background: #f7f8fa; }
+    .hd { position: sticky; top: 0; display: flex; align-items: center; gap: 24px; padding: 0 24px; height: 56px; background: #fff; border-bottom: 1px solid #e7eaef; z-index: 10; }
+    .hd .brand { font-weight: 600; font-size: 16px; color: #0052d9; text-decoration: none; }
+    .hd nav { display: flex; gap: 4px; }
+    .hd nav a { padding: 6px 12px; border-radius: 6px; color: #4b5b76; text-decoration: none; font-size: 14px; }
+    .hd nav a:hover { background: #f2f3f7; color: #0052d9; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 32px 24px 64px; }
+    h1 { font-size: 26px; margin: 8px 0 16px; }
+    h2 { font-size: 20px; margin: 32px 0 12px; padding-bottom: 8px; border-bottom: 1px solid #e7eaef; }
+    a { color: #0052d9; }
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+    .card { display: block; background: #fff; border: 1px solid #e7eaef; border-radius: 10px; padding: 18px; text-decoration: none; color: inherit; transition: border-color .15s; }
+    .card:hover { border-color: #0052d9; }
+    .card strong { display: block; font-size: 15px; margin-bottom: 6px; color: #0052d9; }
+    .card span { font-size: 13px; color: #6b7a99; }
+    code { background: #eef1f6; border-radius: 4px; padding: 1px 6px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    pre { background: #1f2329; color: #d7dbe2; border-radius: 8px; padding: 14px 16px; overflow-x: auto; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    pre code { background: none; padding: 0; color: inherit; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; }
+    th, td { border: 1px solid #e7eaef; padding: 8px 10px; text-align: left; }
+    th { background: #f2f3f7; }
+    .foot { margin-top: 48px; font-size: 12px; color: #9aa5b8; }
+  </style>
+</head>
+<body>
+  <header class="hd">
+    <a class="brand" href="/docs/">{{ .Site.Title }}</a>
+    <nav>
+      <a href="/docs/">首页</a>
+      <a href="/docs/hugo-hertz/">Hugo × Hertz</a>
+      <a href="/docs/dev-guide/">开发指南</a>
+    </nav>
+  </header>
+  <main class="wrap">
+    {{ block "main" . }}{{ end }}
+    <p class="foot">由 Hugo 生成静态文件，Hertz 通过 adaptor + http.FileServer 托管。</p>
+  </main>
+</body>
+</html>

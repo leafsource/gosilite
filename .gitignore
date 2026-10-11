@@ -42,6 +42,9 @@ dist
 # 构建产物
 /codegen
 /package-lock.json
+docs/hugo/public/
+docs/hugo/.hugo_build.lock
+script/bin/
 
 # 环境变量文件（密钥不入库，模板 .env.example 除外）
 .env

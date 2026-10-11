@@ -1,33 +1,25 @@
 <template>
-  <div class="api-doc">
-    <div v-if="loadFailed" class="api-doc__error">
-      <t-empty description="Swagger 加载失败，请确认后端已启动">
+  <div class="docs-page">
+    <div v-if="loadFailed" class="docs-page__error">
+      <t-empty description="开发文档加载失败，请确认后端已启动且已构建文档站">
         <t-button theme="primary" @click="reload">重试</t-button>
       </t-empty>
-      <p class="api-doc__error-link">
+      <p class="docs-page__error-link">
         直接访问：
-        <a :href="swaggerUrl" target="_blank">{{ swaggerUrl }}</a>
+        <a :href="docsUrl" target="_blank">{{ docsUrl }}</a>
+        （未构建时先执行 script/build-docs.sh）
       </p>
     </div>
-    <iframe
-      v-else
-      :key="frameKey"
-      class="api-doc__frame"
-      :src="swaggerUrl"
-      title="Swagger UI"
-      @load="onLoad"
-    />
+    <iframe v-else :key="frameKey" class="docs-page__frame" :src="docsUrl" title="开发文档" @load="onLoad" />
   </div>
 </template>
-
 <script setup lang="ts">
-
-defineOptions({ name: 'MonitorApi' });
+// keep-alive 缓存名 = genRouteName('/tool/docs') = ToolDocs
+defineOptions({ name: 'ToolDocs' });
 import { ref } from 'vue';
 
-/** 与 request 相同的 API 前缀（dev 走 Vite 代理 → 127.0.0.1:8888） */
-const prefix = import.meta.env.VITE_API_URL_PREFIX || '/api';
-const swaggerUrl = `${prefix}/swagger/index.html`;
+/** 同源相对路径：dev 走 Vite 代理 /docs → 8888，生产由 Hertz 直接托管 */
+const docsUrl = '/docs/';
 
 const frameKey = ref(0);
 const loadFailed = ref(false);
@@ -39,7 +31,7 @@ function reload() {
 
 function onLoad() {
   try {
-    const frame = document.querySelector('.api-doc__frame') as HTMLIFrameElement | null;
+    const frame = document.querySelector('.docs-page__frame') as HTMLIFrameElement | null;
     const doc = frame?.contentDocument;
     if (doc && doc.body && !doc.body.innerHTML.trim()) {
       loadFailed.value = true;
@@ -49,9 +41,8 @@ function onLoad() {
   }
 }
 </script>
-
 <style scoped lang="less">
-.api-doc {
+.docs-page {
   display: flex;
   flex-direction: column;
   height: calc(100vh - var(--td-comp-size-xxxl, 56px) - 100px);
@@ -62,7 +53,7 @@ function onLoad() {
   border-radius: 0;
 }
 
-.api-doc__frame {
+.docs-page__frame {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
@@ -70,7 +61,7 @@ function onLoad() {
   background: #fff;
 }
 
-.api-doc__error {
+.docs-page__error {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -80,7 +71,7 @@ function onLoad() {
   padding: 24px;
 }
 
-.api-doc__error-link {
+.docs-page__error-link {
   font-size: 12px;
   color: var(--td-text-color-secondary);
 

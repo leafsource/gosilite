@@ -46,3 +46,6 @@ monitor:
   sql_max_templates: 200
   firewall_enable: true
   gorm_postgres_metrics: false
+
+docs:
+  dir: "docs/hugo/public"   # Hugo 开发文档站产物目录；GOSILITE_DOCS_DIR 可覆盖

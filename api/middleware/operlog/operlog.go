@@ -182,7 +182,7 @@ func skipPath(path, method string) bool {
 	if path == "/ping" || path == "/" {
 		return true
 	}
-	return strings.HasPrefix(path, "/swagger") || strings.HasPrefix(path, "/metrics")
+	return strings.HasPrefix(path, "/swagger") || strings.HasPrefix(path, "/metrics") || strings.HasPrefix(path, "/docs")
 }
 
 func traceIDOf(c *app.RequestContext) string {
