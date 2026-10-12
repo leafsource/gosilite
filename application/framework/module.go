@@ -15,11 +15,13 @@ import (
 	frameworkOssRouter "gosilite/api/router/framework/oss"
 	frameworkOssConfigRouter "gosilite/api/router/framework/ossconfig"
 	frameworkOssRuleRouter "gosilite/api/router/framework/ossrule"
+	frameworkSchedulerRouter "gosilite/api/router/framework/scheduler"
 	frameworkSyscfgRouter "gosilite/api/router/framework/syscfg"
 	frameworkSyscfgGlobalRouter "gosilite/api/router/framework/syscfgglobal"
 	frameworkSystemRouter "gosilite/api/router/framework/system"
 	frameworkUserRouter "gosilite/api/router/framework/user"
 	"gosilite/application/framework/dal/repository"
+	"gosilite/application/framework/scheduler"
 	"gosilite/application/framework/service/config"
 	"gosilite/application/framework/service/dept"
 	"gosilite/application/framework/service/dict"
@@ -32,6 +34,7 @@ import (
 	"gosilite/application/framework/service/ossrule"
 	"gosilite/application/framework/service/post"
 	"gosilite/application/framework/service/role"
+	schedulerSvc "gosilite/application/framework/service/scheduler"
 	"gosilite/application/framework/service/syslog"
 	"gosilite/application/framework/service/user"
 	"gosilite/application/infra"
@@ -63,6 +66,7 @@ func (m *Module) Init(ctx context.Context, deps *infra.AppDependencies) error {
 	syslog.InitService(repository.NewSysLogRepository(deps.DB))
 	monitor.InitService(deps.DB, deps.Cache)
 	monitor.InitCacheService(deps.Cache)
+	schedulerSvc.InitService(repository.NewSchedulerRepository(deps.DB), scheduler.NewCacheLeaseStore(deps.Cache))
 	// 对象存储三件套（spec system-oss）：
 	// ossconfig 变更 → StorageCtl.Invalidate 使默认配置即时生效（S2.4）
 	ossconfig.InitService(repository.NewOssConfigRepository(deps.DB), deps.StorageCtl.Invalidate)
@@ -85,6 +89,7 @@ func (m *Module) RegisterRoutes(r *server.Hertz) {
 	frameworkCommonFileRouter.Register(r)
 	frameworkLogRouter.Register(r)
 	frameworkMonitorRouter.Register(r)
+	frameworkSchedulerRouter.Register(r)
 	// 消息管理（spec system-message）：配置/常量/模板/记录 + 发送
 	frameworkMessageRouter.Register(r)
 	frameworkOssConfigRouter.Register(r)

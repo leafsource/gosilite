@@ -239,6 +239,13 @@ type StringSliceCmd interface {
 }
 
 // MonitorOperations 缓存监控：前缀扫描与类型识别（有界，禁止 KEYS）。
+type LeaseOperations interface {
+	AcquireLease(ctx context.Context, key, token string, ttl time.Duration) (bool, error)
+	RenewLease(ctx context.Context, key, token string, ttl time.Duration) (bool, error)
+	ReleaseLease(ctx context.Context, key, token string) (bool, error)
+}
+
+// MonitorOperations 缓存监控：前缀扫描与类型识别（有界，禁止 KEYS）。
 type MonitorOperations interface {
 	// ScanAll 分页 SCAN 直至结束或达到 limit，返回匹配 key。
 	ScanAll(ctx context.Context, match string, limit int) ([]string, error)
