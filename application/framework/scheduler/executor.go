@@ -7,6 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/cloudwego/hertz/pkg/common/hlog"
+	"github.com/robfig/cron/v3"
 )
 
 const (
@@ -48,6 +51,7 @@ type Executor struct {
 	registry *Registry
 	leases   LeaseStore
 	runs     RunRepository
+	logs     *LogSink
 	leaseTTL time.Duration
 	now      func() time.Time
 }
@@ -64,6 +68,23 @@ func NewExecutor(registry *Registry, leases LeaseStore, runs RunRepository, leas
 	return &Executor{registry: registry, leases: leases, runs: runs, leaseTTL: leaseTTL, now: time.Now}
 }
 
+func (e *Executor) SetLogSink(logs *LogSink) { e.logs = logs }
+
+func (e *Executor) log(run *Run, level, stage, format string, args ...any) {
+	message := fmt.Sprintf(format, args...)
+	switch level {
+	case "error":
+		hlog.Errorf("[scheduler] run=%d job=%s stage=%s %s", run.ID, run.JobKey, stage, message)
+	case "warn":
+		hlog.Warnf("[scheduler] run=%d job=%s stage=%s %s", run.ID, run.JobKey, stage, message)
+	default:
+		hlog.Infof("[scheduler] run=%d job=%s stage=%s %s", run.ID, run.JobKey, stage, message)
+	}
+	if e.logs != nil {
+		e.logs.Write(&LogEntry{RunID: run.ID, JobKey: run.JobKey, Level: level, Stage: stage, Message: message})
+	}
+}
+
 func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) error {
 	job, ok := e.registry.Get(def.JobKey)
 	if !ok {
@@ -78,9 +99,11 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 			return err
 		}
 		run.ID = runID
+		e.log(run, "info", "trigger", "run created: trigger=%s attempt=%d", trigger, attempt)
 		activeToken := randomToken()
 		claimed, claimErr := e.runs.ClaimActiveRun(ctx, def.ID, activeToken)
 		if claimErr != nil {
+			e.log(run, "error", "lock", "active execution fence unavailable: %v", claimErr)
 			run.Status, run.Error, run.FinishedAt = RunStatusFailed, "active execution fence unavailable: "+claimErr.Error(), e.now()
 			if finishErr := e.runs.FinishRun(ctx, run); finishErr != nil {
 				return finishErr
@@ -88,6 +111,7 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 			return claimErr
 		}
 		if !claimed {
+			e.log(run, "warn", "lock", "active execution fence held")
 			run.Status, run.Error, run.FinishedAt = RunStatusSkippedLocked, "job active execution fence held", e.now()
 			return e.runs.FinishRun(ctx, run)
 		}
@@ -95,6 +119,7 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 		lease, locked, err := AcquireLease(ctx, e.leases, def.JobKey, randomToken(), e.leaseTTL)
 		if err != nil {
 			_, _ = e.runs.ClearActiveRun(context.Background(), def.ID, activeToken)
+			e.log(run, "error", "lock", "redis lease unavailable: %v", err)
 			run.Status, run.Error, run.FinishedAt = RunStatusFailed, "redis lease unavailable: "+err.Error(), e.now()
 			if finishErr := e.runs.FinishRun(ctx, run); finishErr != nil {
 				return finishErr
@@ -103,10 +128,12 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 		}
 		if !locked {
 			_, _ = e.runs.ClearActiveRun(context.Background(), def.ID, activeToken)
+			e.log(run, "warn", "lock", "redis lease held by another instance")
 			run.Status, run.Error, run.FinishedAt = RunStatusSkippedLocked, "job lease held by another instance", e.now()
 			return e.runs.FinishRun(ctx, run)
 		}
 
+		e.log(run, "info", "lock", "redis lease acquired")
 		output, runErr, pending := e.runWithRenewal(ctx, job, def, lease, run, activeToken)
 		if pending {
 			return runErr
@@ -117,6 +144,11 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 			run.Status = RunStatusSucceeded
 		} else {
 			run.Status, run.Error = statusForError(runErr), runErr.Error()
+		}
+		if runErr == nil {
+			e.log(run, "info", "finish", "run succeeded")
+		} else {
+			e.log(run, "error", "finish", "run finished: %v", runErr)
 		}
 		finishErr := e.runs.FinishRun(ctx, run)
 		if finishErr != nil {
@@ -139,10 +171,18 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 
 func (e *Executor) runWithRenewal(ctx context.Context, job Job, def Definition, lease *Lease, run *Run, activeToken string) (string, error, bool) {
 	jobCtx, cancel := context.WithTimeout(ctx, def.Timeout)
+	jobCtx = WithRunLogger(jobCtx, e.logs, run.ID, run.JobKey)
+	e.log(run, "info", "execute", "job execution started")
 	finished := make(chan jobResult, 1)
 	go func() {
-		output, err := job.Run(jobCtx, def.ParamsJSON)
-		finished <- jobResult{output: output, err: err}
+		var result jobResult
+		logger := newRunCronLogger(e.logs, run.ID, run.JobKey, func(err error) {
+			result.err = fmt.Errorf("scheduler job panic: %w", err)
+		})
+		cron.NewChain(cron.Recover(logger)).Then(cron.FuncJob(func() {
+			result.output, result.err = job.Run(jobCtx, def.ParamsJSON)
+		})).Run()
+		finished <- result
 	}()
 	ticker := time.NewTicker(e.leaseTTL / 2)
 	defer ticker.Stop()
@@ -153,6 +193,7 @@ func (e *Executor) runWithRenewal(ctx context.Context, job Job, def Definition, 
 			return result.output, result.err, false
 		case <-jobCtx.Done():
 			cancel()
+			e.log(run, "error", "execute", "job context ended: %v", jobCtx.Err())
 			e.finishPendingRun(run, def.ID, activeToken, lease, finished, jobCtx.Err())
 			return "", jobCtx.Err(), true
 		case <-ticker.C:
@@ -163,6 +204,7 @@ func (e *Executor) runWithRenewal(ctx context.Context, job Job, def Definition, 
 				if err != nil {
 					leaseErr = err
 				}
+				e.log(run, "error", "lock", "redis lease renewal lost: %v", leaseErr)
 				e.finishPendingRun(run, def.ID, activeToken, lease, finished, leaseErr)
 				return "", leaseErr, true
 			}
@@ -178,6 +220,7 @@ func (e *Executor) finishPendingRun(run *Run, jobID int64, activeToken string, l
 			select {
 			case result := <-finished:
 				_, _ = lease.Release(context.Background())
+				e.log(run, "error", "finish", "worker exited after terminal state: %v", terminalErr)
 				run.Output, run.Status, run.Error, run.FinishedAt = result.output, statusForError(terminalErr), terminalErr.Error(), e.now()
 				_ = e.runs.FinishRun(context.Background(), run)
 				_, _ = e.runs.ClearActiveRun(context.Background(), jobID, activeToken)

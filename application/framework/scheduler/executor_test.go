@@ -3,6 +3,7 @@ package scheduler
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -135,6 +136,39 @@ func TestExecutorRetriesFailure(t *testing.T) {
 		t.Fatalf("finish must target created IDs: finished=%v runs=%+v", runs.finished, runs.runs)
 	}
 }
+func TestExecutorPersistsCronWrapperPanicUnderRun(t *testing.T) {
+	r := NewRegistry()
+	_ = r.Register(testJob{"system.scheduler.test", func(context.Context, string) (string, error) {
+		panic("boom")
+	}})
+	runs := &testRuns{}
+	store := &logStore{}
+	e := NewExecutor(r, &testLease{}, runs, time.Second)
+	e.SetLogSink(NewLogSink(store))
+
+	err := e.Execute(context.Background(), Definition{ID: 1, JobKey: "system.scheduler.test", Timeout: time.Second}, "cron")
+	if err == nil || err.Error() != "scheduler job panic: boom" {
+		t.Fatalf("err=%v", err)
+	}
+
+	deadline := time.After(time.Second)
+	for {
+		store.mu.Lock()
+		entries := append([]*LogEntry(nil), store.entries...)
+		store.mu.Unlock()
+		for _, entry := range entries {
+			if entry.RunID == runs.runs[0].ID && entry.Stage == "cron" && entry.Level == "error" && strings.HasPrefix(entry.Message, "panic: boom [stack ") {
+				return
+			}
+		}
+		select {
+		case <-deadline:
+			t.Fatalf("panic log not persisted for run %d: %+v", runs.runs[0].ID, entries)
+		case <-time.After(time.Millisecond):
+		}
+	}
+}
+
 func TestExecutorRecordsLockSkip(t *testing.T) {
 	r := NewRegistry()
 	_ = r.Register(testJob{"system.scheduler.test", func(context.Context, string) (string, error) { return "", nil }})

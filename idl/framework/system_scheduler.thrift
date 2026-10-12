@@ -39,6 +39,22 @@ struct SchedulerJobRunDTO {
 }
 struct SchedulerJobRunListRequest { 1: i64 jobId (go.tag = "json:\"jobId,string\""), 2: i32 page = 1, 3: i32 pageSize = 10 }
 struct SchedulerJobRunListResponse { 1: list<SchedulerJobRunDTO> list, 2: i64 total }
+struct SchedulerJobRunLogDTO {
+  1: i64 id (go.tag = "json:\"id,string\"")
+  2: i64 runId (go.tag = "json:\"runId,string\"")
+  3: string jobKey
+  4: string level
+  5: string stage
+  6: string message
+  7: string createdAt
+}
+struct SchedulerJobRunLogListRequest {
+  1: i64 runId (go.tag = "json:\"runId,string\"")
+  2: optional i64 afterId (go.tag = "json:\"afterId,string\"")
+  3: i32 page = 1
+  4: i32 pageSize = 200
+}
+struct SchedulerJobRunLogListResponse { 1: list<SchedulerJobRunLogDTO> list, 2: i64 total }
 struct SchedulerJobKeysResponse { 1: list<string> list }
 
 service SystemSchedulerController {
@@ -50,5 +66,7 @@ service SystemSchedulerController {
   i32 JobChangeStatus(1: SchedulerJobIDRequest req)(api.put = "/system/scheduler/job/status")
   i32 JobRun(1: SchedulerJobIDRequest req)(api.post = "/system/scheduler/job/run")
   SchedulerJobRunListResponse RunList(1: SchedulerJobRunListRequest req)(api.get = "/system/scheduler/run/list")
+  SchedulerJobRunLogListResponse RunLogList(1: SchedulerJobRunLogListRequest req)(api.get = "/system/scheduler/run/log/list")
+  SchedulerJobRunLogListResponse RunLogStream(1: SchedulerJobRunLogListRequest req)(api.get = "/system/scheduler/run/log/stream")
   SchedulerJobKeysResponse JobKeys()(api.get = "/system/scheduler/job/keys")
 }

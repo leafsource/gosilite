@@ -8,17 +8,45 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/robfig/cron/v3"
 	"gosilite/application/framework/dal/model"
 	"gosilite/application/framework/dal/repository"
 	core "gosilite/application/framework/scheduler"
+	"gosilite/conf"
 )
 
 var SystemSchedulerSVC *Service
 
-const TestJobKey = "system.scheduler.test"
+const (
+	TestJobKey       = "system.scheduler.test"
+	LogCleanupJobKey = "system.scheduler.log_cleanup"
+)
 
 type testJob struct{}
+
+type logCleanupStore interface {
+	DeleteRunLogsBefore(context.Context, time.Time) (int64, error)
+}
+
+type logCleanupJob struct {
+	repo          logCleanupStore
+	retentionDays int
+}
+
+func (logCleanupJob) Key() string { return LogCleanupJobKey }
+
+func (j logCleanupJob) Run(ctx context.Context, _ string) (string, error) {
+	cutoff := time.Now().AddDate(0, 0, -j.retentionDays)
+	deleted, err := j.repo.DeleteRunLogsBefore(ctx, cutoff)
+	if err != nil {
+		return "", err
+	}
+	message := fmt.Sprintf("deleted %d execution logs older than %d days", deleted, j.retentionDays)
+	hlog.Infof("[scheduler] %s", message)
+	core.Info(ctx, "cleanup", "%s", message)
+	return message, nil
+}
 
 func (testJob) Key() string { return TestJobKey }
 func (testJob) Run(ctx context.Context, params string) (string, error) {
@@ -27,6 +55,7 @@ func (testJob) Run(ctx context.Context, params string) (string, error) {
 		return "", ctx.Err()
 	default:
 	}
+	core.Info(ctx, "execute", "built-in scheduler test executed")
 	return "scheduler test executed", nil
 }
 
@@ -34,15 +63,27 @@ type Service struct {
 	repo     repository.SchedulerRepository
 	registry *core.Registry
 	executor *core.Executor
+	logs     *core.LogSink
 	cron     *cron.Cron
 	mu       sync.Mutex
 	entries  map[int64]cron.EntryID
 }
 
 func NewService(repo repository.SchedulerRepository, cacheLease core.LeaseStore) *Service {
+	return NewServiceWithRetention(repo, cacheLease, conf.GetConf().Scheduler.LogRetentionDays)
+}
+
+func NewServiceWithRetention(repo repository.SchedulerRepository, cacheLease core.LeaseStore, retentionDays int) *Service {
+	if retentionDays < 1 {
+		retentionDays = 30
+	}
 	r := core.NewRegistry()
 	_ = r.Register(testJob{})
-	return &Service{repo: repo, registry: r, executor: core.NewExecutor(r, cacheLease, repo, time.Minute), cron: cron.New(cron.WithSeconds()), entries: map[int64]cron.EntryID{}}
+	_ = r.Register(logCleanupJob{repo: repo, retentionDays: retentionDays})
+	logs := core.NewLogSink(repo)
+	executor := core.NewExecutor(r, cacheLease, repo, time.Minute)
+	executor.SetLogSink(logs)
+	return &Service{repo: repo, registry: r, executor: executor, logs: logs, cron: cron.New(cron.WithSeconds(), cron.WithLogger(core.CronLogger{}), cron.WithChain(cron.Recover(core.CronLogger{}))), entries: map[int64]cron.EntryID{}}
 }
 func InitService(repo repository.SchedulerRepository, lease core.LeaseStore) *Service {
 	SystemSchedulerSVC = NewService(repo, lease)
@@ -122,6 +163,12 @@ func (s *Service) Run(ctx context.Context, id int64) error {
 }
 func (s *Service) Runs(ctx context.Context, id int64, p, n int) ([]*model.SystemJobRun, int64, error) {
 	return s.repo.ListRuns(ctx, id, p, n)
+}
+func (s *Service) RunLogs(ctx context.Context, runID, afterID int64, p, n int) ([]*model.SystemJobRunLog, int64, error) {
+	return s.repo.ListRunLogs(ctx, runID, afterID, p, n)
+}
+func (s *Service) SubscribeRunLogs(runID int64) (<-chan *core.LogEntry, func()) {
+	return s.logs.Subscribe(runID)
 }
 func (s *Service) Load(ctx context.Context) {
 	const pageSize = 200

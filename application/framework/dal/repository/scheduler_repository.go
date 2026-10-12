@@ -20,6 +20,9 @@ type SchedulerRepository interface {
 	CreateRun(context.Context, *scheduler.Run) (int64, error)
 	FinishRun(context.Context, *scheduler.Run) error
 	ListRuns(context.Context, int64, int, int) ([]*model.SystemJobRun, int64, error)
+	CreateRunLog(context.Context, *scheduler.LogEntry) (int64, error)
+	ListRunLogs(context.Context, int64, int64, int, int) ([]*model.SystemJobRunLog, int64, error)
+	DeleteRunLogsBefore(context.Context, time.Time) (int64, error)
 }
 
 type schedulerRepository struct{ db *gorm.DB }
@@ -145,4 +148,37 @@ func (r *schedulerRepository) ListRuns(c context.Context, id int64, p, s int) ([
 	}
 	e := q.Order("id DESC").Offset((p - 1) * s).Limit(s).Find(&out).Error
 	return out, n, e
+}
+
+func (r *schedulerRepository) CreateRunLog(c context.Context, x *scheduler.LogEntry) (int64, error) {
+	m := &model.SystemJobRunLog{RunID: x.RunID, JobKey: x.JobKey, Level: x.Level, Stage: x.Stage, Message: x.Message, CreatedAt: x.CreatedAt}
+	if err := r.db.WithContext(c).Create(m).Error; err != nil {
+		return 0, err
+	}
+	return m.ID, nil
+}
+
+func (r *schedulerRepository) DeleteRunLogsBefore(c context.Context, before time.Time) (int64, error) {
+	result := r.db.WithContext(c).Where("created_at < ?", before).Delete(&model.SystemJobRunLog{})
+	return result.RowsAffected, result.Error
+}
+
+func (r *schedulerRepository) ListRunLogs(c context.Context, runID, afterID int64, p, s int) ([]*model.SystemJobRunLog, int64, error) {
+	if p < 1 {
+		p = 1
+	}
+	if s < 1 || s > 200 {
+		s = 200
+	}
+	var out []*model.SystemJobRunLog
+	var n int64
+	q := r.db.WithContext(c).Model(&model.SystemJobRunLog{}).Where("run_id = ?", runID)
+	if afterID > 0 {
+		q = q.Where("id > ?", afterID)
+	}
+	if err := q.Count(&n).Error; err != nil {
+		return nil, 0, err
+	}
+	err := q.Order("id ASC").Offset((p - 1) * s).Limit(s).Find(&out).Error
+	return out, n, err
 }

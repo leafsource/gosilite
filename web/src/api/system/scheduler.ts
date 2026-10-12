@@ -1,5 +1,5 @@
 import { request } from '@/utils/request';
-import type { SchedulerJob, SchedulerJobSave, SchedulerRun } from './schedulerModel';
+import type { SchedulerJob, SchedulerJobSave, SchedulerRun, SchedulerRunLog } from './schedulerModel';
 export const listSchedulerJobs=(params:{page:number;pageSize:number})=>request.get<{list:SchedulerJob[];total:number}>({url:'/system/scheduler/job/list',params});
 export const schedulerKeys=()=>request.get<{list:string[]}>({url:'/system/scheduler/job/keys'});
 export const saveSchedulerJob=(data:SchedulerJobSave)=>data.id?request.put({url:'/system/scheduler/job',data}):request.post({url:'/system/scheduler/job',data});
@@ -7,3 +7,4 @@ export const removeSchedulerJob=(id:string)=>request.delete({url:'/system/schedu
 export const toggleSchedulerJob=(id:string)=>request.put({url:'/system/scheduler/job/status',data:{id}});
 export const runSchedulerJob=(id:string)=>request.post({url:'/system/scheduler/job/run',data:{id}});
 export const listSchedulerRuns=(params:{jobId:string;page:number;pageSize:number})=>request.get<{list:SchedulerRun[];total:number}>({url:'/system/scheduler/run/list',params});
+export const listSchedulerRunLogs=(params:{runId:string;afterId?:string;page?:number;pageSize?:number})=>request.get<{list:SchedulerRunLog[];total:number}>({url:'/system/scheduler/run/log/list',params});

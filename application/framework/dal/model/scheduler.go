@@ -32,3 +32,15 @@ type SystemJobRun struct {
 }
 
 func (*SystemJobRun) TableName() string { return "system_job_run" }
+
+type SystemJobRunLog struct {
+	ID        int64     `gorm:"column:id;primaryKey;autoIncrement:true"`
+	RunID     int64     `gorm:"column:run_id"`
+	JobKey    string    `gorm:"column:job_key"`
+	Level     string    `gorm:"column:level"`
+	Stage     string    `gorm:"column:stage"`
+	Message   string    `gorm:"column:message"`
+	CreatedAt time.Time `gorm:"column:created_at"`
+}
+
+func (*SystemJobRunLog) TableName() string { return "system_job_run_log" }

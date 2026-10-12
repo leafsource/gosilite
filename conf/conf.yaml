@@ -49,3 +49,6 @@ monitor:
 
 docs:
   dir: "docs/hugo/public"   # Hugo 开发文档站产物目录；GOSILITE_DOCS_DIR 可覆盖
+
+scheduler:
+  log_retention_days: 30     # GOSILITE_SCHEDULER_LOG_RETENTION_DAYS 可覆盖

@@ -3,6 +3,7 @@ package conf
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -19,18 +20,23 @@ var (
 type Config struct {
 	Env string
 
-	Server   Server   `yaml:"server"`
-	JWT      JWT      `yaml:"jwt"`
-	Database Database `yaml:"database"`
-	Redis    Redis    `yaml:"redis"`
-	Storage  Storage  `yaml:"storage"`
-	Monitor  Monitor  `yaml:"monitor"`
-	Docs     Docs     `yaml:"docs"`
+	Server    Server    `yaml:"server"`
+	JWT       JWT       `yaml:"jwt"`
+	Database  Database  `yaml:"database"`
+	Redis     Redis     `yaml:"redis"`
+	Storage   Storage   `yaml:"storage"`
+	Monitor   Monitor   `yaml:"monitor"`
+	Docs      Docs      `yaml:"docs"`
+	Scheduler Scheduler `yaml:"scheduler"`
 }
 
 // Docs 开发文档静态站（Hugo 产物）托管配置。
 type Docs struct {
 	Dir string `yaml:"dir"`
+}
+
+type Scheduler struct {
+	LogRetentionDays int `yaml:"log_retention_days" validate:"min=1"`
 }
 
 // Monitor 数据监控：指标出口与采集开关（业务热路径仅 O(1) 打点）。
@@ -173,6 +179,13 @@ func applyEnvOverrides(vars map[string]string) {
 	set("GOSILITE_STORAGE_ENDPOINT", &conf.Storage.Endpoint)
 	set("GOSILITE_STORAGE_DOMAIN", &conf.Storage.Domain)
 	set("GOSILITE_DOCS_DIR", &conf.Docs.Dir)
+	if v := vars["GOSILITE_SCHEDULER_LOG_RETENTION_DAYS"]; v != "" {
+		days, err := strconv.Atoi(v)
+		if err != nil || days < 1 {
+			panic("GOSILITE_SCHEDULER_LOG_RETENTION_DAYS must be a positive integer")
+		}
+		conf.Scheduler.LogRetentionDays = days
+	}
 }
 
 func GetEnv() string {

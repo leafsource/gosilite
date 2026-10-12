@@ -2,11 +2,15 @@ package scheduler
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/protocol/sse"
 	apiModel "gosilite/api/model/framework/scheduler"
 	dalModel "gosilite/application/framework/dal/model"
+	core "gosilite/application/framework/scheduler"
 	svc "gosilite/application/framework/service/scheduler"
 	R "gosilite/pkg/utils/response"
+	"strconv"
 	"time"
 )
 
@@ -27,6 +31,10 @@ func runDTO(x *dalModel.SystemJobRun) *apiModel.SchedulerJobRunDTO {
 		z.FinishedAt = x.FinishedAt.Format(time.RFC3339)
 	}
 	return z
+}
+
+func runLogDTO(x *dalModel.SystemJobRunLog) *apiModel.SchedulerJobRunLogDTO {
+	return &apiModel.SchedulerJobRunLogDTO{ID: x.ID, RunId: x.RunID, JobKey: x.JobKey, Level: x.Level, Stage: x.Stage, Message: x.Message, CreatedAt: x.CreatedAt.Format(time.RFC3339)}
 }
 
 // JobList 定时任务列表
@@ -209,6 +217,106 @@ func RunList(ctx context.Context, c *app.RequestContext) {
 		out = append(out, runDTO(x))
 	}
 	R.SuccessWithData(ctx, c, &apiModel.SchedulerJobRunListResponse{List: out, Total: n})
+}
+
+// RunLogList 定时任务执行日志
+// @Summary 定时任务执行日志
+// @Tags 监控
+// @Produce json
+// @Param data query apiModel.SchedulerJobRunLogListRequest true "查询参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/scheduler/run/log/list [GET]
+func RunLogList(ctx context.Context, c *app.RequestContext) {
+	var r apiModel.SchedulerJobRunLogListRequest
+	if err := c.BindAndValidate(&r); err != nil {
+		R.InvalidParamRequestResponse(c, err.Error())
+		return
+	}
+	var afterID int64
+	if r.AfterId != nil {
+		afterID = *r.AfterId
+	}
+	xs, n, err := svc.SystemSchedulerSVC.RunLogs(ctx, r.RunId, afterID, int(r.Page), int(r.PageSize))
+	if err != nil {
+		R.Error(ctx, c, err)
+		return
+	}
+	out := make([]*apiModel.SchedulerJobRunLogDTO, 0, len(xs))
+	for _, x := range xs {
+		out = append(out, runLogDTO(x))
+	}
+	R.SuccessWithData(ctx, c, &apiModel.SchedulerJobRunLogListResponse{List: out, Total: n})
+}
+
+// RunLogStream 定时任务执行日志实时订阅
+// @Summary 定时任务执行日志实时订阅
+// @Tags 监控
+// @Produce text/event-stream
+// @Param data query apiModel.SchedulerJobRunLogListRequest true "查询参数"
+// @Success 200 {string} string
+// @Router /system/scheduler/run/log/stream [GET]
+func RunLogStream(ctx context.Context, c *app.RequestContext) {
+	var r apiModel.SchedulerJobRunLogListRequest
+	if err := c.BindAndValidate(&r); err != nil {
+		R.InvalidParamRequestResponse(c, err.Error())
+		return
+	}
+	var afterID int64
+	if r.AfterId != nil {
+		afterID = *r.AfterId
+	}
+	if lastID, err := strconv.ParseInt(string(c.Request.Header.Peek("Last-Event-ID")), 10, 64); err == nil && lastID > afterID {
+		afterID = lastID
+	}
+	live, unsubscribe := svc.SystemSchedulerSVC.SubscribeRunLogs(r.RunId)
+	logs := make([]*dalModel.SystemJobRunLog, 0)
+	for page := 1; ; page++ {
+		batch, total, err := svc.SystemSchedulerSVC.RunLogs(ctx, r.RunId, afterID, page, 200)
+		if err != nil {
+			unsubscribe()
+			R.Error(ctx, c, err)
+			return
+		}
+		logs = append(logs, batch...)
+		if int64(len(logs)) >= total || len(batch) == 0 {
+			break
+		}
+	}
+	defer unsubscribe()
+	writer := sse.NewWriter(c)
+	c.Response.Header.Set("Connection", "keep-alive")
+	_ = streamRunLogs(ctx, writer, logs, live)
+}
+
+func streamRunLogs(ctx context.Context, writer *sse.Writer, replay []*dalModel.SystemJobRunLog, live <-chan *core.LogEntry) error {
+	write := func(log *apiModel.SchedulerJobRunLogDTO) error {
+		data, err := json.Marshal(log)
+		if err != nil {
+			return err
+		}
+		return writer.WriteEvent(strconv.FormatInt(log.ID, 10), "log", data)
+	}
+	lastID := int64(0)
+	for _, log := range replay {
+		if err := write(runLogDTO(log)); err != nil {
+			return err
+		}
+		lastID = log.ID
+	}
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case log := <-live:
+			if log == nil || log.ID <= lastID {
+				continue
+			}
+			if err := write(&apiModel.SchedulerJobRunLogDTO{ID: log.ID, RunId: log.RunID, JobKey: log.JobKey, Level: log.Level, Stage: log.Stage, Message: log.Message, CreatedAt: log.CreatedAt.Format(time.RFC3339)}); err != nil {
+				return err
+			}
+			lastID = log.ID
+		}
+	}
 }
 
 // JobKeys 可用任务键

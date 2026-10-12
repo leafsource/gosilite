@@ -36,6 +36,11 @@ func Register(r *server.Hertz) {
 			{
 				_run := _scheduler.Group("/run", _runMw()...)
 				_run.GET("/list", append(_runlistMw(), scheduler.RunList)...)
+				{
+					_log := _run.Group("/log", _logMw()...)
+					_log.GET("/list", append(_runloglistMw(), scheduler.RunLogList)...)
+					_log.GET("/stream", append(_runlogstreamMw(), scheduler.RunLogStream)...)
+				}
 			}
 		}
 	}

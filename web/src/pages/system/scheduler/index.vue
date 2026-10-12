@@ -83,12 +83,16 @@
         <template #finishedAt="{ row }">{{ formatRunTime((row as SchedulerRun).finishedAt) }}</template>
         <template #detail="{ row }">
           <t-space size="small">
-            <t-link v-if="(row as SchedulerRun).output" theme="primary" @click="showRunDetail((row as SchedulerRun).output, '执行日志')">执行日志</t-link>
+            <t-link theme="primary" @click="openRunLogs(row as SchedulerRun)">实时日志</t-link>
+            <t-link v-if="(row as SchedulerRun).output" theme="primary" @click="showRunDetail((row as SchedulerRun).output, '执行结果')">执行结果</t-link>
             <t-link v-if="(row as SchedulerRun).error" theme="danger" @click="showRunDetail((row as SchedulerRun).error, '错误')">错误</t-link>
-            <span v-if="!(row as SchedulerRun).output && !(row as SchedulerRun).error">—</span>
           </t-space>
         </template>
       </s-table>
+    </t-drawer>
+
+    <t-drawer v-model:visible="runLogVisible" header="执行日志" size="760px" :footer="false" @close="closeRunLogs">
+      <pre class="run-detail">{{ formattedRunLogs }}</pre>
     </t-drawer>
 
     <t-drawer v-model:visible="runDetailVisible" :header="runDetailTitle" size="600px" :footer="false">
@@ -105,6 +109,7 @@ import { MessagePlugin } from 'tdesign-vue-next';
 
 import {
   listSchedulerJobs,
+  listSchedulerRunLogs,
   listSchedulerRuns,
   removeSchedulerJob,
   runSchedulerJob,
@@ -112,10 +117,10 @@ import {
   schedulerKeys,
   toggleSchedulerJob,
 } from '@/api/system/scheduler';
-import type { SchedulerJob, SchedulerJobSave, SchedulerRun } from '@/api/system/schedulerModel';
+import type { SchedulerJob, SchedulerJobSave, SchedulerRun, SchedulerRunLog } from '@/api/system/schedulerModel';
 import STable from '@/components/s-table/index.vue';
 import type { STableColumn } from '@/components/s-table/sTable';
-import { useConfigStore } from '@/store';
+import { useConfigStore, useUserStore } from '@/store';
 
 const loading = ref(false);
 const jobs = ref<SchedulerJob[]>([]);
@@ -125,6 +130,7 @@ const pageSize = ref(useConfigStore().pageDefault);
 const visible = ref(false);
 const runsVisible = ref(false);
 const runDetailVisible = ref(false);
+const runLogVisible = ref(false);
 const runsLoading = ref(false);
 const selectedJob = ref<SchedulerJob>();
 const runs = ref<SchedulerRun[]>([]);
@@ -133,12 +139,16 @@ const runsPage = ref(1);
 const runsPageSize = ref(useConfigStore().pageDefault);
 const runDetail = ref('');
 const runDetailTitle = ref('');
+const runLogs = ref<SchedulerRunLog[]>([]);
+const selectedRun = ref<SchedulerRun>();
+let runLogAbort: AbortController | undefined;
 const keys = ref<string[]>([]);
 const form = ref<SchedulerJobSave>(createForm());
 
 const tableData = computed(() => jobs.value as unknown as Array<Record<string, unknown>>);
 const runTableData = computed(() => runs.value as unknown as Array<Record<string, unknown>>);
 const jobKeyOptions = computed(() => keys.value.map((key) => ({ label: key, value: key })));
+const formattedRunLogs = computed(() => runLogs.value.map((log) => `${formatRunTime(log.createdAt)} [${log.level.toUpperCase()}] [${log.stage}] ${log.message}`).join('\n'));
 const statusOptions = [
   { label: '启用', value: 1 },
   { label: '停用', value: 0 },
@@ -232,6 +242,65 @@ function closeRuns() {
   selectedJob.value = undefined;
   runs.value = [];
   runsTotal.value = 0;
+}
+
+async function openRunLogs(run: SchedulerRun) {
+  selectedRun.value = run;
+  runLogs.value = [];
+  runLogVisible.value = true;
+  try {
+    const result = await listSchedulerRunLogs({ runId: run.id, page: 1, pageSize: 200 });
+    runLogs.value = result.list ?? [];
+    followRunLogs(run.id, runLogs.value.at(-1)?.id);
+  } catch (error) {
+    MessagePlugin.error((error as Error).message || '加载执行日志失败');
+  }
+}
+
+function closeRunLogs() {
+  runLogAbort?.abort();
+  runLogAbort = undefined;
+  selectedRun.value = undefined;
+}
+
+async function followRunLogs(runId: string, afterId?: string) {
+  runLogAbort?.abort();
+  runLogAbort = new AbortController();
+  const userStore = useUserStore();
+  const params = new URLSearchParams({ runId, page: '1', pageSize: '200' });
+  if (afterId) params.set('afterId', afterId);
+  try {
+    const response = await fetch(`/system/scheduler/run/log/stream?${params.toString()}`, {
+      headers: { Authorization: `Bearer ${userStore.token}`, Accept: 'text/event-stream', ...(afterId ? { 'Last-Event-ID': afterId } : {}) },
+      signal: runLogAbort.signal,
+    });
+    if (!response.ok || !response.body) throw new Error('订阅执行日志失败');
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (runLogVisible.value && !runLogAbort.signal.aborted) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let separator = buffer.indexOf('\n\n');
+      while (separator >= 0) {
+        const event = buffer.slice(0, separator);
+        buffer = buffer.slice(separator + 2);
+        const data = event.split('\n').find((line) => line.startsWith('data: '))?.slice(6);
+        if (data) {
+          const log = JSON.parse(data) as SchedulerRunLog;
+          if (!runLogs.value.some((item) => item.id === log.id)) runLogs.value.push(log);
+        }
+        separator = buffer.indexOf('\n\n');
+      }
+    }
+  } catch (error) {
+    if (!runLogAbort?.signal.aborted) MessagePlugin.error((error as Error).message || '订阅执行日志失败');
+  } finally {
+    if (runLogVisible.value && !runLogAbort?.signal.aborted && selectedRun.value?.id === runId) {
+      window.setTimeout(() => followRunLogs(runId, runLogs.value[runLogs.value.length - 1]?.id), 1000);
+    }
+  }
 }
 
 function runStatusTheme(status: string): 'success' | 'danger' | 'warning' | 'default' {

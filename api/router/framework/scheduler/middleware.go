@@ -53,3 +53,12 @@ func _runMw() []app.HandlerFunc {
 }
 
 func _runlistMw() []app.HandlerFunc { return permission.HPermissions("system:scheduler:list") }
+
+func _logMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _runloglistMw() []app.HandlerFunc { return permission.HPermissions("system:scheduler:list") }
+
+func _runlogstreamMw() []app.HandlerFunc { return permission.HPermissions("system:scheduler:list") }

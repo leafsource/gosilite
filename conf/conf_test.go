@@ -60,12 +60,14 @@ func TestApplyEnvOverrides(t *testing.T) {
 	conf.Server.EnableAccessLog = true
 	conf.Server.Address = ":8888"
 	conf.JWT.Secret = "yaml-default"
+	conf.Scheduler.LogRetentionDays = 30
 
 	applyEnvOverrides(map[string]string{
-		"GOSILITE_SERVER_ADDRESS":    ":8080",
-		"GOSILITE_SERVER_ACCESS_LOG": "false",
-		"GOSILITE_JWT_SECRET":        "",
-		"GOSILITE_STORAGE_ENDPOINT":  "http://127.0.0.1:9000",
+		"GOSILITE_SERVER_ADDRESS":               ":8080",
+		"GOSILITE_SERVER_ACCESS_LOG":            "false",
+		"GOSILITE_JWT_SECRET":                   "",
+		"GOSILITE_STORAGE_ENDPOINT":             "http://127.0.0.1:9000",
+		"GOSILITE_SCHEDULER_LOG_RETENTION_DAYS": "14",
 	})
 
 	if conf.Server.Address != ":8080" {
@@ -81,4 +83,17 @@ func TestApplyEnvOverrides(t *testing.T) {
 	if conf.Storage.Endpoint != "http://127.0.0.1:9000" {
 		t.Fatalf("Endpoint = %q", conf.Storage.Endpoint)
 	}
+	if conf.Scheduler.LogRetentionDays != 14 {
+		t.Fatalf("LogRetentionDays = %d, want 14", conf.Scheduler.LogRetentionDays)
+	}
+}
+
+func TestApplyEnvOverridesRejectsInvalidLogRetentionDays(t *testing.T) {
+	conf = new(Config)
+	defer func() {
+		if recover() == nil {
+			t.Fatal("expected invalid retention override to panic")
+		}
+	}()
+	applyEnvOverrides(map[string]string{"GOSILITE_SCHEDULER_LOG_RETENTION_DAYS": "0"})
 }
