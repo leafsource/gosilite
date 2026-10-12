@@ -296,25 +296,31 @@ func streamRunLogs(ctx context.Context, writer *sse.Writer, replay []*dalModel.S
 		}
 		return writer.WriteEvent(strconv.FormatInt(log.ID, 10), "log", data)
 	}
-	lastID := int64(0)
+	cursor := int64(0)
 	for _, log := range replay {
+		if log == nil || log.ID <= cursor {
+			continue
+		}
 		if err := write(runLogDTO(log)); err != nil {
 			return err
 		}
-		lastID = log.ID
+		cursor = log.ID
 	}
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case log := <-live:
-			if log == nil || log.ID <= lastID {
+		case log, ok := <-live:
+			if !ok {
+				return nil
+			}
+			if log == nil || log.ID <= cursor {
 				continue
 			}
 			if err := write(&apiModel.SchedulerJobRunLogDTO{ID: log.ID, RunId: log.RunID, JobKey: log.JobKey, Level: log.Level, Stage: log.Stage, Message: log.Message, CreatedAt: log.CreatedAt.Format(time.RFC3339)}); err != nil {
 				return err
 			}
-			lastID = log.ID
+			cursor = log.ID
 		}
 	}
 }

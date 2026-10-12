@@ -1,10 +1,15 @@
 package scheduler
 
 import (
+	"bytes"
 	"context"
+	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/cloudwego/hertz/pkg/common/hlog"
 )
 
 type logStore struct {
@@ -55,5 +60,38 @@ func TestRunLoggerUsesContext(t *testing.T) {
 		}
 	case <-time.After(time.Second):
 		t.Fatal("context log was not persisted")
+	}
+}
+
+func TestRunLoggerEmitsContextToHertzLog(t *testing.T) {
+	var output bytes.Buffer
+	logger := hlog.DefaultLogger()
+	logger.SetOutput(&output)
+	t.Cleanup(func() { logger.SetOutput(os.Stderr) })
+
+	store := &logStore{}
+	sink := NewLogSink(store)
+	live, unsubscribe := sink.Subscribe(9)
+	defer unsubscribe()
+	ctx := WithRunLogger(context.Background(), sink, 9, "system.scheduler.test")
+	Info(ctx, "execute", "started")
+	Warn(ctx, "retry", "attempt %d", 2)
+	Error(ctx, "finish", "failed: %s", "boom")
+
+	for range 3 {
+		select {
+		case <-live:
+		case <-time.After(time.Second):
+			t.Fatal("context log was not persisted")
+		}
+	}
+	for _, want := range []string{
+		"[scheduler] run=9 job=system.scheduler.test stage=execute started",
+		"[scheduler] run=9 job=system.scheduler.test stage=retry attempt 2",
+		"[scheduler] run=9 job=system.scheduler.test stage=finish failed: boom",
+	} {
+		if !strings.Contains(output.String(), want) {
+			t.Fatalf("Hertz log = %q, missing %q", output.String(), want)
+		}
 	}
 }

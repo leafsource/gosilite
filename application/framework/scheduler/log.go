@@ -118,7 +118,16 @@ func Log(ctx context.Context, level, stage, format string, args ...any) {
 	if logger == nil || logger.sink == nil {
 		return
 	}
-	logger.sink.Write(&LogEntry{RunID: logger.runID, JobKey: logger.jobKey, Level: level, Stage: stage, Message: fmt.Sprintf(format, args...)})
+	message := fmt.Sprintf(format, args...)
+	switch level {
+	case "error":
+		hlog.Errorf("[scheduler] run=%d job=%s stage=%s %s", logger.runID, logger.jobKey, stage, message)
+	case "warn":
+		hlog.Warnf("[scheduler] run=%d job=%s stage=%s %s", logger.runID, logger.jobKey, stage, message)
+	default:
+		hlog.Infof("[scheduler] run=%d job=%s stage=%s %s", logger.runID, logger.jobKey, stage, message)
+	}
+	logger.sink.Write(&LogEntry{RunID: logger.runID, JobKey: logger.jobKey, Level: level, Stage: stage, Message: message})
 }
 
 func Info(ctx context.Context, stage, format string, args ...any) {
