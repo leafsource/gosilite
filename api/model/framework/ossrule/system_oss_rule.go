@@ -409,7 +409,7 @@ func (p *OssRuleListRequest) String() string {
 }
 
 type OssRuleIdRequest struct {
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 }
 
 func NewOssRuleIdRequest() *OssRuleIdRequest {
@@ -549,7 +549,7 @@ func (p *OssRuleIdRequest) String() string {
 }
 
 type OssRuleIdsRequest struct {
-	Ids []int64 `thrift:"ids,1,default,list<i64>" form:"ids" json:"ids" query:"ids"`
+	Ids []string `thrift:"ids,1,default,list<string>" form:"ids" json:"ids" query:"ids"`
 }
 
 func NewOssRuleIdsRequest() *OssRuleIdsRequest {
@@ -559,7 +559,7 @@ func NewOssRuleIdsRequest() *OssRuleIdsRequest {
 func (p *OssRuleIdsRequest) InitDefault() {
 }
 
-func (p *OssRuleIdsRequest) GetIds() (v []int64) {
+func (p *OssRuleIdsRequest) GetIds() (v []string) {
 	return p.Ids
 }
 
@@ -628,11 +628,11 @@ func (p *OssRuleIdsRequest) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -679,11 +679,11 @@ func (p *OssRuleIdsRequest) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("ids", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.Ids)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.Ids)); err != nil {
 		return err
 	}
 	for _, v := range p.Ids {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -709,7 +709,7 @@ func (p *OssRuleIdsRequest) String() string {
 }
 
 type OssRuleDTO struct {
-	ID          int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID          int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	RuleName    string `thrift:"ruleName,2" form:"ruleName" json:"ruleName" query:"ruleName"`
 	Domain      string `thrift:"domain,3" form:"domain" json:"domain" query:"domain"`
 	MimeType    string `thrift:"mimeType,4" form:"mimeType" json:"mimeType" query:"mimeType"`
@@ -1561,7 +1561,7 @@ func (p *OssRuleListResponse) String() string {
 }
 
 type OssRuleSaveRequest struct {
-	ID        *int64 `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	ID        *int64 `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
 	RuleName  string `thrift:"ruleName,2" form:"ruleName" json:"ruleName" query:"ruleName"`
 	Domain    string `thrift:"domain,3" form:"domain" json:"domain" query:"domain"`
 	MimeType  string `thrift:"mimeType,4" form:"mimeType" json:"mimeType" query:"mimeType"`
@@ -2081,7 +2081,7 @@ func (p *OssRuleSaveRequest) String() string {
 
 // 覆盖字段值开关（目标为 Y 且该规则为默认时，同域名其他默认规则覆盖自动关闭）
 type OssRuleOverwriteRequest struct {
-	ID          int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID          int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	IsOverwrite string `thrift:"isOverwrite,2" form:"isOverwrite" json:"isOverwrite" query:"isOverwrite"`
 }
 

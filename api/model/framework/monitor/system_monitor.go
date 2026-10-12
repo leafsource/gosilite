@@ -249,7 +249,7 @@ func (p *OnlineListRequest) String() string {
 type OnlineDTO struct {
 	// 行标识 = access token 摘要（同用户多端各自成行）
 	ID     string `thrift:"id,1" form:"id" json:"id" query:"id"`
-	UserId int64  `thrift:"userId,2" form:"userId" json:"userId" query:"userId"`
+	UserId int64  `thrift:"userId,2" json:"userId,string" form:"userId" query:"userId"`
 	// 登录名称（账号）
 	UserName string `thrift:"userName,3" form:"userName" json:"userName" query:"userName"`
 	DeptName string `thrift:"deptName,4" form:"deptName" json:"deptName" query:"deptName"`

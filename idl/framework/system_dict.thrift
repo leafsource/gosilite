@@ -7,17 +7,17 @@ struct PageQuery {
 }
 
 struct IdRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
 }
 
 struct DictTypeDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string dictName
     3: string dictType
     4: i32 status
     5: i32 orderNum
     6: string remark
-    7: i64 groupId
+    7: i64 groupId (go.tag = "json:\"groupId,string\"")
 }
 
 struct DictTypeListRequest {
@@ -25,7 +25,7 @@ struct DictTypeListRequest {
     2: i32 pageSize = 10
     3: string keyword
     // 缺省=全部；0=未分组；>0=指定分组
-    4: optional i64 groupId
+    4: optional i64 groupId (go.tag = "json:\"groupId,string\"")
 }
 
 struct DictTypeListResponse {
@@ -34,17 +34,17 @@ struct DictTypeListResponse {
 }
 
 struct DictTypeSaveRequest {
-    1: optional i64 id
+    1: optional i64 id (go.tag = "json:\"id,string\"")
     2: string dictName
     3: string dictType
     4: i32 status
     5: i32 orderNum
     6: optional string remark
-    7: i64 groupId
+    7: i64 groupId (go.tag = "json:\"groupId,string\"")
 }
 
 struct DictGroupDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string groupName
     3: i32 orderNum
     4: string remark
@@ -55,14 +55,14 @@ struct DictGroupListResponse {
 }
 
 struct DictGroupSaveRequest {
-    1: optional i64 id
+    1: optional i64 id (go.tag = "json:\"id,string\"")
     2: string groupName
     3: i32 orderNum
     4: optional string remark
 }
 
 struct DictDataDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string dictType
     3: string dictLabel
     4: string dictValue
@@ -88,7 +88,7 @@ struct DictDataListResponse {
 }
 
 struct DictDataSaveRequest {
-    1: optional i64 id
+    1: optional i64 id (go.tag = "json:\"id,string\"")
     2: string dictType
     3: string dictLabel
     4: string dictValue
@@ -116,7 +116,7 @@ struct DictOptionsResponse {
 }
 
 struct ConfigDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string configName
     3: string configKey
     4: string configValue
@@ -131,7 +131,7 @@ struct ConfigListResponse {
 }
 
 struct ConfigSaveRequest {
-    1: optional i64 id
+    1: optional i64 id (go.tag = "json:\"id,string\"")
     2: string configName
     3: string configKey
     4: string configValue

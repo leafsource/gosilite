@@ -5,7 +5,8 @@ definitions:
       handleRemark:
         type: string
       id:
-        type: integer
+        example: "0"
+        type: string
     type: object
   log.LogCleanRequest:
     properties:
@@ -15,6 +16,89 @@ definitions:
         items:
           type: integer
         type: array
+    type: object
+  message.MessageConfigSaveRequest:
+    properties:
+      configJson:
+        type: string
+      id:
+        example: "0"
+        type: string
+      messageType:
+        type: string
+      remark:
+        type: string
+      status:
+        type: integer
+      supplierType:
+        type: string
+      title:
+        type: string
+    type: object
+  message.MessageIdRequest:
+    properties:
+      id:
+        example: "0"
+        type: string
+    type: object
+  message.MessageKeySaveRequest:
+    properties:
+      id:
+        example: "0"
+        type: string
+      messageKey:
+        type: string
+      name:
+        type: string
+      remark:
+        type: string
+    type: object
+  message.MessageSendTestRequest:
+    properties:
+      account:
+        description: 收件账号（邮箱地址或手机号）
+        type: string
+      messageTemplateId:
+        example: "0"
+        type: string
+      vars:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  message.MessageTemplateSaveRequest:
+    properties:
+      content:
+        type: string
+      id:
+        example: "0"
+        type: string
+      messageConfigId:
+        example: "0"
+        type: string
+      messageKey:
+        type: string
+      messageKeyId:
+        example: "0"
+        type: string
+      messageType:
+        type: string
+      remark:
+        type: string
+      signature:
+        type: string
+      status:
+        type: integer
+      templateId:
+        type: string
+      templateMode:
+        type: string
+      templateName:
+        type: string
+      title:
+        type: string
+      varsJson:
+        type: string
     type: object
   monitor.CacheKeyDeleteRequest:
     properties:
@@ -36,19 +120,22 @@ definitions:
   notice.NoticeIdRequest:
     properties:
       id:
-        type: integer
+        example: "0"
+        type: string
     type: object
   notice.NoticeReadRequest:
     properties:
       id:
-        type: integer
+        example: "0"
+        type: string
     type: object
   notice.NoticeSaveRequest:
     properties:
       content:
         type: string
       id:
-        type: integer
+        example: "0"
+        type: string
       noticeType:
         type: integer
       status:
@@ -66,7 +153,8 @@ definitions:
   oss.OssSaveRequest:
     properties:
       id:
-        type: integer
+        example: "0"
+        type: string
       isLock:
         type: boolean
       originalName:
@@ -94,7 +182,8 @@ definitions:
       endpoint:
         type: string
       id:
-        type: integer
+        example: "0"
+        type: string
       isHttps:
         type: string
       prefix:
@@ -109,7 +198,8 @@ definitions:
   ossconfig.OssConfigStatusRequest:
     properties:
       id:
-        type: integer
+        example: "0"
+        type: string
     type: object
   ossconfig.OssConfigTestRequest:
     properties:
@@ -134,7 +224,8 @@ definitions:
   ossrule.OssRuleOverwriteRequest:
     properties:
       id:
-        type: integer
+        example: "0"
+        type: string
       isOverwrite:
         type: string
     type: object
@@ -143,7 +234,8 @@ definitions:
       domain:
         type: string
       id:
-        type: integer
+        example: "0"
+        type: string
       isDefault:
         type: string
       mimeType:
@@ -170,7 +262,8 @@ definitions:
       configValue:
         type: string
       id:
-        type: integer
+        example: "0"
+        type: string
       remark:
         type: string
       status:
@@ -189,7 +282,8 @@ definitions:
       dictValue:
         type: string
       id:
-        type: integer
+        example: "0"
+        type: string
       isDefault:
         type: integer
       listOrder:
@@ -204,7 +298,8 @@ definitions:
       groupName:
         type: string
       id:
-        type: integer
+        example: "0"
+        type: string
       orderNum:
         type: integer
       remark:
@@ -217,9 +312,11 @@ definitions:
       dictType:
         type: string
       groupId:
-        type: integer
+        example: "0"
+        type: string
       id:
-        type: integer
+        example: "0"
+        type: string
       orderNum:
         type: integer
       remark:
@@ -230,18 +327,21 @@ definitions:
   syscfg.IdRequest:
     properties:
       id:
-        type: integer
+        example: "0"
+        type: string
     type: object
   system.AdminUserSaveRequest:
     properties:
       account:
         type: string
       deptId:
-        type: integer
+        example: "0"
+        type: string
       email:
         type: string
       id:
-        type: integer
+        example: "0"
+        type: string
       mobilePhone:
         type: string
       password:
@@ -262,27 +362,32 @@ definitions:
   system.DeptLeaderRequest:
     properties:
       deptId:
-        type: integer
+        example: "0"
+        type: string
       userId:
-        type: integer
+        example: "0"
+        type: string
     type: object
   system.DeptSaveRequest:
     properties:
       deptName:
         type: string
       id:
-        type: integer
+        example: "0"
+        type: string
       orderNum:
         type: integer
       parentId:
-        type: integer
+        example: "0"
+        type: string
       status:
         type: integer
     type: object
   system.IdRequest:
     properties:
       id:
-        type: integer
+        example: "0"
+        type: string
     type: object
   system.MenuSaveRequest:
     properties:
@@ -293,7 +398,8 @@ definitions:
       icon:
         type: string
       id:
-        type: integer
+        example: "0"
+        type: string
       menuName:
         type: string
       menuType:
@@ -301,7 +407,8 @@ definitions:
       orderNum:
         type: integer
       parentId:
-        type: integer
+        example: "0"
+        type: string
       path:
         type: string
       perms:
@@ -316,7 +423,8 @@ definitions:
   system.PostSaveRequest:
     properties:
       id:
-        type: integer
+        example: "0"
+        type: string
       orderNum:
         type: integer
       postCode:
@@ -339,7 +447,8 @@ definitions:
           type: integer
         type: array
       roleId:
-        type: integer
+        example: "0"
+        type: string
     type: object
   system.RoleSaveRequest:
     properties:
@@ -350,7 +459,8 @@ definitions:
       description:
         type: string
       id:
-        type: integer
+        example: "0"
+        type: string
       name:
         type: string
       orderNum:
@@ -361,7 +471,8 @@ definitions:
   system.UserStatusRequest:
     properties:
       id:
-        type: integer
+        example: "0"
+        type: string
       state:
         type: string
     type: object
@@ -392,7 +503,8 @@ definitions:
   user.UpdateProfileAvatarRequest:
     properties:
       fileId:
-        type: integer
+        example: "0"
+        type: string
     type: object
 info:
   contact: {}
@@ -404,9 +516,10 @@ paths:
     get:
       description: 统一文件下载接口（按台账 id 流式下载）
       parameters:
-      - in: query
+      - example: "0"
+        in: query
         name: id
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -455,9 +568,10 @@ paths:
     get:
       description: 详情接口
       parameters:
-      - in: query
+      - example: "0"
+        in: query
         name: id
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -1104,9 +1218,10 @@ paths:
       description: 类型列表接口
       parameters:
       - description: 缺省=全部；0=未分组；>0=指定分组
+        example: "0"
         in: query
         name: groupId
-        type: integer
+        type: string
       - in: query
         name: keyword
         type: string
@@ -1131,9 +1246,10 @@ paths:
     get:
       description: 错误日志接口
       parameters:
-      - in: query
+      - example: "0"
+        in: query
         name: id
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -1361,6 +1477,475 @@ paths:
       summary: 菜单树
       tags:
       - 系统管理
+  /system/message/config:
+    delete:
+      description: 删除消息配置接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageIdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除消息配置
+      tags:
+      - 消息管理
+    get:
+      description: 消息配置详情接口
+      parameters:
+      - example: "0"
+        in: query
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 消息配置详情
+      tags:
+      - 消息管理
+    post:
+      description: 新增消息配置接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageConfigSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 新增消息配置
+      tags:
+      - 消息管理
+    put:
+      description: 修改消息配置接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageConfigSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 修改消息配置
+      tags:
+      - 消息管理
+  /system/message/config/list:
+    get:
+      description: 消息配置分页列表接口
+      parameters:
+      - in: query
+        name: keyword
+        type: string
+      - description: 缺省=全部；MAIL / SMS
+        in: query
+        name: messageType
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - description: 缺省=全部；1 正常 0 停用
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 消息配置列表
+      tags:
+      - 消息管理
+  /system/message/field-configs:
+    get:
+      description: supplier → 动态表单字段定义 JSON 接口（前端 evalFieldConfigs 消费）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 消息配置动态字段
+      tags:
+      - 消息管理
+  /system/message/key:
+    delete:
+      description: 删除消息常量接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageIdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除消息常量
+      tags:
+      - 消息管理
+    get:
+      description: 消息常量详情接口
+      parameters:
+      - example: "0"
+        in: query
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 消息常量详情
+      tags:
+      - 消息管理
+    post:
+      description: 新增消息常量接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageKeySaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 新增消息常量
+      tags:
+      - 消息管理
+    put:
+      description: 修改消息常量接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageKeySaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 修改消息常量
+      tags:
+      - 消息管理
+  /system/message/key/list:
+    get:
+      description: 消息常量分页列表接口
+      parameters:
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 消息常量列表
+      tags:
+      - 消息管理
+  /system/message/log:
+    delete:
+      description: 删除单条发送记录接口（返回删除条数）
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageIdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除发送记录
+      tags:
+      - 消息管理
+    get:
+      description: 发送记录详情接口
+      parameters:
+      - example: "0"
+        in: query
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 发送记录详情
+      tags:
+      - 消息管理
+  /system/message/log/clear:
+    delete:
+      description: 清空发送记录接口（返回删除条数）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 清空发送记录
+      tags:
+      - 消息管理
+  /system/message/log/list:
+    get:
+      description: 发送记录分页列表接口
+      parameters:
+      - description: 缺省=全部；1 成功 0 失败
+        in: query
+        name: isSuccess
+        type: integer
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: messageKey
+        type: string
+      - in: query
+        name: messageType
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 发送记录列表
+      tags:
+      - 消息管理
+  /system/message/suppliers:
+    get:
+      description: 按消息类型返回可用供应商列表接口
+      parameters:
+      - description: MAIL / SMS
+        in: query
+        name: messageType
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 消息供应商列表
+      tags:
+      - 消息管理
+  /system/message/template:
+    delete:
+      description: 删除消息模板接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageIdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除消息模板
+      tags:
+      - 消息管理
+    get:
+      description: 消息模板详情接口
+      parameters:
+      - example: "0"
+        in: query
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 消息模板详情
+      tags:
+      - 消息管理
+    post:
+      description: 新增消息模板接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageTemplateSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 新增消息模板
+      tags:
+      - 消息管理
+    put:
+      description: 修改消息模板接口
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageTemplateSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 修改消息模板
+      tags:
+      - 消息管理
+  /system/message/template/list:
+    get:
+      description: 消息模板分页列表接口
+      parameters:
+      - in: query
+        name: keyword
+        type: string
+      - example: "0"
+        in: query
+        name: messageKeyId
+        type: string
+      - in: query
+        name: messageType
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - description: 缺省=全部；1 正常 0 停用
+        in: query
+        name: status
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 消息模板列表
+      tags:
+      - 消息管理
+  /system/message/template/send-test:
+    post:
+      description: 消息模板测试发送接口（走发送服务，无论成败都落发送记录）
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/message.MessageSendTestRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 测试发送
+      tags:
+      - 消息管理
   /system/monitor/datasource:
     get:
       description: 数据源监控接口
@@ -1483,9 +2068,10 @@ paths:
     get:
       description: 通知接口
       parameters:
-      - in: query
+      - example: "0"
+        in: query
         name: id
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -1619,9 +2205,10 @@ paths:
     get:
       description: 操作日志接口
       parameters:
-      - in: query
+      - example: "0"
+        in: query
         name: id
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -1728,9 +2315,10 @@ paths:
     get:
       description: OSS文件台账详情接口
       parameters:
-      - in: query
+      - example: "0"
+        in: query
         name: id
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -1790,9 +2378,10 @@ paths:
     get:
       description: 对象存储配置详情接口
       parameters:
-      - in: query
+      - example: "0"
+        in: query
         name: id
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -1934,6 +2523,10 @@ paths:
       - in: query
         name: endTime
         type: string
+      - description: 对象 key 模糊（文件名）
+        in: query
+        name: fileName
+        type: string
       - description: 小写后缀，逗号分隔
         in: query
         name: fileSuffix
@@ -1947,6 +2540,10 @@ paths:
       - in: query
         name: pageSize
         type: integer
+      - description: 服务商（system_oss_config.config_key）
+        in: query
+        name: service
+        type: string
       produces:
       - application/json
       responses:
@@ -1984,9 +2581,10 @@ paths:
     get:
       description: OSS处理规则详情接口
       parameters:
-      - in: query
+      - example: "0"
+        in: query
         name: id
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -2264,9 +2862,10 @@ paths:
     get:
       description: 角色授权接口
       parameters:
-      - in: query
+      - example: "0"
+        in: query
         name: id
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -2387,9 +2986,10 @@ paths:
     get:
       description: 用户列表接口
       parameters:
-      - in: query
+      - example: "0"
+        in: query
         name: deptId
-        type: integer
+        type: string
       - in: query
         name: keyword
         type: string
@@ -2417,9 +3017,10 @@ paths:
     get:
       description: 角色接口
       parameters:
-      - in: query
+      - example: "0"
+        in: query
         name: id
-        type: integer
+        type: string
       produces:
       - application/json
       responses:

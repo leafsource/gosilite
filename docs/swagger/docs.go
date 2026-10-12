@@ -27,7 +27,8 @@ const docTemplate = `{
                 "summary": "统一文件下载",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "name": "id",
                         "in": "query"
                     }
@@ -105,7 +106,8 @@ const docTemplate = `{
                 "summary": "详情",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "name": "id",
                         "in": "query"
                     }
@@ -1095,7 +1097,8 @@ const docTemplate = `{
                 "summary": "类型列表",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "description": "缺省=全部；0=未分组；\u003e0=指定分组",
                         "name": "groupId",
                         "in": "query"
@@ -1139,7 +1142,8 @@ const docTemplate = `{
                 "summary": "错误日志",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "name": "id",
                         "in": "query"
                     }
@@ -1488,6 +1492,722 @@ const docTemplate = `{
                 }
             }
         },
+        "/system/message/config": {
+            "get": {
+                "description": "消息配置详情接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "消息配置详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "0",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "修改消息配置接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "修改消息配置",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.MessageConfigSaveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "新增消息配置接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "新增消息配置",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.MessageConfigSaveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除消息配置接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "删除消息配置",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.MessageIdRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/message/config/list": {
+            "get": {
+                "description": "消息配置分页列表接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "消息配置列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "缺省=全部；MAIL / SMS",
+                        "name": "messageType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "缺省=全部；1 正常 0 停用",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/message/field-configs": {
+            "get": {
+                "description": "supplier → 动态表单字段定义 JSON 接口（前端 evalFieldConfigs 消费）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "消息配置动态字段",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/message/key": {
+            "get": {
+                "description": "消息常量详情接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "消息常量详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "0",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "修改消息常量接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "修改消息常量",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.MessageKeySaveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "新增消息常量接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "新增消息常量",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.MessageKeySaveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除消息常量接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "删除消息常量",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.MessageIdRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/message/key/list": {
+            "get": {
+                "description": "消息常量分页列表接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "消息常量列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/message/log": {
+            "get": {
+                "description": "发送记录详情接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "发送记录详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "0",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除单条发送记录接口（返回删除条数）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "删除发送记录",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.MessageIdRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/message/log/clear": {
+            "delete": {
+                "description": "清空发送记录接口（返回删除条数）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "清空发送记录",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/message/log/list": {
+            "get": {
+                "description": "发送记录分页列表接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "发送记录列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "缺省=全部；1 成功 0 失败",
+                        "name": "isSuccess",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "messageKey",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "messageType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/message/suppliers": {
+            "get": {
+                "description": "按消息类型返回可用供应商列表接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "消息供应商列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "MAIL / SMS",
+                        "name": "messageType",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/message/template": {
+            "get": {
+                "description": "消息模板详情接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "消息模板详情",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "0",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "修改消息模板接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "修改消息模板",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.MessageTemplateSaveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "新增消息模板接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "新增消息模板",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.MessageTemplateSaveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "删除消息模板接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "删除消息模板",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.MessageIdRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/message/template/list": {
+            "get": {
+                "description": "消息模板分页列表接口",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "消息模板列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "0",
+                        "name": "messageKeyId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "messageType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "缺省=全部；1 正常 0 停用",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/message/template/send-test": {
+            "post": {
+                "description": "消息模板测试发送接口（走发送服务，无论成败都落发送记录）",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "消息管理"
+                ],
+                "summary": "测试发送",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/message.MessageSendTestRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/system/monitor/datasource": {
             "get": {
                 "description": "数据源监控接口",
@@ -1647,7 +2367,8 @@ const docTemplate = `{
                 "summary": "通知",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "name": "id",
                         "in": "query"
                     }
@@ -1886,7 +2607,8 @@ const docTemplate = `{
                 "summary": "操作日志",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "name": "id",
                         "in": "query"
                     }
@@ -2022,7 +2744,8 @@ const docTemplate = `{
                 "summary": "文件详情",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "name": "id",
                         "in": "query"
                     }
@@ -2116,7 +2839,8 @@ const docTemplate = `{
                 "summary": "OSS配置详情",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "name": "id",
                         "in": "query"
                     }
@@ -2370,6 +3094,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "对象 key 模糊（文件名）",
+                        "name": "fileName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "小写后缀，逗号分隔",
                         "name": "fileSuffix",
                         "in": "query"
@@ -2387,6 +3117,12 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "服务商（system_oss_config.config_key）",
+                        "name": "service",
                         "in": "query"
                     }
                 ],
@@ -2413,7 +3149,8 @@ const docTemplate = `{
                 "summary": "OSS处理规则详情",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "name": "id",
                         "in": "query"
                     }
@@ -2873,7 +3610,8 @@ const docTemplate = `{
                 "summary": "角色授权",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "name": "id",
                         "in": "query"
                     }
@@ -3061,7 +3799,8 @@ const docTemplate = `{
                 "summary": "用户列表",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "name": "deptId",
                         "in": "query"
                     },
@@ -3109,7 +3848,8 @@ const docTemplate = `{
                 "summary": "角色",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
+                        "example": "0",
                         "name": "id",
                         "in": "query"
                     }
@@ -3371,7 +4111,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 }
             }
         },
@@ -3386,6 +4127,129 @@ const docTemplate = `{
                     "items": {
                         "type": "integer"
                     }
+                }
+            }
+        },
+        "message.MessageConfigSaveRequest": {
+            "type": "object",
+            "properties": {
+                "configJson": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "0"
+                },
+                "messageType": {
+                    "type": "string"
+                },
+                "remark": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "supplierType": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "message.MessageIdRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "0"
+                }
+            }
+        },
+        "message.MessageKeySaveRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "0"
+                },
+                "messageKey": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "remark": {
+                    "type": "string"
+                }
+            }
+        },
+        "message.MessageSendTestRequest": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "description": "收件账号（邮箱地址或手机号）",
+                    "type": "string"
+                },
+                "messageTemplateId": {
+                    "type": "string",
+                    "example": "0"
+                },
+                "vars": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "message.MessageTemplateSaveRequest": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "0"
+                },
+                "messageConfigId": {
+                    "type": "string",
+                    "example": "0"
+                },
+                "messageKey": {
+                    "type": "string"
+                },
+                "messageKeyId": {
+                    "type": "string",
+                    "example": "0"
+                },
+                "messageType": {
+                    "type": "string"
+                },
+                "remark": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "templateId": {
+                    "type": "string"
+                },
+                "templateMode": {
+                    "type": "string"
+                },
+                "templateName": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "varsJson": {
+                    "type": "string"
                 }
             }
         },
@@ -3420,7 +4284,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 }
             }
         },
@@ -3428,7 +4293,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 }
             }
         },
@@ -3439,7 +4305,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "noticeType": {
                     "type": "integer"
@@ -3467,7 +4334,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "isLock": {
                     "type": "boolean"
@@ -3510,7 +4378,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "isHttps": {
                     "type": "string"
@@ -3533,7 +4402,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 }
             }
         },
@@ -3572,7 +4442,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "isOverwrite": {
                     "type": "string"
@@ -3586,7 +4457,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "isDefault": {
                     "type": "string"
@@ -3627,7 +4499,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "remark": {
                     "type": "string"
@@ -3656,7 +4529,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "isDefault": {
                     "type": "integer"
@@ -3679,7 +4553,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "orderNum": {
                     "type": "integer"
@@ -3699,10 +4574,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "groupId": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "orderNum": {
                     "type": "integer"
@@ -3719,7 +4596,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 }
             }
         },
@@ -3730,13 +4608,15 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "deptId": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "email": {
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "mobilePhone": {
                     "type": "string"
@@ -3768,10 +4648,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "deptId": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "userId": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 }
             }
         },
@@ -3782,13 +4664,15 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "orderNum": {
                     "type": "integer"
                 },
                 "parentId": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "status": {
                     "type": "integer"
@@ -3799,7 +4683,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 }
             }
         },
@@ -3816,7 +4701,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "menuName": {
                     "type": "string"
@@ -3828,7 +4714,8 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "parentId": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "path": {
                     "type": "string"
@@ -3851,7 +4738,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "orderNum": {
                     "type": "integer"
@@ -3886,7 +4774,8 @@ const docTemplate = `{
                     }
                 },
                 "roleId": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 }
             }
         },
@@ -3903,7 +4792,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "name": {
                     "type": "string"
@@ -3920,7 +4810,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 },
                 "state": {
                     "type": "string"
@@ -3969,7 +4860,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "fileId": {
-                    "type": "integer"
+                    "type": "string",
+                    "example": "0"
                 }
             }
         }

@@ -167,6 +167,26 @@ CRUD 样板         templates/*.tmpl     script/codegen（仅新文件）
 - 入口集中组装；业务模块不得调用 `Spin()`。
 - 本项目 `main.go` 使用 `server.New` + 显式 Recovery。
 
+### JSON 大整数精度（i64 id，强制）
+
+Hertz 官方文档「精度丢失问题」：JS `Number` 超过 2^53 即丢精度（`6855337641038665531` → `6855337641038666000`），前后端值不一致；`encoding/json` 对 `interface{}` 默认 float64，同样丢。官方给的两条出路：结构体字段 `json:"id,string"` tag，或字段类型用 `json.Number`（见 Hertz 文档同名章节）。
+
+**本仓落地方式（IDL 源头优先）**：Thrift 的标量 i64 标识字段（`id` 或 `*Id`）在 IDL 用官方注解 `go.tag = "json:\"field,string\""`，经 `hz update` 生成 `json:"field,string"`，同时保留 Hertz 的 `form/query` 绑定 tag。例如：
+
+```thrift
+1: i64 id (go.tag = "json:\"id,string\"")
+```
+
+Go 标准库的 `json:",string"` 不支持 slice（marshal 忽略该选项，string 数组 unmarshal 会失败），因此数组型 i64 标识字段必须在 IDL 声明为 `list<string>`；Handler 在调用 Service 前用 `strconv.ParseInt` 严格还原为 `[]int64`。
+
+规则：
+
+1. **新增标量 i64 标识字段**（尤其雪花 id）→ 在 IDL 加 `go.tag = "json:\"<field>,string\""`，再 `hz update`；前端 model 声明为 `string`，请求 body 必须传字符串，禁止 `Number(id)`。`json:",string"` 入站拒绝裸数字（`cannot unmarshal number` → 400），这是刻意的契约约束。
+2. **新增数组型 i64 标识字段**（`roleIds/postIds/menuIds/deptIds/ids` 等）→ 在 IDL 声明 `list<string>`（可选数组使用 `optional list<string>`），前端 model 声明为 `string[]`；Handler 用严格 `strconv.ParseInt` 转为 `[]int64` 后才调用 Service/Repository，非法值返回参数错误。数组元素禁止 `Number` 或 `map(Number)`。
+3. 手写且直接作为 HTTP JSON 返回的标量 i64 DTO 同样用 `json:",string"`；数组响应 DTO 使用 `[]string`，不通过 JSON 字节转换。Redis/JWT 等内部序列化结构不要为 HTTP 契约而改 tag。
+4. 2026-10-12 实例：`messageKeyId …353920` 经前端 `Number()` 舍入为 `…354000`，导致 `message key not found`；已迁移为字符串契约。
+
+
 ### Swagger 注解（强制，所有 HTTP Handler）
 
 每个对外 Handler **必须**写完整 swag 注解，否则系统监控 · 系统接口（Swagger UI）缺文档；`doc.json` 会漏路由。
@@ -187,7 +207,7 @@ func Datasource(ctx context.Context, c *app.RequestContext) { ... }
 | 规则 | 说明 |
 |------|------|
 | 必填 | `@Summary` `@Tags` `@Produce` `@Success` `@Router`（**大写 Router**） |
-| `@Tags` | 用户 / 系统管理 / 系统配置 / 监控 / 日志 / 通知 / 菜单 |
+| `@Tags` | 用户 / 系统管理 / 系统配置 / 监控 / 日志 / 通知 / 菜单 / 消息管理 |
 | `@Param` | 有 `var req ...` 才写；body（POST/PUT/DELETE）或 query（GET）；类型用 **api/model 包名.结构体** |
 | `@Success` | 统一 `{object} map[string]interface{}`（信封在 `response` 包） |
 | 路径 | 与 IDL `api.get/post/...` **一致**；变更：**先改 IDL → hz update → 再补注解** |

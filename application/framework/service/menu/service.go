@@ -40,8 +40,8 @@ func InitService(ctx context.Context, db *gorm.DB) *Service {
 
 // TreeNode 管理用菜单树
 type TreeNode struct {
-	ID         int64       `json:"id"`
-	ParentID   int64       `json:"parentId"`
+	ID         int64       `json:"id,string"`
+	ParentID   int64       `json:"parentId,string"`
 	Label      string      `json:"label"`
 	MenuType   string      `json:"menuType"`
 	Perms      string      `json:"perms"`

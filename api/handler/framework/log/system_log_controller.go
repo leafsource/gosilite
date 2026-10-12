@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"gosilite/api/handler/idparse"
 	log "gosilite/api/model/framework/log"
 	syslog "gosilite/application/framework/service/syslog"
 	R "gosilite/pkg/utils/response"
@@ -87,7 +88,12 @@ func OperLogClean(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	n, err := syslog.SysLogSVC.CleanOper(ctx, req.Ids, req.All)
+	ids, err := idparse.Int64s(req.Ids)
+	if err != nil {
+		R.InvalidParamRequestResponse(c, "invalid ids")
+		return
+	}
+	n, err := syslog.SysLogSVC.CleanOper(ctx, ids, req.All)
 	if err != nil {
 		R.Error(ctx, c, err)
 		return
@@ -193,7 +199,12 @@ func ErrorLogClean(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	n, err := syslog.SysLogSVC.CleanError(ctx, req.Ids, req.All)
+	ids, err := idparse.Int64s(req.Ids)
+	if err != nil {
+		R.InvalidParamRequestResponse(c, "invalid ids")
+		return
+	}
+	n, err := syslog.SysLogSVC.CleanError(ctx, ids, req.All)
 	if err != nil {
 		R.Error(ctx, c, err)
 		return

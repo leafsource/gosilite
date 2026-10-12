@@ -248,8 +248,8 @@ func (p *PageQuery) String() string {
 
 // ========== 部门 ==========
 type DeptDTO struct {
-	ID        int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
-	ParentId  int64  `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
+	ID        int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
+	ParentId  int64  `thrift:"parentId,2" json:"parentId,string" form:"parentId" query:"parentId"`
 	Ancestors string `thrift:"ancestors,3" form:"ancestors" json:"ancestors" query:"ancestors"`
 	DeptName  string `thrift:"deptName,4" form:"deptName" json:"deptName" query:"deptName"`
 	OrderNum  int32  `thrift:"orderNum,5" form:"orderNum" json:"orderNum" query:"orderNum"`
@@ -618,8 +618,8 @@ func (p *DeptDTO) String() string {
 }
 
 type DeptNode struct {
-	ID       int64       `thrift:"id,1" form:"id" json:"id" query:"id"`
-	ParentId int64       `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
+	ID       int64       `thrift:"id,1" json:"id,string" form:"id" query:"id"`
+	ParentId int64       `thrift:"parentId,2" json:"parentId,string" form:"parentId" query:"parentId"`
 	Label    string      `thrift:"label,3" form:"label" json:"label" query:"label"`
 	OrderNum int32       `thrift:"orderNum,4" form:"orderNum" json:"orderNum" query:"orderNum"`
 	Status   int32       `thrift:"status,5" form:"status" json:"status" query:"status"`
@@ -1374,8 +1374,8 @@ func (p *DeptListResponse) String() string {
 }
 
 type DeptSaveRequest struct {
-	ID       *int64 `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
-	ParentId int64  `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
+	ID       *int64 `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
+	ParentId int64  `thrift:"parentId,2" json:"parentId,string" form:"parentId" query:"parentId"`
 	DeptName string `thrift:"deptName,3" form:"deptName" json:"deptName" query:"deptName"`
 	OrderNum int32  `thrift:"orderNum,4" form:"orderNum" json:"orderNum" query:"orderNum"`
 	Status   int32  `thrift:"status,5" form:"status" json:"status" query:"status"`
@@ -1710,7 +1710,7 @@ func (p *DeptSaveRequest) String() string {
 
 // ========== 岗位 ==========
 type PostDTO struct {
-	ID       int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID       int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	PostCode string `thrift:"postCode,2" form:"postCode" json:"postCode" query:"postCode"`
 	PostName string `thrift:"postName,3" form:"postName" json:"postName" query:"postName"`
 	OrderNum int32  `thrift:"orderNum,4" form:"orderNum" json:"orderNum" query:"orderNum"`
@@ -2240,7 +2240,7 @@ func (p *PostListResponse) String() string {
 }
 
 type PostSaveRequest struct {
-	ID       *int64 `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	ID       *int64 `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
 	PostCode string `thrift:"postCode,2" form:"postCode" json:"postCode" query:"postCode"`
 	PostName string `thrift:"postName,3" form:"postName" json:"postName" query:"postName"`
 	OrderNum int32  `thrift:"orderNum,4" form:"orderNum" json:"orderNum" query:"orderNum"`
@@ -2576,17 +2576,17 @@ func (p *PostSaveRequest) String() string {
 
 // ========== 用户管理 ==========
 type AdminUserDTO struct {
-	ID          int64   `thrift:"id,1" form:"id" json:"id" query:"id"`
-	Account     string  `thrift:"account,2" form:"account" json:"account" query:"account"`
-	Username    string  `thrift:"username,3" form:"username" json:"username" query:"username"`
-	MobilePhone string  `thrift:"mobilePhone,4" form:"mobilePhone" json:"mobilePhone" query:"mobilePhone"`
-	Email       string  `thrift:"email,5" form:"email" json:"email" query:"email"`
-	State       string  `thrift:"state,6" form:"state" json:"state" query:"state"`
-	DeptId      int64   `thrift:"deptId,7" form:"deptId" json:"deptId" query:"deptId"`
-	DeptName    string  `thrift:"deptName,8" form:"deptName" json:"deptName" query:"deptName"`
-	RoleIds     []int64 `thrift:"roleIds,9,default,list<i64>" form:"roleIds" json:"roleIds" query:"roleIds"`
-	PostIds     []int64 `thrift:"postIds,10,default,list<i64>" form:"postIds" json:"postIds" query:"postIds"`
-	AvatarUrl   string  `thrift:"avatarUrl,11" form:"avatarUrl" json:"avatarUrl" query:"avatarUrl"`
+	ID          int64    `thrift:"id,1" json:"id,string" form:"id" query:"id"`
+	Account     string   `thrift:"account,2" form:"account" json:"account" query:"account"`
+	Username    string   `thrift:"username,3" form:"username" json:"username" query:"username"`
+	MobilePhone string   `thrift:"mobilePhone,4" form:"mobilePhone" json:"mobilePhone" query:"mobilePhone"`
+	Email       string   `thrift:"email,5" form:"email" json:"email" query:"email"`
+	State       string   `thrift:"state,6" form:"state" json:"state" query:"state"`
+	DeptId      int64    `thrift:"deptId,7" json:"deptId,string" form:"deptId" query:"deptId"`
+	DeptName    string   `thrift:"deptName,8" form:"deptName" json:"deptName" query:"deptName"`
+	RoleIds     []string `thrift:"roleIds,9,default,list<string>" form:"roleIds" json:"roleIds" query:"roleIds"`
+	PostIds     []string `thrift:"postIds,10,default,list<string>" form:"postIds" json:"postIds" query:"postIds"`
+	AvatarUrl   string   `thrift:"avatarUrl,11" form:"avatarUrl" json:"avatarUrl" query:"avatarUrl"`
 }
 
 func NewAdminUserDTO() *AdminUserDTO {
@@ -2628,11 +2628,11 @@ func (p *AdminUserDTO) GetDeptName() (v string) {
 	return p.DeptName
 }
 
-func (p *AdminUserDTO) GetRoleIds() (v []int64) {
+func (p *AdminUserDTO) GetRoleIds() (v []string) {
 	return p.RoleIds
 }
 
-func (p *AdminUserDTO) GetPostIds() (v []int64) {
+func (p *AdminUserDTO) GetPostIds() (v []string) {
 	return p.PostIds
 }
 
@@ -2883,11 +2883,11 @@ func (p *AdminUserDTO) ReadField9(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -2906,11 +2906,11 @@ func (p *AdminUserDTO) ReadField10(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -3144,11 +3144,11 @@ func (p *AdminUserDTO) writeField9(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("roleIds", thrift.LIST, 9); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.RoleIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.RoleIds)); err != nil {
 		return err
 	}
 	for _, v := range p.RoleIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -3169,11 +3169,11 @@ func (p *AdminUserDTO) writeField10(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("postIds", thrift.LIST, 10); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.PostIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.PostIds)); err != nil {
 		return err
 	}
 	for _, v := range p.PostIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -3219,7 +3219,7 @@ type AdminUserListRequest struct {
 	Page     int32   `thrift:"page,1" form:"page" json:"page" query:"page"`
 	PageSize int32   `thrift:"pageSize,2" form:"pageSize" json:"pageSize" query:"pageSize"`
 	Keyword  *string `thrift:"keyword,3,optional" form:"keyword" json:"keyword,omitempty" query:"keyword"`
-	DeptId   *int64  `thrift:"deptId,4,optional" form:"deptId" json:"deptId,omitempty" query:"deptId"`
+	DeptId   *int64  `thrift:"deptId,4,optional" json:"deptId,string" form:"deptId" query:"deptId"`
 	State    *string `thrift:"state,5,optional" form:"state" json:"state,omitempty" query:"state"`
 }
 
@@ -3784,16 +3784,16 @@ func (p *AdminUserListResponse) String() string {
 }
 
 type AdminUserSaveRequest struct {
-	ID          *int64  `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
-	Account     string  `thrift:"account,2" form:"account" json:"account" query:"account"`
-	Username    string  `thrift:"username,3" form:"username" json:"username" query:"username"`
-	MobilePhone *string `thrift:"mobilePhone,4,optional" form:"mobilePhone" json:"mobilePhone,omitempty" query:"mobilePhone"`
-	Email       *string `thrift:"email,5,optional" form:"email" json:"email,omitempty" query:"email"`
-	Password    *string `thrift:"password,6,optional" form:"password" json:"password,omitempty" query:"password"`
-	DeptId      int64   `thrift:"deptId,7" form:"deptId" json:"deptId" query:"deptId"`
-	State       string  `thrift:"state,8" form:"state" json:"state" query:"state"`
-	RoleIds     []int64 `thrift:"roleIds,9,default,list<i64>" form:"roleIds" json:"roleIds" query:"roleIds"`
-	PostIds     []int64 `thrift:"postIds,10,default,list<i64>" form:"postIds" json:"postIds" query:"postIds"`
+	ID          *int64   `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
+	Account     string   `thrift:"account,2" form:"account" json:"account" query:"account"`
+	Username    string   `thrift:"username,3" form:"username" json:"username" query:"username"`
+	MobilePhone *string  `thrift:"mobilePhone,4,optional" form:"mobilePhone" json:"mobilePhone,omitempty" query:"mobilePhone"`
+	Email       *string  `thrift:"email,5,optional" form:"email" json:"email,omitempty" query:"email"`
+	Password    *string  `thrift:"password,6,optional" form:"password" json:"password,omitempty" query:"password"`
+	DeptId      int64    `thrift:"deptId,7" json:"deptId,string" form:"deptId" query:"deptId"`
+	State       string   `thrift:"state,8" form:"state" json:"state" query:"state"`
+	RoleIds     []string `thrift:"roleIds,9,default,list<string>" form:"roleIds" json:"roleIds" query:"roleIds"`
+	PostIds     []string `thrift:"postIds,10,default,list<string>" form:"postIds" json:"postIds" query:"postIds"`
 }
 
 func NewAdminUserSaveRequest() *AdminUserSaveRequest {
@@ -3855,11 +3855,11 @@ func (p *AdminUserSaveRequest) GetState() (v string) {
 	return p.State
 }
 
-func (p *AdminUserSaveRequest) GetRoleIds() (v []int64) {
+func (p *AdminUserSaveRequest) GetRoleIds() (v []string) {
 	return p.RoleIds
 }
 
-func (p *AdminUserSaveRequest) GetPostIds() (v []int64) {
+func (p *AdminUserSaveRequest) GetPostIds() (v []string) {
 	return p.PostIds
 }
 
@@ -4113,11 +4113,11 @@ func (p *AdminUserSaveRequest) ReadField9(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -4136,11 +4136,11 @@ func (p *AdminUserSaveRequest) ReadField10(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -4367,11 +4367,11 @@ func (p *AdminUserSaveRequest) writeField9(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("roleIds", thrift.LIST, 9); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.RoleIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.RoleIds)); err != nil {
 		return err
 	}
 	for _, v := range p.RoleIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -4392,11 +4392,11 @@ func (p *AdminUserSaveRequest) writeField10(oprot thrift.TProtocol) (err error) 
 	if err = oprot.WriteFieldBegin("postIds", thrift.LIST, 10); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.PostIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.PostIds)); err != nil {
 		return err
 	}
 	for _, v := range p.PostIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -4422,7 +4422,7 @@ func (p *AdminUserSaveRequest) String() string {
 }
 
 type IdRequest struct {
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 }
 
 func NewIdRequest() *IdRequest {
@@ -4562,7 +4562,7 @@ func (p *IdRequest) String() string {
 }
 
 type IdsRequest struct {
-	Ids []int64 `thrift:"ids,1,default,list<i64>" form:"ids" json:"ids" query:"ids"`
+	Ids []string `thrift:"ids,1,default,list<string>" form:"ids" json:"ids" query:"ids"`
 }
 
 func NewIdsRequest() *IdsRequest {
@@ -4572,7 +4572,7 @@ func NewIdsRequest() *IdsRequest {
 func (p *IdsRequest) InitDefault() {
 }
 
-func (p *IdsRequest) GetIds() (v []int64) {
+func (p *IdsRequest) GetIds() (v []string) {
 	return p.Ids
 }
 
@@ -4641,11 +4641,11 @@ func (p *IdsRequest) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -4692,11 +4692,11 @@ func (p *IdsRequest) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("ids", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.Ids)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.Ids)); err != nil {
 		return err
 	}
 	for _, v := range p.Ids {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -4722,7 +4722,7 @@ func (p *IdsRequest) String() string {
 }
 
 type IdsResponse struct {
-	Ids []int64 `thrift:"ids,1,default,list<i64>" form:"ids" json:"ids" query:"ids"`
+	Ids []string `thrift:"ids,1,default,list<string>" form:"ids" json:"ids" query:"ids"`
 }
 
 func NewIdsResponse() *IdsResponse {
@@ -4732,7 +4732,7 @@ func NewIdsResponse() *IdsResponse {
 func (p *IdsResponse) InitDefault() {
 }
 
-func (p *IdsResponse) GetIds() (v []int64) {
+func (p *IdsResponse) GetIds() (v []string) {
 	return p.Ids
 }
 
@@ -4801,11 +4801,11 @@ func (p *IdsResponse) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -4852,11 +4852,11 @@ func (p *IdsResponse) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("ids", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.Ids)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.Ids)); err != nil {
 		return err
 	}
 	for _, v := range p.Ids {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -4882,7 +4882,7 @@ func (p *IdsResponse) String() string {
 }
 
 type UserStatusRequest struct {
-	ID    int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID    int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	State string `thrift:"state,2" form:"state" json:"state" query:"state"`
 }
 
@@ -5069,8 +5069,8 @@ func (p *UserStatusRequest) String() string {
 
 // ========== 菜单 ==========
 type MenuDTO struct {
-	ID         int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
-	ParentId   int64  `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
+	ID         int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
+	ParentId   int64  `thrift:"parentId,2" json:"parentId,string" form:"parentId" query:"parentId"`
 	MenuName   string `thrift:"menuName,3" form:"menuName" json:"menuName" query:"menuName"`
 	MenuType   string `thrift:"menuType,4" form:"menuType" json:"menuType" query:"menuType"`
 	Path       string `thrift:"path,5" form:"path" json:"path" query:"path"`
@@ -5715,8 +5715,8 @@ func (p *MenuDTO) String() string {
 }
 
 type MenuNode struct {
-	ID         int64       `thrift:"id,1" form:"id" json:"id" query:"id"`
-	ParentId   int64       `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
+	ID         int64       `thrift:"id,1" json:"id,string" form:"id" query:"id"`
+	ParentId   int64       `thrift:"parentId,2" json:"parentId,string" form:"parentId" query:"parentId"`
 	Label      string      `thrift:"label,3" form:"label" json:"label" query:"label"`
 	MenuType   string      `thrift:"menuType,4" form:"menuType" json:"menuType" query:"menuType"`
 	Perms      string      `thrift:"perms,5" form:"perms" json:"perms" query:"perms"`
@@ -6839,8 +6839,8 @@ func (p *MenuListResponse) String() string {
 }
 
 type MenuSaveRequest struct {
-	ID         *int64  `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
-	ParentId   int64   `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
+	ID         *int64  `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
+	ParentId   int64   `thrift:"parentId,2" json:"parentId,string" form:"parentId" query:"parentId"`
 	MenuName   string  `thrift:"menuName,3" form:"menuName" json:"menuName" query:"menuName"`
 	MenuType   string  `thrift:"menuType,4" form:"menuType" json:"menuType" query:"menuType"`
 	Path       *string `thrift:"path,5,optional" form:"path" json:"path,omitempty" query:"path"`
@@ -7609,7 +7609,7 @@ func (p *MenuSaveRequest) String() string {
 
 // ========== 角色 ==========
 type RoleDTO struct {
-	ID          int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID          int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	Name        string `thrift:"name,2" form:"name" json:"name" query:"name"`
 	Code        string `thrift:"code,3" form:"code" json:"code" query:"code"`
 	Description string `thrift:"description,4" form:"description" json:"description" query:"description"`
@@ -8479,7 +8479,7 @@ func (p *RoleListResponse) String() string {
 }
 
 type RoleSaveRequest struct {
-	ID          *int64  `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	ID          *int64  `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
 	Name        string  `thrift:"name,2" form:"name" json:"name" query:"name"`
 	Code        string  `thrift:"code,3" form:"code" json:"code" query:"code"`
 	Description *string `thrift:"description,4,optional" form:"description" json:"description,omitempty" query:"description"`
@@ -8918,7 +8918,7 @@ func (p *RoleSaveRequest) String() string {
 
 // 角色授权：权限项（按钮 F 提升后的权限标识）
 type RolePermItem struct {
-	ID       int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID       int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	MenuName string `thrift:"menuName,2" form:"menuName" json:"menuName" query:"menuName"`
 	Perms    string `thrift:"perms,3" form:"perms" json:"perms" query:"perms"`
 	Checked  bool   `thrift:"checked,4" form:"checked" json:"checked" query:"checked"`
@@ -9197,8 +9197,8 @@ func (p *RolePermItem) String() string {
 
 // 角色授权：菜单行（F 已提升为 perms，不再单独成行）
 type RoleAuthMenuNode struct {
-	ID       int64               `thrift:"id,1" form:"id" json:"id" query:"id"`
-	ParentId int64               `thrift:"parentId,2" form:"parentId" json:"parentId" query:"parentId"`
+	ID       int64               `thrift:"id,1" json:"id,string" form:"id" query:"id"`
+	ParentId int64               `thrift:"parentId,2" json:"parentId,string" form:"parentId" query:"parentId"`
 	MenuName string              `thrift:"menuName,3" form:"menuName" json:"menuName" query:"menuName"`
 	MenuType string              `thrift:"menuType,4" form:"menuType" json:"menuType" query:"menuType"`
 	Icon     string              `thrift:"icon,5" form:"icon" json:"icon" query:"icon"`
@@ -9748,7 +9748,7 @@ func (p *RoleAuthMenuNode) String() string {
 type RoleAuthorizeResponse struct {
 	DataScope int32               `thrift:"dataScope,1" form:"dataScope" json:"dataScope" query:"dataScope"`
 	Menus     []*RoleAuthMenuNode `thrift:"menus,2,default,list<RoleAuthMenuNode>" form:"menus" json:"menus" query:"menus"`
-	DeptIds   []int64             `thrift:"deptIds,3,default,list<i64>" form:"deptIds" json:"deptIds" query:"deptIds"`
+	DeptIds   []string            `thrift:"deptIds,3,default,list<string>" form:"deptIds" json:"deptIds" query:"deptIds"`
 }
 
 func NewRoleAuthorizeResponse() *RoleAuthorizeResponse {
@@ -9766,7 +9766,7 @@ func (p *RoleAuthorizeResponse) GetMenus() (v []*RoleAuthMenuNode) {
 	return p.Menus
 }
 
-func (p *RoleAuthorizeResponse) GetDeptIds() (v []int64) {
+func (p *RoleAuthorizeResponse) GetDeptIds() (v []string) {
 	return p.DeptIds
 }
 
@@ -9887,11 +9887,11 @@ func (p *RoleAuthorizeResponse) ReadField3(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -9988,11 +9988,11 @@ func (p *RoleAuthorizeResponse) writeField3(oprot thrift.TProtocol) (err error) 
 	if err = oprot.WriteFieldBegin("deptIds", thrift.LIST, 3); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.DeptIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.DeptIds)); err != nil {
 		return err
 	}
 	for _, v := range p.DeptIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -10019,10 +10019,10 @@ func (p *RoleAuthorizeResponse) String() string {
 
 // 角色授权保存：菜单 + 数据范围 + 自定义部门一次提交
 type RoleAuthorizeSaveRequest struct {
-	RoleId    int64   `thrift:"roleId,1" form:"roleId" json:"roleId" query:"roleId"`
-	MenuIds   []int64 `thrift:"menuIds,2,default,list<i64>" form:"menuIds" json:"menuIds" query:"menuIds"`
-	DeptIds   []int64 `thrift:"deptIds,3,default,list<i64>" form:"deptIds" json:"deptIds" query:"deptIds"`
-	DataScope int32   `thrift:"dataScope,4" form:"dataScope" json:"dataScope" query:"dataScope"`
+	RoleId    int64    `thrift:"roleId,1" json:"roleId,string" form:"roleId" query:"roleId"`
+	MenuIds   []string `thrift:"menuIds,2,default,list<string>" form:"menuIds" json:"menuIds" query:"menuIds"`
+	DeptIds   []string `thrift:"deptIds,3,default,list<string>" form:"deptIds" json:"deptIds" query:"deptIds"`
+	DataScope int32    `thrift:"dataScope,4" form:"dataScope" json:"dataScope" query:"dataScope"`
 }
 
 func NewRoleAuthorizeSaveRequest() *RoleAuthorizeSaveRequest {
@@ -10036,11 +10036,11 @@ func (p *RoleAuthorizeSaveRequest) GetRoleId() (v int64) {
 	return p.RoleId
 }
 
-func (p *RoleAuthorizeSaveRequest) GetMenuIds() (v []int64) {
+func (p *RoleAuthorizeSaveRequest) GetMenuIds() (v []string) {
 	return p.MenuIds
 }
 
-func (p *RoleAuthorizeSaveRequest) GetDeptIds() (v []int64) {
+func (p *RoleAuthorizeSaveRequest) GetDeptIds() (v []string) {
 	return p.DeptIds
 }
 
@@ -10151,11 +10151,11 @@ func (p *RoleAuthorizeSaveRequest) ReadField2(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -10174,11 +10174,11 @@ func (p *RoleAuthorizeSaveRequest) ReadField3(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -10265,11 +10265,11 @@ func (p *RoleAuthorizeSaveRequest) writeField2(oprot thrift.TProtocol) (err erro
 	if err = oprot.WriteFieldBegin("menuIds", thrift.LIST, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.MenuIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.MenuIds)); err != nil {
 		return err
 	}
 	for _, v := range p.MenuIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -10290,11 +10290,11 @@ func (p *RoleAuthorizeSaveRequest) writeField3(oprot thrift.TProtocol) (err erro
 	if err = oprot.WriteFieldBegin("deptIds", thrift.LIST, 3); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.DeptIds)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.DeptIds)); err != nil {
 		return err
 	}
 	for _, v := range p.DeptIds {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -10338,8 +10338,8 @@ func (p *RoleAuthorizeSaveRequest) String() string {
 
 // 部门负责人设置（userId=0 清除）
 type DeptLeaderRequest struct {
-	DeptId int64 `thrift:"deptId,1" form:"deptId" json:"deptId" query:"deptId"`
-	UserId int64 `thrift:"userId,2" form:"userId" json:"userId" query:"userId"`
+	DeptId int64 `thrift:"deptId,1" json:"deptId,string" form:"deptId" query:"deptId"`
+	UserId int64 `thrift:"userId,2" json:"userId,string" form:"userId" query:"userId"`
 }
 
 func NewDeptLeaderRequest() *DeptLeaderRequest {

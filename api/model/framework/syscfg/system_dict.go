@@ -246,7 +246,7 @@ func (p *PageQuery) String() string {
 }
 
 type IdRequest struct {
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 }
 
 func NewIdRequest() *IdRequest {
@@ -386,13 +386,13 @@ func (p *IdRequest) String() string {
 }
 
 type DictTypeDTO struct {
-	ID       int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID       int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	DictName string `thrift:"dictName,2" form:"dictName" json:"dictName" query:"dictName"`
 	DictType string `thrift:"dictType,3" form:"dictType" json:"dictType" query:"dictType"`
 	Status   int32  `thrift:"status,4" form:"status" json:"status" query:"status"`
 	OrderNum int32  `thrift:"orderNum,5" form:"orderNum" json:"orderNum" query:"orderNum"`
 	Remark   string `thrift:"remark,6" form:"remark" json:"remark" query:"remark"`
-	GroupId  int64  `thrift:"groupId,7" form:"groupId" json:"groupId" query:"groupId"`
+	GroupId  int64  `thrift:"groupId,7" json:"groupId,string" form:"groupId" query:"groupId"`
 }
 
 func NewDictTypeDTO() *DictTypeDTO {
@@ -806,7 +806,7 @@ type DictTypeListRequest struct {
 	PageSize int32  `thrift:"pageSize,2" form:"pageSize" json:"pageSize" query:"pageSize"`
 	Keyword  string `thrift:"keyword,3" form:"keyword" json:"keyword" query:"keyword"`
 	// 缺省=全部；0=未分组；>0=指定分组
-	GroupId *int64 `thrift:"groupId,4,optional" form:"groupId" json:"groupId,omitempty" query:"groupId"`
+	GroupId *int64 `thrift:"groupId,4,optional" json:"groupId,string" form:"groupId" query:"groupId"`
 }
 
 func NewDictTypeListRequest() *DictTypeListRequest {
@@ -1303,13 +1303,13 @@ func (p *DictTypeListResponse) String() string {
 }
 
 type DictTypeSaveRequest struct {
-	ID       *int64  `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	ID       *int64  `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
 	DictName string  `thrift:"dictName,2" form:"dictName" json:"dictName" query:"dictName"`
 	DictType string  `thrift:"dictType,3" form:"dictType" json:"dictType" query:"dictType"`
 	Status   int32   `thrift:"status,4" form:"status" json:"status" query:"status"`
 	OrderNum int32   `thrift:"orderNum,5" form:"orderNum" json:"orderNum" query:"orderNum"`
 	Remark   *string `thrift:"remark,6,optional" form:"remark" json:"remark,omitempty" query:"remark"`
-	GroupId  int64   `thrift:"groupId,7" form:"groupId" json:"groupId" query:"groupId"`
+	GroupId  int64   `thrift:"groupId,7" json:"groupId,string" form:"groupId" query:"groupId"`
 }
 
 func NewDictTypeSaveRequest() *DictTypeSaveRequest {
@@ -1741,7 +1741,7 @@ func (p *DictTypeSaveRequest) String() string {
 }
 
 type DictGroupDTO struct {
-	ID        int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID        int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	GroupName string `thrift:"groupName,2" form:"groupName" json:"groupName" query:"groupName"`
 	OrderNum  int32  `thrift:"orderNum,3" form:"orderNum" json:"orderNum" query:"orderNum"`
 	Remark    string `thrift:"remark,4" form:"remark" json:"remark" query:"remark"`
@@ -2179,7 +2179,7 @@ func (p *DictGroupListResponse) String() string {
 }
 
 type DictGroupSaveRequest struct {
-	ID        *int64  `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	ID        *int64  `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
 	GroupName string  `thrift:"groupName,2" form:"groupName" json:"groupName" query:"groupName"`
 	OrderNum  int32   `thrift:"orderNum,3" form:"orderNum" json:"orderNum" query:"orderNum"`
 	Remark    *string `thrift:"remark,4,optional" form:"remark" json:"remark,omitempty" query:"remark"`
@@ -2479,7 +2479,7 @@ func (p *DictGroupSaveRequest) String() string {
 }
 
 type DictDataDTO struct {
-	ID        int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID        int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	DictType  string `thrift:"dictType,2" form:"dictType" json:"dictType" query:"dictType"`
 	DictLabel string `thrift:"dictLabel,3" form:"dictLabel" json:"dictLabel" query:"dictLabel"`
 	DictValue string `thrift:"dictValue,4" form:"dictValue" json:"dictValue" query:"dictValue"`
@@ -3489,7 +3489,7 @@ func (p *DictDataListResponse) String() string {
 }
 
 type DictDataSaveRequest struct {
-	ID        *int64  `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	ID        *int64  `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
 	DictType  string  `thrift:"dictType,2" form:"dictType" json:"dictType" query:"dictType"`
 	DictLabel string  `thrift:"dictLabel,3" form:"dictLabel" json:"dictLabel" query:"dictLabel"`
 	DictValue string  `thrift:"dictValue,4" form:"dictValue" json:"dictValue" query:"dictValue"`
@@ -4665,7 +4665,7 @@ func (p *DictOptionsResponse) String() string {
 }
 
 type ConfigDTO struct {
-	ID          int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID          int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	ConfigName  string `thrift:"configName,2" form:"configName" json:"configName" query:"configName"`
 	ConfigKey   string `thrift:"configKey,3" form:"configKey" json:"configKey" query:"configKey"`
 	ConfigValue string `thrift:"configValue,4" form:"configValue" json:"configValue" query:"configValue"`
@@ -5287,7 +5287,7 @@ func (p *ConfigListResponse) String() string {
 }
 
 type ConfigSaveRequest struct {
-	ID          *int64  `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	ID          *int64  `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
 	ConfigName  string  `thrift:"configName,2" form:"configName" json:"configName" query:"configName"`
 	ConfigKey   string  `thrift:"configKey,3" form:"configKey" json:"configKey" query:"configKey"`
 	ConfigValue string  `thrift:"configValue,4" form:"configValue" json:"configValue" query:"configValue"`

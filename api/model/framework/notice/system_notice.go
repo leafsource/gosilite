@@ -362,7 +362,7 @@ func (p *NoticeListRequest) String() string {
 }
 
 type NoticeIdRequest struct {
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 }
 
 func NewNoticeIdRequest() *NoticeIdRequest {
@@ -502,7 +502,7 @@ func (p *NoticeIdRequest) String() string {
 }
 
 type NoticeDTO struct {
-	ID    int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID    int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	Title string `thrift:"title,2" form:"title" json:"title" query:"title"`
 	// sys_notice_type: 1 通知 2 公告
 	NoticeType int32  `thrift:"noticeType,3" form:"noticeType" json:"noticeType" query:"noticeType"`
@@ -1172,7 +1172,7 @@ func (p *NoticeListResponse) String() string {
 }
 
 type NoticeSaveRequest struct {
-	ID         *int64 `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	ID         *int64 `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
 	Title      string `thrift:"title,2" form:"title" json:"title" query:"title"`
 	NoticeType int32  `thrift:"noticeType,3" form:"noticeType" json:"noticeType" query:"noticeType"`
 	Content    string `thrift:"content,4" form:"content" json:"content" query:"content"`
@@ -1745,7 +1745,7 @@ func (p *NoticeInboxRequest) String() string {
 }
 
 type NoticeInboxItemDTO struct {
-	ID         int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID         int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	Title      string `thrift:"title,2" form:"title" json:"title" query:"title"`
 	NoticeType int32  `thrift:"noticeType,3" form:"noticeType" json:"noticeType" query:"noticeType"`
 	Publisher  string `thrift:"publisher,4" form:"publisher" json:"publisher" query:"publisher"`
@@ -2368,7 +2368,7 @@ func (p *NoticeInboxListResponse) String() string {
 }
 
 type NoticeDetailRequest struct {
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 }
 
 func NewNoticeDetailRequest() *NoticeDetailRequest {
@@ -2508,7 +2508,7 @@ func (p *NoticeDetailRequest) String() string {
 }
 
 type NoticeDetailDTO struct {
-	ID         int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID         int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	Title      string `thrift:"title,2" form:"title" json:"title" query:"title"`
 	NoticeType int32  `thrift:"noticeType,3" form:"noticeType" json:"noticeType" query:"noticeType"`
 	Content    string `thrift:"content,4" form:"content" json:"content" query:"content"`
@@ -3066,7 +3066,7 @@ func (p *UnreadCountResponse) String() string {
 
 // id 缺省 = 全部已读
 type NoticeReadRequest struct {
-	ID *int64 `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	ID *int64 `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
 }
 
 func NewNoticeReadRequest() *NoticeReadRequest {

@@ -6,10 +6,11 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 
+	frameworkCommonFileRouter "gosilite/api/router/framework/commonfile"
 	frameworkLogRouter "gosilite/api/router/framework/log"
 	frameworkMenuRouter "gosilite/api/router/framework/menu"
+	frameworkMessageRouter "gosilite/api/router/framework/message"
 	frameworkMonitorRouter "gosilite/api/router/framework/monitor"
-	frameworkCommonFileRouter "gosilite/api/router/framework/commonfile"
 	frameworkNoticeRouter "gosilite/api/router/framework/notice"
 	frameworkOssRouter "gosilite/api/router/framework/oss"
 	frameworkOssConfigRouter "gosilite/api/router/framework/ossconfig"
@@ -23,6 +24,7 @@ import (
 	"gosilite/application/framework/service/dept"
 	"gosilite/application/framework/service/dict"
 	"gosilite/application/framework/service/menu"
+	"gosilite/application/framework/service/message"
 	"gosilite/application/framework/service/monitor"
 	"gosilite/application/framework/service/notice"
 	"gosilite/application/framework/service/ossconfig"
@@ -57,6 +59,7 @@ func (m *Module) Init(ctx context.Context, deps *infra.AppDependencies) error {
 	dict.InitService(repository.NewDictRepository(deps.DB))
 	config.InitService(repository.NewConfigRepository(deps.DB))
 	notice.InitService(repository.NewNoticeRepository(deps.DB))
+	message.InitService(repository.NewMessageRepository(deps.DB))
 	syslog.InitService(repository.NewSysLogRepository(deps.DB))
 	monitor.InitService(deps.DB, deps.Cache)
 	monitor.InitCacheService(deps.Cache)
@@ -82,6 +85,8 @@ func (m *Module) RegisterRoutes(r *server.Hertz) {
 	frameworkCommonFileRouter.Register(r)
 	frameworkLogRouter.Register(r)
 	frameworkMonitorRouter.Register(r)
+	// 消息管理（spec system-message）：配置/常量/模板/记录 + 发送
+	frameworkMessageRouter.Register(r)
 	frameworkOssConfigRouter.Register(r)
 	frameworkOssRuleRouter.Register(r)
 	frameworkOssRouter.Register(r)

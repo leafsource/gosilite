@@ -11,8 +11,8 @@ struct PageQuery {
 // ========== 部门 ==========
 
 struct DeptDTO {
-    1: i64 id
-    2: i64 parentId
+    1: i64 id (go.tag = "json:\"id,string\"")
+    2: i64 parentId (go.tag = "json:\"parentId,string\"")
     3: string ancestors
     4: string deptName
     5: i32 orderNum
@@ -20,8 +20,8 @@ struct DeptDTO {
 }
 
 struct DeptNode {
-    1: i64 id
-    2: i64 parentId
+    1: i64 id (go.tag = "json:\"id,string\"")
+    2: i64 parentId (go.tag = "json:\"parentId,string\"")
     3: string label
     4: i32 orderNum
     5: i32 status
@@ -38,8 +38,8 @@ struct DeptListResponse {
 }
 
 struct DeptSaveRequest {
-    1: optional i64 id
-    2: i64 parentId
+    1: optional i64 id (go.tag = "json:\"id,string\"")
+    2: i64 parentId (go.tag = "json:\"parentId,string\"")
     3: string deptName
     4: i32 orderNum
     5: i32 status
@@ -48,7 +48,7 @@ struct DeptSaveRequest {
 // ========== 岗位 ==========
 
 struct PostDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string postCode
     3: string postName
     4: i32 orderNum
@@ -61,7 +61,7 @@ struct PostListResponse {
 }
 
 struct PostSaveRequest {
-    1: optional i64 id
+    1: optional i64 id (go.tag = "json:\"id,string\"")
     2: string postCode
     3: string postName
     4: i32 orderNum
@@ -71,16 +71,16 @@ struct PostSaveRequest {
 // ========== 用户管理 ==========
 
 struct AdminUserDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string account
     3: string username
     4: string mobilePhone
     5: string email
     6: string state
-    7: i64 deptId
+    7: i64 deptId (go.tag = "json:\"deptId,string\"")
     8: string deptName
-    9: list<i64> roleIds
-    10: list<i64> postIds
+    9: list<string> roleIds
+    10: list<string> postIds
     11: string avatarUrl
 }
 
@@ -88,7 +88,7 @@ struct AdminUserListRequest {
     1: i32 page = 1
     2: i32 pageSize = 10
     3: optional string keyword
-    4: optional i64 deptId
+    4: optional i64 deptId (go.tag = "json:\"deptId,string\"")
     5: optional string state
 }
 
@@ -98,40 +98,40 @@ struct AdminUserListResponse {
 }
 
 struct AdminUserSaveRequest {
-    1: optional i64 id
+    1: optional i64 id (go.tag = "json:\"id,string\"")
     2: string account
     3: string username
     4: optional string mobilePhone
     5: optional string email
     6: optional string password
-    7: i64 deptId
+    7: i64 deptId (go.tag = "json:\"deptId,string\"")
     8: string state
-    9: list<i64> roleIds
-    10: list<i64> postIds
+    9: list<string> roleIds
+    10: list<string> postIds
 }
 
 struct IdRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
 }
 
 struct IdsRequest {
-    1: list<i64> ids
+    1: list<string> ids
 }
 
 struct IdsResponse {
-    1: list<i64> ids
+    1: list<string> ids
 }
 
 struct UserStatusRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string state
 }
 
 // ========== 菜单 ==========
 
 struct MenuDTO {
-    1: i64 id
-    2: i64 parentId
+    1: i64 id (go.tag = "json:\"id,string\"")
+    2: i64 parentId (go.tag = "json:\"parentId,string\"")
     3: string menuName
     4: string menuType
     5: string path
@@ -145,8 +145,8 @@ struct MenuDTO {
 }
 
 struct MenuNode {
-    1: i64 id
-    2: i64 parentId
+    1: i64 id (go.tag = "json:\"id,string\"")
+    2: i64 parentId (go.tag = "json:\"parentId,string\"")
     3: string label
     4: string menuType
     5: string perms
@@ -171,8 +171,8 @@ struct MenuListResponse {
 }
 
 struct MenuSaveRequest {
-    1: optional i64 id
-    2: i64 parentId
+    1: optional i64 id (go.tag = "json:\"id,string\"")
+    2: i64 parentId (go.tag = "json:\"parentId,string\"")
     3: string menuName
     4: string menuType
     5: optional string path
@@ -189,7 +189,7 @@ struct MenuSaveRequest {
 // ========== 角色 ==========
 
 struct RoleDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string name
     3: string code
     4: string description
@@ -210,7 +210,7 @@ struct RoleListResponse {
 }
 
 struct RoleSaveRequest {
-    1: optional i64 id
+    1: optional i64 id (go.tag = "json:\"id,string\"")
     2: string name
     3: string code
     4: optional string description
@@ -221,7 +221,7 @@ struct RoleSaveRequest {
 
 // 角色授权：权限项（按钮 F 提升后的权限标识）
 struct RolePermItem {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string menuName
     3: string perms
     4: bool checked
@@ -229,8 +229,8 @@ struct RolePermItem {
 
 // 角色授权：菜单行（F 已提升为 perms，不再单独成行）
 struct RoleAuthMenuNode {
-    1: i64 id
-    2: i64 parentId
+    1: i64 id (go.tag = "json:\"id,string\"")
+    2: i64 parentId (go.tag = "json:\"parentId,string\"")
     3: string menuName
     4: string menuType
     5: string icon
@@ -244,21 +244,21 @@ struct RoleAuthMenuNode {
 struct RoleAuthorizeResponse {
     1: i32 dataScope
     2: list<RoleAuthMenuNode> menus
-    3: list<i64> deptIds
+    3: list<string> deptIds
 }
 
 // 角色授权保存：菜单 + 数据范围 + 自定义部门一次提交
 struct RoleAuthorizeSaveRequest {
-    1: i64 roleId
-    2: list<i64> menuIds
-    3: list<i64> deptIds
+    1: i64 roleId (go.tag = "json:\"roleId,string\"")
+    2: list<string> menuIds
+    3: list<string> deptIds
     4: i32 dataScope
 }
 
 // 部门负责人设置（userId=0 清除）
 struct DeptLeaderRequest {
-    1: i64 deptId
-    2: i64 userId
+    1: i64 deptId (go.tag = "json:\"deptId,string\"")
+    2: i64 userId (go.tag = "json:\"userId,string\"")
 }
 
 // 服务定义

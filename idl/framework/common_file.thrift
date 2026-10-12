@@ -4,7 +4,7 @@ namespace go framework.commonfile
 // 登录即可用；上传自动写 system_oss 台账（create_by=登录用户）。
 
 struct CommonFileDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string url
     // 对象 key
     3: string key
@@ -14,7 +14,7 @@ struct CommonFileDTO {
 }
 
 struct CommonFileDownloadRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
 }
 
 service CommonFileController {

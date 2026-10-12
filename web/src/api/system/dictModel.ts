@@ -6,7 +6,7 @@ export interface DictTypeDTO {
   status: number;
   orderNum: number;
   remark: string;
-  groupId: number;
+  groupId: string;
 }
 
 export interface DictDataDTO {

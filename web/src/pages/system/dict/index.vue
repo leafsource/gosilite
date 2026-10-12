@@ -22,12 +22,12 @@
         :key="g.id"
         class="dict-page__group-item"
         :class="{
-          'is-active': activeGroupId === Number(g.id),
+          'is-active': activeGroupId === g.id,
           'is-dragging': dragGroupId === g.id,
           'is-drop-target': dragOverGroupId === g.id && dragGroupId !== g.id,
         }"
         draggable="true"
-        @click="selectGroup(Number(g.id))"
+        @click="selectGroup(g.id)"
         @dragstart="onGroupDragStart(g)"
         @dragover.prevent="onGroupDragOver(g)"
         @drop.prevent="onGroupDrop(g)"
@@ -50,8 +50,8 @@
       </div>
       <div
         class="dict-page__group-item dict-page__group-item--static"
-        :class="{ 'is-active': activeGroupId === 0 }"
-        @click="selectGroup(0)"
+        :class="{ 'is-active': activeGroupId === '0' }"
+        @click="selectGroup('0')"
       >
         <span class="dict-page__group-name">未分组</span>
       </div>
@@ -244,7 +244,6 @@
   </div>
 </template>
 <script setup lang="ts">
-
 defineOptions({ name: 'SystemDict' });
 import { AddIcon, MoreIcon, MoveIcon } from 'tdesign-icons-vue-next';
 import type { DropdownOption, FormInstanceFunctions, FormRule } from 'tdesign-vue-next';
@@ -307,7 +306,7 @@ const typeKeyword = ref('');
 
 const groups = ref<DictGroupDTO[]>([]);
 /** null=全部分组；0=未分组；>0=指定分组 */
-const activeGroupId = ref<number | null>(null);
+const activeGroupId = ref<string | null>(null);
 
 const selectedType = ref<DictTypeDTO | null>(null);
 const dataList = ref<DictDataDTO[]>([]);
@@ -356,15 +355,15 @@ const dataColumns = [
 ];
 
 const groupSelectOptions = computed(() => [
-  { label: '未分组', value: 0 },
-  ...groups.value.map((g) => ({ label: g.groupName, value: Number(g.id) })),
+  { label: '未分组', value: '0' },
+  ...groups.value.map((g) => ({ label: g.groupName, value: g.id })),
 ]);
 
-function groupOf(groupId: number | undefined): string {
-  const id = Number(groupId ?? 0);
-  if (!id) return '未分组';
-  const hit = groups.value.find((g) => Number(g.id) === id);
-  return hit ? hit.groupName : String(id);
+function groupOf(groupId: string | undefined): string {
+  const id = groupId ?? '0';
+  if (id === '0') return '未分组';
+  const hit = groups.value.find((g) => g.id === id);
+  return hit ? hit.groupName : id;
 }
 
 async function loadGroups() {
@@ -417,7 +416,7 @@ async function onGroupDrop(target: DictGroupDTO) {
   }
 }
 
-function selectGroup(id: number | null) {
+function selectGroup(id: string | null) {
   if (activeGroupId.value === id) return;
   activeGroupId.value = id;
   typePage.value = 1;
@@ -479,7 +478,7 @@ function onSelectType(row: DictTypeDTO) {
 }
 
 function openType(row?: DictTypeDTO) {
-  const defaultGroup = activeGroupId.value !== null && activeGroupId.value > 0 ? activeGroupId.value : 0;
+  const defaultGroup = activeGroupId.value ?? '0';
   typeForm.value = row
     ? { ...row }
     : { status: 0, orderNum: 0, dictName: '', dictType: '', remark: '', groupId: defaultGroup };
@@ -537,7 +536,7 @@ async function delGroup(row: DictGroupDTO) {
   try {
     await removeDictGroup(row.id);
     MessagePlugin.success('已删除');
-    if (activeGroupId.value === Number(row.id)) {
+    if (activeGroupId.value === row.id) {
       activeGroupId.value = null;
       typePage.value = 1;
       await loadTypes();

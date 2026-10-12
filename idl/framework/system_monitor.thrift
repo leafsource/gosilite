@@ -10,7 +10,7 @@ struct OnlineListRequest {
 struct OnlineDTO {
     // 行标识 = access token 摘要（同用户多端各自成行）
     1: string id
-    2: i64 userId
+    2: i64 userId (go.tag = "json:\"userId,string\"")
     // 登录名称（账号）
     3: string userName
     4: string deptName

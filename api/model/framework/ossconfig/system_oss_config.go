@@ -248,7 +248,7 @@ func (p *OssConfigListRequest) String() string {
 }
 
 type OssConfigIdRequest struct {
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 }
 
 func NewOssConfigIdRequest() *OssConfigIdRequest {
@@ -388,7 +388,7 @@ func (p *OssConfigIdRequest) String() string {
 }
 
 type OssConfigIdsRequest struct {
-	Ids []int64 `thrift:"ids,1,default,list<i64>" form:"ids" json:"ids" query:"ids"`
+	Ids []string `thrift:"ids,1,default,list<string>" form:"ids" json:"ids" query:"ids"`
 }
 
 func NewOssConfigIdsRequest() *OssConfigIdsRequest {
@@ -398,7 +398,7 @@ func NewOssConfigIdsRequest() *OssConfigIdsRequest {
 func (p *OssConfigIdsRequest) InitDefault() {
 }
 
-func (p *OssConfigIdsRequest) GetIds() (v []int64) {
+func (p *OssConfigIdsRequest) GetIds() (v []string) {
 	return p.Ids
 }
 
@@ -467,11 +467,11 @@ func (p *OssConfigIdsRequest) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -518,11 +518,11 @@ func (p *OssConfigIdsRequest) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("ids", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.Ids)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.Ids)); err != nil {
 		return err
 	}
 	for _, v := range p.Ids {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -548,7 +548,7 @@ func (p *OssConfigIdsRequest) String() string {
 }
 
 type OssConfigDTO struct {
-	ID         int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID         int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	ConfigKey  string `thrift:"configKey,2" form:"configKey" json:"configKey" query:"configKey"`
 	AccessKey  string `thrift:"accessKey,3" form:"accessKey" json:"accessKey" query:"accessKey"`
 	SecretKey  string `thrift:"secretKey,4" form:"secretKey" json:"secretKey" query:"secretKey"`
@@ -1588,7 +1588,7 @@ func (p *OssConfigListResponse) String() string {
 
 // 新增/编辑共用；编辑时必带 id；config_key 建库后不可改
 type OssConfigSaveRequest struct {
-	ID           *int64 `thrift:"id,1,optional" form:"id" json:"id,omitempty" query:"id"`
+	ID           *int64 `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
 	ConfigKey    string `thrift:"configKey,2" form:"configKey" json:"configKey" query:"configKey"`
 	AccessKey    string `thrift:"accessKey,3" form:"accessKey" json:"accessKey" query:"accessKey"`
 	SecretKey    string `thrift:"secretKey,4" form:"secretKey" json:"secretKey" query:"secretKey"`
@@ -2246,7 +2246,7 @@ func (p *OssConfigSaveRequest) String() string {
 
 // 设为默认（设默认即时生效：事务内全部置 0 → 目标置 1）
 type OssConfigStatusRequest struct {
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 }
 
 func NewOssConfigStatusRequest() *OssConfigStatusRequest {

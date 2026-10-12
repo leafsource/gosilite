@@ -2,12 +2,10 @@ package response
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 
 	"gosilite/pkg/errorx"
-	"gosilite/pkg/jsonid"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -20,19 +18,8 @@ type Result struct {
 	Data interface{} `json:"data,omitempty"`
 }
 
-// writeJSON 手动序列化并经 jsonid 转换（int64 id → 字符串），再写回响应
 func writeJSON(c *app.RequestContext, status int, v interface{}) {
-	b, err := json.Marshal(v)
-	if err != nil {
-		hlog.Errorf("[Response] marshal failed: %v", err)
-		c.SetStatusCode(http.StatusInternalServerError)
-		c.Response.Header.SetContentType("application/json; charset=utf-8")
-		c.SetBodyString(`{"code":500,"msg":"internal server error"}`)
-		return
-	}
-	c.SetStatusCode(status)
-	c.Response.Header.SetContentType("application/json; charset=utf-8")
-	c.SetBodyString(string(jsonid.TransformOut(b)))
+	c.JSON(status, v)
 }
 
 func InvalidParamRequestResponse(c *app.RequestContext, errMsg string) {

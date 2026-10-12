@@ -212,7 +212,7 @@ func (p *LoginRequest) String() string {
 
 // 用户信息
 type UserProfile struct {
-	ID        int64  `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
+	ID        int64  `thrift:"id,1,required" json:"id,string" form:"id,required" query:"id,required"`
 	Account   string `thrift:"account,2,required" form:"account,required" json:"account,required" query:"account,required"`
 	Username  string `thrift:"username,3,required" form:"username,required" json:"username,required" query:"username,required"`
 	AvatarURL string `thrift:"avatarURL,4,required" form:"avatarURL,required" json:"avatarURL,required" query:"avatarURL,required"`
@@ -520,7 +520,7 @@ func (p *UserProfile) String() string {
 
 // 个人资料（GET /user/profile）
 type ProfileResponse struct {
-	ID          int64  `thrift:"id,1,required" form:"id,required" json:"id,required" query:"id,required"`
+	ID          int64  `thrift:"id,1,required" json:"id,string" form:"id,required" query:"id,required"`
 	Account     string `thrift:"account,2,required" form:"account,required" json:"account,required" query:"account,required"`
 	Username    string `thrift:"username,3,required" form:"username,required" json:"username,required" query:"username,required"`
 	AvatarURL   string `thrift:"avatarURL,4,required" form:"avatarURL,required" json:"avatarURL,required" query:"avatarURL,required"`
@@ -1342,7 +1342,7 @@ func (p *LoginUserResponse) String() string {
 
 // 更新头像（统一文件服务两步链路第二步）：按台账 fileId 回查 key 更新 avatar_url
 type UpdateProfileAvatarRequest struct {
-	FileId int64 `thrift:"fileId,1,required" form:"fileId,required" json:"fileId,required" query:"fileId,required"`
+	FileId int64 `thrift:"fileId,1,required" json:"fileId,string" form:"fileId,required" query:"fileId,required"`
 }
 
 func NewUpdateProfileAvatarRequest() *UpdateProfileAvatarRequest {

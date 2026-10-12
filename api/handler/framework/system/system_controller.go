@@ -268,12 +268,22 @@ func UserCreate(ctx context.Context, c *app.RequestContext) {
 	if req.Password != nil {
 		password = *req.Password
 	}
-	if err := user.SystemUserSVC.AdminCreate(ctx, u, req.RoleIds, req.PostIds, password); err != nil {
+	roleIDs, err := parseIDs(req.RoleIds)
+	if err != nil {
+		R.InvalidParamRequestResponse(c, "invalid roleIds")
+		return
+	}
+	postIDs, err := parseIDs(req.PostIds)
+	if err != nil {
+		R.InvalidParamRequestResponse(c, "invalid postIds")
+		return
+	}
+	if err := user.SystemUserSVC.AdminCreate(ctx, u, roleIDs, postIDs, password); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
-	roleIDs, _ := user.SystemUserSVC.AdminRoleIDs(ctx, u.ID)
-	R.SuccessWithData(ctx, c, adminUserDTO(u, "", roleIDs, req.PostIds))
+	savedRoleIDs, _ := user.SystemUserSVC.AdminRoleIDs(ctx, u.ID)
+	R.SuccessWithData(ctx, c, adminUserDTO(u, "", savedRoleIDs, postIDs))
 }
 
 // UserUpdate .
@@ -300,7 +310,17 @@ func UserUpdate(ctx context.Context, c *app.RequestContext) {
 	if req.Password != nil {
 		password = *req.Password
 	}
-	if err := user.SystemUserSVC.AdminUpdate(ctx, u, req.RoleIds, req.PostIds, password); err != nil {
+	roleIDs, err := parseIDs(req.RoleIds)
+	if err != nil {
+		R.InvalidParamRequestResponse(c, "invalid roleIds")
+		return
+	}
+	postIDs, err := parseIDs(req.PostIds)
+	if err != nil {
+		R.InvalidParamRequestResponse(c, "invalid postIds")
+		return
+	}
+	if err := user.SystemUserSVC.AdminUpdate(ctx, u, roleIDs, postIDs, password); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
@@ -368,7 +388,7 @@ func UserRoles(ctx context.Context, c *app.RequestContext) {
 		R.Error(ctx, c, err)
 		return
 	}
-	R.SuccessWithData(ctx, c, &system.IdsResponse{Ids: ids})
+	R.SuccessWithData(ctx, c, &system.IdsResponse{Ids: formatIDs(ids)})
 }
 
 // ========== 菜单 ==========
@@ -616,7 +636,17 @@ func RoleAuthorizeSave(ctx context.Context, c *app.RequestContext) {
 		R.InvalidParamRequestResponse(c, err.Error())
 		return
 	}
-	if err := role.SystemRoleSVC.SaveAuthorize(ctx, req.RoleId, req.MenuIds, req.DeptIds, req.DataScope); err != nil {
+	menuIDs, err := parseIDs(req.MenuIds)
+	if err != nil {
+		R.InvalidParamRequestResponse(c, "invalid menuIds")
+		return
+	}
+	deptIDs, err := parseIDs(req.DeptIds)
+	if err != nil {
+		R.InvalidParamRequestResponse(c, "invalid deptIds")
+		return
+	}
+	if err := role.SystemRoleSVC.SaveAuthorize(ctx, req.RoleId, menuIDs, deptIDs, req.DataScope); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}

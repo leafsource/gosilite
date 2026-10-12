@@ -35,12 +35,12 @@ func InitService(ctx context.Context, db *gorm.DB) *Service {
 
 // Node 树节点
 type Node struct {
-	ID         int64   `json:"id"`
-	ParentID   int64   `json:"parentId"`
+	ID         int64   `json:"id,string"`
+	ParentID   int64   `json:"parentId,string"`
 	Label      string  `json:"label"`
 	OrderNum   int32   `json:"orderNum"`
 	Status     int16   `json:"status"`
-	LeaderID   int64   `json:"leaderId"`
+	LeaderID   int64   `json:"leaderId,string"`
 	LeaderName string  `json:"leaderName"`
 	Children   []*Node `json:"children,omitempty"`
 }

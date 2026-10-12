@@ -29,8 +29,7 @@ export interface RoleSaveParams {
 
 // ===== 授权快照（GET /system/role/authorize） =====
 
-/** i64 经 JSON 到前端为 number；比对时组件内统一 String() 归一化 */
-export type RoleId = string | number;
+export type RoleId = string;
 
 export interface RolePermItem {
   id: RoleId;

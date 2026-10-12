@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 
+	"gosilite/api/handler/idparse"
 	oss "gosilite/api/model/framework/oss"
 	"gosilite/application/framework/dal/model"
 	"gosilite/application/framework/dal/repository"
@@ -123,7 +124,12 @@ func Remove(ctx context.Context, c *app.RequestContext) {
 		R.InvalidParamRequestResponse(c, err.Error())
 		return
 	}
-	if err := ossfile.SystemOssSVC.Delete(ctx, req.Ids); err != nil {
+	ids, err := idparse.Int64s(req.Ids)
+	if err != nil {
+		R.InvalidParamRequestResponse(c, "invalid ids")
+		return
+	}
+	if err := ossfile.SystemOssSVC.Delete(ctx, ids); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}

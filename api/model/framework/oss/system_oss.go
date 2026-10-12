@@ -529,7 +529,7 @@ func (p *OssListRequest) String() string {
 }
 
 type OssIdRequest struct {
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 }
 
 func NewOssIdRequest() *OssIdRequest {
@@ -669,7 +669,7 @@ func (p *OssIdRequest) String() string {
 }
 
 type OssIdsRequest struct {
-	Ids []int64 `thrift:"ids,1,default,list<i64>" form:"ids" json:"ids" query:"ids"`
+	Ids []string `thrift:"ids,1,default,list<string>" form:"ids" json:"ids" query:"ids"`
 }
 
 func NewOssIdsRequest() *OssIdsRequest {
@@ -679,7 +679,7 @@ func NewOssIdsRequest() *OssIdsRequest {
 func (p *OssIdsRequest) InitDefault() {
 }
 
-func (p *OssIdsRequest) GetIds() (v []int64) {
+func (p *OssIdsRequest) GetIds() (v []string) {
 	return p.Ids
 }
 
@@ -748,11 +748,11 @@ func (p *OssIdsRequest) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -799,11 +799,11 @@ func (p *OssIdsRequest) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("ids", thrift.LIST, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteListBegin(thrift.I64, len(p.Ids)); err != nil {
+	if err := oprot.WriteListBegin(thrift.STRING, len(p.Ids)); err != nil {
 		return err
 	}
 	for _, v := range p.Ids {
-		if err := oprot.WriteI64(v); err != nil {
+		if err := oprot.WriteString(v); err != nil {
 			return err
 		}
 	}
@@ -829,7 +829,7 @@ func (p *OssIdsRequest) String() string {
 }
 
 type OssDTO struct {
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	// 对象 key
 	FileName     string `thrift:"fileName,2" form:"fileName" json:"fileName" query:"fileName"`
 	OriginalName string `thrift:"originalName,3" form:"originalName" json:"originalName" query:"originalName"`
@@ -1761,7 +1761,7 @@ func (p *OssListResponse) String() string {
 
 // 编辑：仅 originalName / isLock 可改
 type OssSaveRequest struct {
-	ID           int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID           int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	OriginalName string `thrift:"originalName,2" form:"originalName" json:"originalName" query:"originalName"`
 	IsLock       bool   `thrift:"isLock,3" form:"isLock" json:"isLock" query:"isLock"`
 }

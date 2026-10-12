@@ -9,7 +9,7 @@ import (
 )
 
 type ConfigGlobalDTO struct {
-	ID          int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID          int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	ConfigName  string `thrift:"configName,2" form:"configName" json:"configName" query:"configName"`
 	ConfigKey   string `thrift:"configKey,3" form:"configKey" json:"configKey" query:"configKey"`
 	ConfigValue string `thrift:"configValue,4" form:"configValue" json:"configValue" query:"configValue"`

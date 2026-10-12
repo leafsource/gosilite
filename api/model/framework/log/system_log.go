@@ -627,7 +627,7 @@ func (p *OperLogListRequest) String() string {
 }
 
 type OperLogDTO struct {
-	ID       int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID       int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	TraceId  string `thrift:"traceId,2" form:"traceId" json:"traceId" query:"traceId"`
 	UserName string `thrift:"userName,3" form:"userName" json:"userName" query:"userName"`
 	// sys_oper_type
@@ -1811,7 +1811,7 @@ func (p *LogListResponse) String() string {
 }
 
 type LogIdRequest struct {
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 }
 
 func NewLogIdRequest() *LogIdRequest {
@@ -1952,8 +1952,8 @@ func (p *LogIdRequest) String() string {
 
 // ids 与 all 二选一：ids 按选中删除，all=true 清空全部
 type LogCleanRequest struct {
-	Ids []int64 `thrift:"ids,1,optional,list<i64>" form:"ids" json:"ids,omitempty" query:"ids"`
-	All bool    `thrift:"all,2" form:"all" json:"all" query:"all"`
+	Ids []string `thrift:"ids,1,optional,list<string>" form:"ids" json:"ids,omitempty" query:"ids"`
+	All bool     `thrift:"all,2" form:"all" json:"all" query:"all"`
 }
 
 func NewLogCleanRequest() *LogCleanRequest {
@@ -1963,9 +1963,9 @@ func NewLogCleanRequest() *LogCleanRequest {
 func (p *LogCleanRequest) InitDefault() {
 }
 
-var LogCleanRequest_Ids_DEFAULT []int64
+var LogCleanRequest_Ids_DEFAULT []string
 
-func (p *LogCleanRequest) GetIds() (v []int64) {
+func (p *LogCleanRequest) GetIds() (v []string) {
 	if !p.IsSetIds() {
 		return LogCleanRequest_Ids_DEFAULT
 	}
@@ -2054,11 +2054,11 @@ func (p *LogCleanRequest) ReadField1(iprot thrift.TProtocol) error {
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -2121,11 +2121,11 @@ func (p *LogCleanRequest) writeField1(oprot thrift.TProtocol) (err error) {
 		if err = oprot.WriteFieldBegin("ids", thrift.LIST, 1); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.Ids)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.Ids)); err != nil {
 			return err
 		}
 		for _, v := range p.Ids {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}
@@ -2786,7 +2786,7 @@ func (p *ErrorLogListRequest) String() string {
 }
 
 type ErrorLogDTO struct {
-	ID       int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID       int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	TraceId  string `thrift:"traceId,2" form:"traceId" json:"traceId" query:"traceId"`
 	UserName string `thrift:"userName,3" form:"userName" json:"userName" query:"userName"`
 	// 1 业务异常 2 panic
@@ -4109,7 +4109,7 @@ func (p *ErrorLogListResponse) String() string {
 }
 
 type ErrorHandleRequest struct {
-	ID           int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID           int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	HandleRemark string `thrift:"handleRemark,2" form:"handleRemark" json:"handleRemark" query:"handleRemark"`
 }
 
@@ -4751,10 +4751,10 @@ func (p *LoginLogListRequest) String() string {
 }
 
 type LoginLogDTO struct {
-	ID       int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID       int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	TraceId  string `thrift:"traceId,2" form:"traceId" json:"traceId" query:"traceId"`
 	UserName string `thrift:"userName,3" form:"userName" json:"userName" query:"userName"`
-	UserId   int64  `thrift:"userId,4" form:"userId" json:"userId" query:"userId"`
+	UserId   int64  `thrift:"userId,4" json:"userId,string" form:"userId" query:"userId"`
 	// sys_login_status: 0 成功 1 失败
 	Status     int32  `thrift:"status,5" form:"status" json:"status" query:"status"`
 	FailReason string `thrift:"failReason,6" form:"failReason" json:"failReason" query:"failReason"`

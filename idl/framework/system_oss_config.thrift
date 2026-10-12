@@ -10,15 +10,15 @@ struct OssConfigListRequest {
 }
 
 struct OssConfigIdRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
 }
 
 struct OssConfigIdsRequest {
-    1: list<i64> ids
+    1: list<string> ids
 }
 
 struct OssConfigDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string configKey
     3: string accessKey
     4: string secretKey
@@ -46,7 +46,7 @@ struct OssConfigListResponse {
 
 // 新增/编辑共用；编辑时必带 id；config_key 建库后不可改
 struct OssConfigSaveRequest {
-    1: optional i64 id
+    1: optional i64 id (go.tag = "json:\"id,string\"")
     2: string configKey
     3: string accessKey
     4: string secretKey
@@ -62,7 +62,7 @@ struct OssConfigSaveRequest {
 
 // 设为默认（设默认即时生效：事务内全部置 0 → 目标置 1）
 struct OssConfigStatusRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
 }
 
 // 连通测试：用请求体配置临时构建客户端探活，不写库

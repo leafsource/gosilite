@@ -21,6 +21,8 @@ _site
 package
 tmp*
 temp*
+# 消息模板页面目录恰好以 temp 开头，排除误伤（否则 git add 会漏掉 pages/system/message/template）
+!src/pages/system/message/template/
 coverage
 test-report.html
 .idea/

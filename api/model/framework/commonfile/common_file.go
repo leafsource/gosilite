@@ -11,7 +11,7 @@ import (
 // ===== 统一文件服务（spec system-oss S2.11：所有文件传输收口，业务不再自建 multipart handler）=====
 // 登录即可用；上传自动写 system_oss 台账（create_by=登录用户）。
 type CommonFileDTO struct {
-	ID  int64  `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID  int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 	URL string `thrift:"url,2" form:"url" json:"url" query:"url"`
 	// 对象 key
 	Key          string `thrift:"key,3" form:"key" json:"key" query:"key"`
@@ -382,7 +382,7 @@ func (p *CommonFileDTO) String() string {
 }
 
 type CommonFileDownloadRequest struct {
-	ID int64 `thrift:"id,1" form:"id" json:"id" query:"id"`
+	ID int64 `thrift:"id,1" json:"id,string" form:"id" query:"id"`
 }
 
 func NewCommonFileDownloadRequest() *CommonFileDownloadRequest {

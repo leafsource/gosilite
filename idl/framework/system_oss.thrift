@@ -22,15 +22,15 @@ struct OssListRequest {
 }
 
 struct OssIdRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
 }
 
 struct OssIdsRequest {
-    1: list<i64> ids
+    1: list<string> ids
 }
 
 struct OssDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     // 对象 key
     2: string fileName
     3: string originalName
@@ -56,7 +56,7 @@ struct OssListResponse {
 
 // 编辑：仅 originalName / isLock 可改
 struct OssSaveRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string originalName
     3: bool isLock
 }

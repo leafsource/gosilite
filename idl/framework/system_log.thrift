@@ -19,7 +19,7 @@ struct OperLogListRequest {
 }
 
 struct OperLogDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string traceId
     3: string userName
     // sys_oper_type
@@ -49,12 +49,12 @@ struct LogListResponse {
 }
 
 struct LogIdRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
 }
 
 // ids 与 all 二选一：ids 按选中删除，all=true 清空全部
 struct LogCleanRequest {
-    1: optional list<i64> ids
+    1: optional list<string> ids
     2: bool all
 }
 
@@ -75,7 +75,7 @@ struct ErrorLogListRequest {
 }
 
 struct ErrorLogDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string traceId
     3: string userName
     // 1 业务异常 2 panic
@@ -109,7 +109,7 @@ struct ErrorLogListResponse {
 }
 
 struct ErrorHandleRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string handleRemark
 }
 
@@ -127,10 +127,10 @@ struct LoginLogListRequest {
 }
 
 struct LoginLogDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string traceId
     3: string userName
-    4: i64 userId
+    4: i64 userId (go.tag = "json:\"userId,string\"")
     // sys_login_status: 0 成功 1 失败
     5: i32 status
     6: string failReason

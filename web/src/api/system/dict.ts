@@ -10,7 +10,7 @@ import type {
   DictTypeSaveParams,
 } from './dictModel';
 
-export function listDictTypes(params: { page?: number; pageSize?: number; keyword?: string; groupId?: number }) {
+export function listDictTypes(params: { page?: number; pageSize?: number; keyword?: string; groupId?: string }) {
   return request.get<{ list: DictTypeDTO[]; total: number }>({ url: '/system/dict/type/list', params });
 }
 

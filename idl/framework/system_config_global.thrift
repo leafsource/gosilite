@@ -4,7 +4,7 @@
 namespace go framework.syscfgglobal
 
 struct ConfigGlobalDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string configName
     3: string configKey
     4: string configValue

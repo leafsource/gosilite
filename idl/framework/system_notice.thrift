@@ -11,11 +11,11 @@ struct NoticeListRequest {
 }
 
 struct NoticeIdRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
 }
 
 struct NoticeDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string title
     // sys_notice_type: 1 通知 2 公告
     3: i32 noticeType
@@ -33,7 +33,7 @@ struct NoticeListResponse {
 }
 
 struct NoticeSaveRequest {
-    1: optional i64 id
+    1: optional i64 id (go.tag = "json:\"id,string\"")
     2: string title
     3: i32 noticeType
     4: string content
@@ -49,7 +49,7 @@ struct NoticeInboxRequest {
 }
 
 struct NoticeInboxItemDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string title
     3: i32 noticeType
     4: string publisher
@@ -65,11 +65,11 @@ struct NoticeInboxListResponse {
 }
 
 struct NoticeDetailRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
 }
 
 struct NoticeDetailDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string title
     3: i32 noticeType
     4: string content
@@ -85,7 +85,7 @@ struct UnreadCountResponse {
 
 // id 缺省 = 全部已读
 struct NoticeReadRequest {
-    1: optional i64 id
+    1: optional i64 id (go.tag = "json:\"id,string\"")
 }
 
 service SystemNoticeController {

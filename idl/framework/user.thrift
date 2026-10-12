@@ -8,7 +8,7 @@ struct LoginRequest {
 
 // 用户信息
 struct UserProfile {
-    1: required i64 id
+    1: required i64 id (go.tag = "json:\"id,string\"")
     2: required string account
     3: required string username
     4: required string avatarURL
@@ -16,7 +16,7 @@ struct UserProfile {
 
 // 个人资料（GET /user/profile）
 struct ProfileResponse {
-    1: required i64 id
+    1: required i64 id (go.tag = "json:\"id,string\"")
     2: required string account
     3: required string username
     4: required string avatarURL
@@ -36,7 +36,7 @@ struct LoginUserResponse {
 
 // 更新头像（统一文件服务两步链路第二步）：按台账 fileId 回查 key 更新 avatar_url
 struct UpdateProfileAvatarRequest {
-    1: required i64 fileId
+    1: required i64 fileId (go.tag = "json:\"fileId,string\"")
 }
 
 struct UpdateProfileAvatarResponse {

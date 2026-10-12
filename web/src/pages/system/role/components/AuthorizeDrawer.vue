@@ -220,8 +220,7 @@ async function onSave() {
   saving.value = true;
   try {
     const menuIds = menuTableRef.value?.collect() ?? [];
-    // 部门 id 归一化为 string 参与树比对，提交前转回 i64；非自定义范围提交空，服务端也会清空
-    const deptIds = isCustomScope.value ? deptCheckedIds.value.map((id) => Number(id)) : [];
+    const deptIds = isCustomScope.value ? deptCheckedIds.value : [];
     await saveRoleAuthorize({
       roleId: props.role.id,
       menuIds,

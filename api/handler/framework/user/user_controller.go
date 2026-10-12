@@ -72,7 +72,6 @@ func GetProfile(ctx context.Context, c *app.RequestContext) {
 	R.SuccessWithData(ctx, c, toProfileResponse(profile))
 }
 
-
 // Refresh .
 // @Summary 刷新访问令牌
 // @Description 刷新访问令牌接口
@@ -176,7 +175,6 @@ func ChangePassword(ctx context.Context, c *app.RequestContext) {
 
 	R.SuccessWithData(ctx, c, nil)
 }
-
 
 // UpdateProfileAvatar 按台账 fileId 更新头像（统一文件服务第二步，spec S2.11）
 // @Summary 更新头像

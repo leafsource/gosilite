@@ -14,15 +14,15 @@ struct OssRuleListRequest {
 }
 
 struct OssRuleIdRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
 }
 
 struct OssRuleIdsRequest {
-    1: list<i64> ids
+    1: list<string> ids
 }
 
 struct OssRuleDTO {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string ruleName
     3: string domain
     4: string mimeType
@@ -42,7 +42,7 @@ struct OssRuleListResponse {
 }
 
 struct OssRuleSaveRequest {
-    1: optional i64 id
+    1: optional i64 id (go.tag = "json:\"id,string\"")
     2: string ruleName
     3: string domain
     4: string mimeType
@@ -55,7 +55,7 @@ struct OssRuleSaveRequest {
 
 // 覆盖字段值开关（目标为 Y 且该规则为默认时，同域名其他默认规则覆盖自动关闭）
 struct OssRuleOverwriteRequest {
-    1: i64 id
+    1: i64 id (go.tag = "json:\"id,string\"")
     2: string isOverwrite
 }
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 
+	"gosilite/api/handler/idparse"
 	ossrule "gosilite/api/model/framework/ossrule"
 	"gosilite/application/framework/dal/model"
 	ossruleSvc "gosilite/application/framework/service/ossrule"
@@ -133,7 +134,12 @@ func Remove(ctx context.Context, c *app.RequestContext) {
 		R.InvalidParamRequestResponse(c, err.Error())
 		return
 	}
-	if err := ossruleSvc.SystemOssRuleSVC.Delete(ctx, req.Ids); err != nil {
+	ids, err := idparse.Int64s(req.Ids)
+	if err != nil {
+		R.InvalidParamRequestResponse(c, "invalid ids")
+		return
+	}
+	if err := ossruleSvc.SystemOssRuleSVC.Delete(ctx, ids); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}
@@ -211,17 +217,17 @@ func toDTOs(list []*model.SystemOssRule) []*ossrule.OssRuleDTO {
 // fromSaveRequest is_overwrite 不在 Save 契约中（由 ChangeOverwrite 单独管），落库保留零值由服务层处理
 func fromSaveRequest(req *ossrule.OssRuleSaveRequest, id int64) *model.SystemOssRule {
 	return &model.SystemOssRule{
-		ID:         id,
-		RuleName:   req.RuleName,
-		Domain:     req.Domain,
-		MimeType:   req.MimeType,
-		Rule:       req.Rule,
-		IsDefault:  req.IsDefault,
-		Status:     req.Status,
-		RuleSort:   req.RuleSort,
-		Remark:     req.Remark,
-		DelFlag:    0,
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
+		ID:        id,
+		RuleName:  req.RuleName,
+		Domain:    req.Domain,
+		MimeType:  req.MimeType,
+		Rule:      req.Rule,
+		IsDefault: req.IsDefault,
+		Status:    req.Status,
+		RuleSort:  req.RuleSort,
+		Remark:    req.Remark,
+		DelFlag:   0,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 }

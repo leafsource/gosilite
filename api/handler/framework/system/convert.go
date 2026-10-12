@@ -1,6 +1,8 @@
 package system
 
 import (
+	"strconv"
+
 	system "gosilite/api/model/framework/system"
 	"gosilite/application/framework/dal/model"
 	"gosilite/application/framework/service/dept"
@@ -70,13 +72,33 @@ func fromPostSaveRequest(req *system.PostSaveRequest) *model.SystemPost {
 
 // ========== 用户 ==========
 
+func parseIDs(values []string) ([]int64, error) {
+	ids := make([]int64, len(values))
+	for i, value := range values {
+		id, err := strconv.ParseInt(value, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		ids[i] = id
+	}
+	return ids, nil
+}
+
+func formatIDs(values []int64) []string {
+	ids := make([]string, len(values))
+	for i, value := range values {
+		ids[i] = strconv.FormatInt(value, 10)
+	}
+	return ids
+}
+
 // adminUserDTO SystemUser + 关联信息 → AdminUserDTO 的公共映射
 func adminUserDTO(u *model.SystemUser, deptName string, roleIDs, postIDs []int64) *system.AdminUserDTO {
 	return &system.AdminUserDTO{
 		ID: u.ID, Account: u.Account, Username: u.Username,
 		MobilePhone: u.MobilePhone, Email: u.Email, State: u.State,
 		DeptId: u.DeptID, DeptName: deptName,
-		RoleIds: roleIDs, PostIds: postIDs, AvatarUrl: u.AvatarURL,
+		RoleIds: formatIDs(roleIDs), PostIds: formatIDs(postIDs), AvatarUrl: u.AvatarURL,
 	}
 }
 
@@ -200,7 +222,7 @@ func toRoleAuthorizeResponse(s *role.AuthorizeSnapshot) *system.RoleAuthorizeRes
 	return &system.RoleAuthorizeResponse{
 		DataScope: s.DataScope,
 		Menus:     toRoleAuthMenuNodes(s.Menus),
-		DeptIds:   s.DeptIDs,
+		DeptIds:   formatIDs(s.DeptIDs),
 	}
 }
 
