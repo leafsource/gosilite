@@ -1,19 +1,22 @@
 ---
 feature: scheduler
-status: in-progress
+status: delivered
 updated: 2026-10-12
 branch: feat/scheduler
-commits:
+commits: 1945e0a..5fb8a6f
 ---
 
 # 定时调度
 
 ## Report
 
-- Delivered migration 0024, IDL-generated management APIs, Redis lease execution, cron runtime, framework module wiring, and the built-in `system.scheduler.test` job.
-- Executor returns promptly on timeout or lost lease after cancelling the job context, but keeps the durable active-execution fence until the worker goroutine exits; the terminal audit record is finalized only then, so a non-cooperative job cannot overlap a local retry or later execution even if its Redis lease is lost.
-- Added paginated per-job run history to the scheduler management page, including status and output/error inspection.
-- Verification: `WEB=1 ./script/check.sh` passed; the real local database migration and `system.scheduler.test` runtime smoke test are pending before delivery.
+**What was built** — Delivered migrations 0024/0025, IDL-generated management APIs, Redis token leases, a database-backed active-execution fence, cron runtime, framework module wiring, and the built-in `system.scheduler.test` Job. The executor keeps the durable fence until a worker truly exits, so timeout, lease loss, retry, and a non-cooperative Job cannot overlap.
+
+**What was verified** — Applied both migrations to the local PostgreSQL development database. Created `system.scheduler.test` through the real API, manually ran it, and observed `status=succeeded` with output `scheduler test executed`. Then scheduled it every two seconds and observed repeated `trigger=cron`, `status=succeeded` records with the same output. The task has been disabled after the smoke test; its run records remain visible in the management page.
+
+**Verification** — `WEB=1 ./script/check.sh` passed: Go tests, vet, build, Vue type checking, and Vite production build. Final independent review passed specification compliance, correctness, and codebase consistency.
+
+**Journey log** — ① The initial API smoke request hit an existing process on :8888, so final verification used the isolated :8889 application instance. ② Redis leasing alone cannot prevent overlap after lease loss for a Job that ignores cancellation; a database owner-token fence is the final cross-instance safety boundary. ③ Protected execution-state fields must use a repository update whitelist, not a whole-record save.
 
 ## [S1] Problem
 
