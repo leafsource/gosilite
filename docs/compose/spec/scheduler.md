@@ -3,7 +3,7 @@ feature: scheduler
 status: delivered
 updated: 2026-10-12
 branch: feat/scheduler
-commits: 5e397e0..362a3a6
+commits: e5382ca..958d876
 ---
 
 # 定时调度
@@ -12,11 +12,13 @@ commits: 5e397e0..362a3a6
 
 **What was built** — Added immutable, ordered `system_job_run_log` records for scheduler lifecycle and Job business logs. The executor, Redis/fence stages, run-bound robfig cron panic wrapper, and Job context logging write both Hertz `hlog` and an asynchronous persist-before-broadcast sink. The monitoring UI replays history and follows live logs through permission-protected SSE.
 
-**What was verified** — Applied migrations 0027/0028 to the local PostgreSQL development database. A real manual `system.scheduler.test` run produced persisted trigger, lock, execute, Job-step, and finish logs. The authenticated SSE endpoint replayed the same `id / event: log / data` frames immediately. The daily `system.scheduler.log_cleanup` Job is seeded and registered; it removes only logs older than the configured retention period.
+**What was verified** — Applied migrations 0027/0028/0029 to the local PostgreSQL development database. A real manual `system.scheduler.test` run produced persisted trigger, lock, execute, Job-step, and finish logs. The authenticated SSE endpoint replayed the same `id / event: log / data` frames immediately. Snapshot retry was verified through the real API: the new run retained the original task key, name, parameters, timeout and configuration version.
 
-**Verification** — `WEB=1 ./script/check.sh` passed: Go tests, vet, build, Vue type checking, Vite production build, and Hugo documentation build. Focused cron-panic regression passed, verifying the recovered wrapper panic is stored under its run ID. Final independent review confirmed S4 specification compliance, correctness, and project consistency.
+**Run control console** — The monitoring page now separates task management and run records. A task row opens the run-record Tab with its task filter selected. Runs retain snapshots, show details/logs/retry/stop only, and provide copy/download logs. Stop is cooperative and durable across replicas: a local request cancels immediately when possible, while the owner polls the persisted stopping state every second and preserves its lease/fence until the worker exits as `stopped`. Stable keys are centralized in `types/jobkeys`, framework jobs are in `application/framework/jobs`, and SSE is centralized in `web/src/utils/request/sse.ts`.
 
-**Journey log** — ① Hertz `SetBodyStream` with a deferred pipe did not flush SSE replay reliably; switching to Hertz’s native `protocol/sse.Writer` made replay immediate and preserves live streaming. ② Browser `EventSource` cannot send the existing Bearer header; the UI uses authenticated `fetch` streaming while retaining SSE framing and `Last-Event-ID` recovery. ③ Cron-wide events lack a valid run ID and remain in `hlog`; wrapper panics are bound to the run created by the executor and persist into that run’s log. ④ Retention is YAML-driven (`scheduler.log_retention_days`, default 30) and the cleanup Job never removes run summaries.
+**Verification** — `WEB=1 ./script/check.sh` passed: Go tests, vet, build, Vue type checking, Vite production build, and Hugo documentation build. Focused cron-panic, cross-replica stop, stopped-run snapshot retry, and SSE ordering regressions passed. Final independent review confirmed S4/S5 specification compliance, correctness, and project consistency.
+
+**Journey log** — ① Hertz `SetBodyStream` with a deferred pipe did not flush SSE replay reliably; switching to Hertz’s native `protocol/sse.Writer` made replay immediate and preserves live streaming. ② Browser `EventSource` cannot send the existing Bearer header; the UI uses authenticated fetch streaming behind one shared SSE utility. ③ Cron-wide events lack a valid run ID and remain in hlog; wrapper panics are bound to the run created by the executor and persist into that run’s log. ④ Retention is YAML-driven (`scheduler.log_retention_days`, default 30) and the cleanup Job never removes run summaries. ⑤ Cross-replica stop polling is intentionally independent from lease renewal, preventing a one-minute lease from delaying cancellation by 30 seconds.
 
 ## [S1] Problem
 
@@ -42,6 +44,16 @@ commits: 5e397e0..362a3a6
 
 日志保留天数取自 `scheduler.log_retention_days`，默认 30 天，并允许环境变量覆盖。内置清理 Job 每日执行，删除过期执行日志；不得删除 `system_job_run` 摘要记录。持久化或广播失败不得中断业务 Job，但要通过 `hlog` 报错。
 
+## [S5] Run Control and Operations Console
+
+调度页面分为“任务管理”和“运行记录”两个 Tab。任务管理的运行记录入口切换到运行记录 Tab，并将任务 ID 写入查询条件。运行记录表展示运行 ID、任务名称、任务键、触发方式、重试次数、状态、触发时间与结束时间；它是独立页面内容，不再使用抽屉承载列表。
+
+每条运行记录持久化创建时的任务快照：任务键、任务名称、参数 JSON、超时秒数与调度配置版本。重试使用此快照创建新的手动运行，不读取后来编辑的任务定义。运行记录只提供详情、日志、重试、停止四种操作。详情展示运行基本信息和快照；日志在运行中订阅 SSE、已结束时查询持久化日志，并支持复制和下载纯文本日志。
+
+停止是协作式取消：可停止状态仅为运行中或停止中之前的记录。停止请求将运行状态改为 `stopping`、取消该运行上下文并阻止后续重试；Job/Service 通过 `ctx.Done()` 尽快收敛，最终记为 `stopped`。不强杀 goroutine；未响应取消时保留活动执行栅栏、继续显示停止中，直至实际退出。
+
+稳定 Job Key 常量位于 `types/jobkeys/`，按业务域拆分。框架自身 Job 实现在 `application/framework/jobs/`；业务 Job 实现在所属 `application/<domain>/jobs/` 并调用同域 Service。SSE 前端客户端归入 `web/src/utils/request/sse.ts`，统一处理 Bearer 鉴权、帧解析、断线重连、Last-Event-ID、关闭和错误回调；领域 API 仅暴露已定义的 SSE 连接函数。
+
 ## Tasks
 
 - [x] T1: 建立调度器注册、Redis 租约锁与执行器测试 — acceptance: 重复 Key 被拒绝，抢锁、失败重试、超时与运行记录状态可由单测验证 (covers: S2)
@@ -51,3 +63,7 @@ commits: 5e397e0..362a3a6
 - [x] T5: 持久化任务执行日志并适配 cron/hlog — acceptance: 每个运行记录可按序查询触发、锁、执行、重试与结束日志，业务任务失败不因日志写入失败中断 (covers: S4)
 - [x] T6: 提供任务日志 SSE 实时订阅与管理端日志面板 — acceptance: 页面打开运行记录可回放历史并实时追加日志，断线后按日志 ID 恢复 (covers: S4; depends: T5)
 - [x] T7: 增加 YAML 保留期配置与自动清理任务并完成验收 — acceptance: 默认 30 天配置生效，过期日志被清理且运行摘要保留，`WEB=1 ./script/check.sh` 与独立评审通过 (covers: S4; depends: T5, T6)
+- [x] T8: 持久化运行快照并实现停止、重试契约 — acceptance: 停止协作取消且阻止后续重试；重试使用原运行快照 (covers: S5)
+- [x] T9: 集中稳定 Job Key 与 Job 实现落位 — acceptance: Key 位于 `types/jobkeys`，框架与业务 Job 按域组织且现有任务可执行 (covers: S5)
+- [x] T10: 建立统一 SSE 请求客户端并实现双 Tab 运行控制台 — acceptance: 任务管理可跳转筛选运行记录；日志可实时/历史显示、复制、下载，组件不直接 fetch (covers: S5; depends: T8, T9)
+- [x] T11: 验收运行控制、双 Tab 与独立评审 — acceptance: `WEB=1 ./script/check.sh` 通过，真实任务可停止/重试并满足快照语义 (covers: S5; depends: T8, T9, T10)
