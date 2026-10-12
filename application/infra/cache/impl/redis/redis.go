@@ -161,6 +161,23 @@ func (r *redisClient) Set(ctx context.Context, key string, value interface{}, ex
 	return r.client.Set(ctx, key, value, expiration)
 }
 
+const renewLeaseScript = `if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end`
+const releaseLeaseScript = `if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end`
+
+func (r *redisClient) AcquireLease(ctx context.Context, key, token string, ttl time.Duration) (bool, error) {
+	return r.client.SetNX(ctx, key, token, ttl).Result()
+}
+
+func (r *redisClient) RenewLease(ctx context.Context, key, token string, ttl time.Duration) (bool, error) {
+	n, err := r.client.Eval(ctx, renewLeaseScript, []string{key}, token, ttl.Milliseconds()).Int64()
+	return n == 1, err
+}
+
+func (r *redisClient) ReleaseLease(ctx context.Context, key, token string) (bool, error) {
+	n, err := r.client.Eval(ctx, releaseLeaseScript, []string{key}, token).Int64()
+	return n == 1, err
+}
+
 // ScanAll 有界 SCAN 匹配 key（禁止 KEYS）。
 func (r *redisClient) ScanAll(ctx context.Context, match string, limit int) ([]string, error) {
 	if limit <= 0 {

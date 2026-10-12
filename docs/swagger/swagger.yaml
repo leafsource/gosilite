@@ -14,7 +14,7 @@ definitions:
         type: boolean
       ids:
         items:
-          type: integer
+          type: string
         type: array
     type: object
   message.MessageConfigSaveRequest:
@@ -147,7 +147,7 @@ definitions:
     properties:
       ids:
         items:
-          type: integer
+          type: string
         type: array
     type: object
   oss.OssSaveRequest:
@@ -164,7 +164,7 @@ definitions:
     properties:
       ids:
         items:
-          type: integer
+          type: string
         type: array
     type: object
   ossconfig.OssConfigSaveRequest:
@@ -218,7 +218,7 @@ definitions:
     properties:
       ids:
         items:
-          type: integer
+          type: string
         type: array
     type: object
   ossrule.OssRuleOverwriteRequest:
@@ -249,6 +249,34 @@ definitions:
       ruleSort:
         type: integer
       status:
+        type: string
+    type: object
+  scheduler.SchedulerJobIDRequest:
+    properties:
+      id:
+        example: "0"
+        type: string
+    type: object
+  scheduler.SchedulerJobSaveRequest:
+    properties:
+      cron:
+        type: string
+      id:
+        example: "0"
+        type: string
+      jobKey:
+        type: string
+      jobName:
+        type: string
+      paramsJson:
+        type: string
+      retryCount:
+        type: integer
+      status:
+        type: integer
+      timeoutSec:
+        type: integer
+      timezone:
         type: string
     type: object
   syscfg.ConfigSaveRequest:
@@ -348,11 +376,11 @@ definitions:
         type: string
       postIds:
         items:
-          type: integer
+          type: string
         type: array
       roleIds:
         items:
-          type: integer
+          type: string
         type: array
       state:
         type: string
@@ -440,11 +468,11 @@ definitions:
         type: integer
       deptIds:
         items:
-          type: integer
+          type: string
         type: array
       menuIds:
         items:
-          type: integer
+          type: string
         type: array
       roleId:
         example: "0"
@@ -2919,6 +2947,178 @@ paths:
             additionalProperties: true
             type: object
       summary: 角色列表
+      tags:
+      - 系统管理
+  /system/scheduler/job:
+    delete:
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/scheduler.SchedulerJobIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 删除定时任务
+      tags:
+      - 系统管理
+    get:
+      parameters:
+      - example: "0"
+        in: query
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 定时任务详情
+      tags:
+      - 系统管理
+    post:
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/scheduler.SchedulerJobSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 新增定时任务
+      tags:
+      - 系统管理
+    put:
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/scheduler.SchedulerJobSaveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 修改定时任务
+      tags:
+      - 系统管理
+  /system/scheduler/job/keys:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 可用任务键
+      tags:
+      - 系统管理
+  /system/scheduler/job/list:
+    get:
+      parameters:
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 定时任务列表
+      tags:
+      - 系统管理
+  /system/scheduler/job/run:
+    post:
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/scheduler.SchedulerJobIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 手动运行定时任务
+      tags:
+      - 系统管理
+  /system/scheduler/job/status:
+    put:
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/scheduler.SchedulerJobIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 启停定时任务
+      tags:
+      - 系统管理
+  /system/scheduler/run/list:
+    get:
+      parameters:
+      - example: "0"
+        in: query
+        name: jobId
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 定时任务运行记录
       tags:
       - 系统管理
   /system/user:
