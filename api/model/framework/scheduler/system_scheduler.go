@@ -1573,16 +1573,20 @@ func (p *SchedulerJobIDRequest) String() string {
 }
 
 type SchedulerJobRunDTO struct {
-	ID          int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
-	JobId       int64  `thrift:"jobId,2" json:"jobId,string" form:"jobId" query:"jobId"`
-	JobKey      string `thrift:"jobKey,3" form:"jobKey" json:"jobKey" query:"jobKey"`
-	Trigger     string `thrift:"trigger,4" form:"trigger" json:"trigger" query:"trigger"`
-	RetryCount  int32  `thrift:"retryCount,5" form:"retryCount" json:"retryCount" query:"retryCount"`
-	Status      string `thrift:"status,6" form:"status" json:"status" query:"status"`
-	TriggeredAt string `thrift:"triggeredAt,7" form:"triggeredAt" json:"triggeredAt" query:"triggeredAt"`
-	FinishedAt  string `thrift:"finishedAt,8" form:"finishedAt" json:"finishedAt" query:"finishedAt"`
-	Output      string `thrift:"output,9" form:"output" json:"output" query:"output"`
-	Error       string `thrift:"error,10" form:"error" json:"error" query:"error"`
+	ID            int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
+	JobId         int64  `thrift:"jobId,2" json:"jobId,string" form:"jobId" query:"jobId"`
+	JobKey        string `thrift:"jobKey,3" form:"jobKey" json:"jobKey" query:"jobKey"`
+	Trigger       string `thrift:"trigger,4" form:"trigger" json:"trigger" query:"trigger"`
+	RetryCount    int32  `thrift:"retryCount,5" form:"retryCount" json:"retryCount" query:"retryCount"`
+	Status        string `thrift:"status,6" form:"status" json:"status" query:"status"`
+	TriggeredAt   string `thrift:"triggeredAt,7" form:"triggeredAt" json:"triggeredAt" query:"triggeredAt"`
+	FinishedAt    string `thrift:"finishedAt,8" form:"finishedAt" json:"finishedAt" query:"finishedAt"`
+	Output        string `thrift:"output,9" form:"output" json:"output" query:"output"`
+	Error         string `thrift:"error,10" form:"error" json:"error" query:"error"`
+	JobName       string `thrift:"jobName,11" form:"jobName" json:"jobName" query:"jobName"`
+	ParamsJson    string `thrift:"paramsJson,12" form:"paramsJson" json:"paramsJson" query:"paramsJson"`
+	TimeoutSec    int32  `thrift:"timeoutSec,13" form:"timeoutSec" json:"timeoutSec" query:"timeoutSec"`
+	ConfigVersion int32  `thrift:"configVersion,14" form:"configVersion" json:"configVersion" query:"configVersion"`
 }
 
 func NewSchedulerJobRunDTO() *SchedulerJobRunDTO {
@@ -1632,6 +1636,22 @@ func (p *SchedulerJobRunDTO) GetError() (v string) {
 	return p.Error
 }
 
+func (p *SchedulerJobRunDTO) GetJobName() (v string) {
+	return p.JobName
+}
+
+func (p *SchedulerJobRunDTO) GetParamsJson() (v string) {
+	return p.ParamsJson
+}
+
+func (p *SchedulerJobRunDTO) GetTimeoutSec() (v int32) {
+	return p.TimeoutSec
+}
+
+func (p *SchedulerJobRunDTO) GetConfigVersion() (v int32) {
+	return p.ConfigVersion
+}
+
 var fieldIDToName_SchedulerJobRunDTO = map[int16]string{
 	1:  "id",
 	2:  "jobId",
@@ -1643,6 +1663,10 @@ var fieldIDToName_SchedulerJobRunDTO = map[int16]string{
 	8:  "finishedAt",
 	9:  "output",
 	10: "error",
+	11: "jobName",
+	12: "paramsJson",
+	13: "timeoutSec",
+	14: "configVersion",
 }
 
 func (p *SchedulerJobRunDTO) Read(iprot thrift.TProtocol) (err error) {
@@ -1739,6 +1763,38 @@ func (p *SchedulerJobRunDTO) Read(iprot thrift.TProtocol) (err error) {
 		case 10:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField10(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 11:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField11(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 12:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField12(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 13:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField13(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 14:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField14(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1883,6 +1939,50 @@ func (p *SchedulerJobRunDTO) ReadField10(iprot thrift.TProtocol) error {
 	p.Error = _field
 	return nil
 }
+func (p *SchedulerJobRunDTO) ReadField11(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.JobName = _field
+	return nil
+}
+func (p *SchedulerJobRunDTO) ReadField12(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ParamsJson = _field
+	return nil
+}
+func (p *SchedulerJobRunDTO) ReadField13(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.TimeoutSec = _field
+	return nil
+}
+func (p *SchedulerJobRunDTO) ReadField14(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ConfigVersion = _field
+	return nil
+}
 
 func (p *SchedulerJobRunDTO) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -1928,6 +2028,22 @@ func (p *SchedulerJobRunDTO) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField10(oprot); err != nil {
 			fieldId = 10
+			goto WriteFieldError
+		}
+		if err = p.writeField11(oprot); err != nil {
+			fieldId = 11
+			goto WriteFieldError
+		}
+		if err = p.writeField12(oprot); err != nil {
+			fieldId = 12
+			goto WriteFieldError
+		}
+		if err = p.writeField13(oprot); err != nil {
+			fieldId = 13
+			goto WriteFieldError
+		}
+		if err = p.writeField14(oprot); err != nil {
+			fieldId = 14
 			goto WriteFieldError
 		}
 	}
@@ -2116,6 +2232,74 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
+}
+
+func (p *SchedulerJobRunDTO) writeField11(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("jobName", thrift.STRING, 11); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.JobName); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
+}
+
+func (p *SchedulerJobRunDTO) writeField12(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("paramsJson", thrift.STRING, 12); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.ParamsJson); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
+}
+
+func (p *SchedulerJobRunDTO) writeField13(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("timeoutSec", thrift.I32, 13); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.TimeoutSec); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
+}
+
+func (p *SchedulerJobRunDTO) writeField14(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("configVersion", thrift.I32, 14); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.ConfigVersion); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
 }
 
 func (p *SchedulerJobRunDTO) String() string {
@@ -3666,6 +3850,10 @@ type SystemSchedulerController interface {
 
 	RunLogStream(ctx context.Context, req *SchedulerJobRunLogListRequest) (r *SchedulerJobRunLogListResponse, err error)
 
+	RunRetry(ctx context.Context, req *SchedulerJobIDRequest) (r int32, err error)
+
+	RunStop(ctx context.Context, req *SchedulerJobIDRequest) (r int32, err error)
+
 	JobKeys(ctx context.Context) (r *SchedulerJobKeysResponse, err error)
 }
 
@@ -3785,6 +3973,24 @@ func (p *SystemSchedulerControllerClient) RunLogStream(ctx context.Context, req 
 	}
 	return _result.GetSuccess(), nil
 }
+func (p *SystemSchedulerControllerClient) RunRetry(ctx context.Context, req *SchedulerJobIDRequest) (r int32, err error) {
+	var _args SystemSchedulerControllerRunRetryArgs
+	_args.Req = req
+	var _result SystemSchedulerControllerRunRetryResult
+	if err = p.Client_().Call(ctx, "RunRetry", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+func (p *SystemSchedulerControllerClient) RunStop(ctx context.Context, req *SchedulerJobIDRequest) (r int32, err error) {
+	var _args SystemSchedulerControllerRunStopArgs
+	_args.Req = req
+	var _result SystemSchedulerControllerRunStopResult
+	if err = p.Client_().Call(ctx, "RunStop", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
 func (p *SystemSchedulerControllerClient) JobKeys(ctx context.Context) (r *SchedulerJobKeysResponse, err error) {
 	var _args SystemSchedulerControllerJobKeysArgs
 	var _result SystemSchedulerControllerJobKeysResult
@@ -3824,6 +4030,8 @@ func NewSystemSchedulerControllerProcessor(handler SystemSchedulerController) *S
 	self.AddToProcessorMap("RunList", &systemSchedulerControllerProcessorRunList{handler: handler})
 	self.AddToProcessorMap("RunLogList", &systemSchedulerControllerProcessorRunLogList{handler: handler})
 	self.AddToProcessorMap("RunLogStream", &systemSchedulerControllerProcessorRunLogStream{handler: handler})
+	self.AddToProcessorMap("RunRetry", &systemSchedulerControllerProcessorRunRetry{handler: handler})
+	self.AddToProcessorMap("RunStop", &systemSchedulerControllerProcessorRunStop{handler: handler})
 	self.AddToProcessorMap("JobKeys", &systemSchedulerControllerProcessorJobKeys{handler: handler})
 	return self
 }
@@ -4308,6 +4516,102 @@ func (p *systemSchedulerControllerProcessorRunLogStream) Process(ctx context.Con
 		result.Success = retval
 	}
 	if err2 = oprot.WriteMessageBegin("RunLogStream", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type systemSchedulerControllerProcessorRunRetry struct {
+	handler SystemSchedulerController
+}
+
+func (p *systemSchedulerControllerProcessorRunRetry) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := SystemSchedulerControllerRunRetryArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("RunRetry", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := SystemSchedulerControllerRunRetryResult{}
+	var retval int32
+	if retval, err2 = p.handler.RunRetry(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing RunRetry: "+err2.Error())
+		oprot.WriteMessageBegin("RunRetry", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = &retval
+	}
+	if err2 = oprot.WriteMessageBegin("RunRetry", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 = result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type systemSchedulerControllerProcessorRunStop struct {
+	handler SystemSchedulerController
+}
+
+func (p *systemSchedulerControllerProcessorRunStop) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := SystemSchedulerControllerRunStopArgs{}
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("RunStop", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return false, err
+	}
+
+	iprot.ReadMessageEnd()
+	var err2 error
+	result := SystemSchedulerControllerRunStopResult{}
+	var retval int32
+	if retval, err2 = p.handler.RunStop(ctx, args.Req); err2 != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing RunStop: "+err2.Error())
+		oprot.WriteMessageBegin("RunStop", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush(ctx)
+		return true, err2
+	} else {
+		result.Success = &retval
+	}
+	if err2 = oprot.WriteMessageBegin("RunStop", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -7319,6 +7623,600 @@ func (p *SystemSchedulerControllerRunLogStreamResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("SystemSchedulerControllerRunLogStreamResult(%+v)", *p)
+
+}
+
+type SystemSchedulerControllerRunRetryArgs struct {
+	Req *SchedulerJobIDRequest `thrift:"req,1"`
+}
+
+func NewSystemSchedulerControllerRunRetryArgs() *SystemSchedulerControllerRunRetryArgs {
+	return &SystemSchedulerControllerRunRetryArgs{}
+}
+
+func (p *SystemSchedulerControllerRunRetryArgs) InitDefault() {
+}
+
+var SystemSchedulerControllerRunRetryArgs_Req_DEFAULT *SchedulerJobIDRequest
+
+func (p *SystemSchedulerControllerRunRetryArgs) GetReq() (v *SchedulerJobIDRequest) {
+	if !p.IsSetReq() {
+		return SystemSchedulerControllerRunRetryArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_SystemSchedulerControllerRunRetryArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *SystemSchedulerControllerRunRetryArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *SystemSchedulerControllerRunRetryArgs) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemSchedulerControllerRunRetryArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunRetryArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewSchedulerJobIDRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *SystemSchedulerControllerRunRetryArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("RunRetry_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunRetryArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunRetryArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("SystemSchedulerControllerRunRetryArgs(%+v)", *p)
+
+}
+
+type SystemSchedulerControllerRunRetryResult struct {
+	Success *int32 `thrift:"success,0,optional"`
+}
+
+func NewSystemSchedulerControllerRunRetryResult() *SystemSchedulerControllerRunRetryResult {
+	return &SystemSchedulerControllerRunRetryResult{}
+}
+
+func (p *SystemSchedulerControllerRunRetryResult) InitDefault() {
+}
+
+var SystemSchedulerControllerRunRetryResult_Success_DEFAULT int32
+
+func (p *SystemSchedulerControllerRunRetryResult) GetSuccess() (v int32) {
+	if !p.IsSetSuccess() {
+		return SystemSchedulerControllerRunRetryResult_Success_DEFAULT
+	}
+	return *p.Success
+}
+
+var fieldIDToName_SystemSchedulerControllerRunRetryResult = map[int16]string{
+	0: "success",
+}
+
+func (p *SystemSchedulerControllerRunRetryResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *SystemSchedulerControllerRunRetryResult) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemSchedulerControllerRunRetryResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunRetryResult) ReadField0(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *SystemSchedulerControllerRunRetryResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("RunRetry_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunRetryResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.Success); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunRetryResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("SystemSchedulerControllerRunRetryResult(%+v)", *p)
+
+}
+
+type SystemSchedulerControllerRunStopArgs struct {
+	Req *SchedulerJobIDRequest `thrift:"req,1"`
+}
+
+func NewSystemSchedulerControllerRunStopArgs() *SystemSchedulerControllerRunStopArgs {
+	return &SystemSchedulerControllerRunStopArgs{}
+}
+
+func (p *SystemSchedulerControllerRunStopArgs) InitDefault() {
+}
+
+var SystemSchedulerControllerRunStopArgs_Req_DEFAULT *SchedulerJobIDRequest
+
+func (p *SystemSchedulerControllerRunStopArgs) GetReq() (v *SchedulerJobIDRequest) {
+	if !p.IsSetReq() {
+		return SystemSchedulerControllerRunStopArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+var fieldIDToName_SystemSchedulerControllerRunStopArgs = map[int16]string{
+	1: "req",
+}
+
+func (p *SystemSchedulerControllerRunStopArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *SystemSchedulerControllerRunStopArgs) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemSchedulerControllerRunStopArgs[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunStopArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewSchedulerJobIDRequest()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.Req = _field
+	return nil
+}
+
+func (p *SystemSchedulerControllerRunStopArgs) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("RunStop_args"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunStopArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.Req.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunStopArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("SystemSchedulerControllerRunStopArgs(%+v)", *p)
+
+}
+
+type SystemSchedulerControllerRunStopResult struct {
+	Success *int32 `thrift:"success,0,optional"`
+}
+
+func NewSystemSchedulerControllerRunStopResult() *SystemSchedulerControllerRunStopResult {
+	return &SystemSchedulerControllerRunStopResult{}
+}
+
+func (p *SystemSchedulerControllerRunStopResult) InitDefault() {
+}
+
+var SystemSchedulerControllerRunStopResult_Success_DEFAULT int32
+
+func (p *SystemSchedulerControllerRunStopResult) GetSuccess() (v int32) {
+	if !p.IsSetSuccess() {
+		return SystemSchedulerControllerRunStopResult_Success_DEFAULT
+	}
+	return *p.Success
+}
+
+var fieldIDToName_SystemSchedulerControllerRunStopResult = map[int16]string{
+	0: "success",
+}
+
+func (p *SystemSchedulerControllerRunStopResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *SystemSchedulerControllerRunStopResult) Read(iprot thrift.TProtocol) (err error) {
+
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 0:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField0(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_SystemSchedulerControllerRunStopResult[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunStopResult) ReadField0(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Success = _field
+	return nil
+}
+
+func (p *SystemSchedulerControllerRunStopResult) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("RunStop_result"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField0(oprot); err != nil {
+			fieldId = 0
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunStopResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSuccess() {
+		if err = oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.Success); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
+}
+
+func (p *SystemSchedulerControllerRunStopResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("SystemSchedulerControllerRunStopResult(%+v)", *p)
 
 }
 

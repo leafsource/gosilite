@@ -26,7 +26,7 @@ func save(r *apiModel.SchedulerJobSaveRequest) *dalModel.SystemJob {
 }
 
 func runDTO(x *dalModel.SystemJobRun) *apiModel.SchedulerJobRunDTO {
-	z := &apiModel.SchedulerJobRunDTO{ID: x.ID, JobId: x.JobID, JobKey: x.JobKey, Trigger: x.Trigger, RetryCount: x.Attempt - 1, Status: x.Status, TriggeredAt: x.TriggeredAt.Format(time.RFC3339), Output: x.Output, Error: x.Error}
+	z := &apiModel.SchedulerJobRunDTO{ID: x.ID, JobId: x.JobID, JobKey: x.JobKey, Trigger: x.Trigger, RetryCount: x.Attempt - 1, Status: x.Status, TriggeredAt: x.TriggeredAt.Format(time.RFC3339), Output: x.Output, Error: x.Error, JobName: x.JobName, ParamsJson: x.ParamsJSON, TimeoutSec: x.TimeoutSec, ConfigVersion: x.ConfigVersion}
 	if x.FinishedAt != nil {
 		z.FinishedAt = x.FinishedAt.Format(time.RFC3339)
 	}
@@ -188,6 +188,46 @@ func JobRun(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	if err := svc.SystemSchedulerSVC.Run(ctx, r.ID); err != nil {
+		R.Error(ctx, c, err)
+		return
+	}
+	R.SuccessWithData(ctx, c, int32(1))
+}
+
+// RunRetry 使用运行快照重试定时任务
+// @Summary 重试定时任务运行
+// @Tags 监控
+// @Produce json
+// @Param data body apiModel.SchedulerJobIDRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/scheduler/run/retry [POST]
+func RunRetry(ctx context.Context, c *app.RequestContext) {
+	var r apiModel.SchedulerJobIDRequest
+	if err := c.BindAndValidate(&r); err != nil {
+		R.InvalidParamRequestResponse(c, err.Error())
+		return
+	}
+	if err := svc.SystemSchedulerSVC.Retry(ctx, r.ID); err != nil {
+		R.Error(ctx, c, err)
+		return
+	}
+	R.SuccessWithData(ctx, c, int32(1))
+}
+
+// RunStop 协作停止定时任务运行
+// @Summary 停止定时任务运行
+// @Tags 监控
+// @Produce json
+// @Param data body apiModel.SchedulerJobIDRequest true "请求参数"
+// @Success 200 {object} map[string]interface{}
+// @Router /system/scheduler/run/stop [POST]
+func RunStop(ctx context.Context, c *app.RequestContext) {
+	var r apiModel.SchedulerJobIDRequest
+	if err := c.BindAndValidate(&r); err != nil {
+		R.InvalidParamRequestResponse(c, err.Error())
+		return
+	}
+	if err := svc.SystemSchedulerSVC.Stop(ctx, r.ID); err != nil {
 		R.Error(ctx, c, err)
 		return
 	}

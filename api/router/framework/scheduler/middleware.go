@@ -62,3 +62,7 @@ func _logMw() []app.HandlerFunc {
 func _runloglistMw() []app.HandlerFunc { return permission.HPermissions("system:scheduler:list") }
 
 func _runlogstreamMw() []app.HandlerFunc { return permission.HPermissions("system:scheduler:list") }
+
+func _runretryMw() []app.HandlerFunc { return permission.HPermissions("system:scheduler:run") }
+
+func _runstopMw() []app.HandlerFunc { return permission.HPermissions("system:scheduler:run") }

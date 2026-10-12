@@ -3119,6 +3119,101 @@ paths:
       summary: 定时任务运行记录
       tags:
       - 监控
+  /system/scheduler/run/log/list:
+    get:
+      parameters:
+      - example: "0"
+        in: query
+        name: afterId
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - example: "0"
+        in: query
+        name: runId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 定时任务执行日志
+      tags:
+      - 监控
+  /system/scheduler/run/log/stream:
+    get:
+      parameters:
+      - example: "0"
+        in: query
+        name: afterId
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: pageSize
+        type: integer
+      - example: "0"
+        in: query
+        name: runId
+        type: string
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: 定时任务执行日志实时订阅
+      tags:
+      - 监控
+  /system/scheduler/run/retry:
+    post:
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/scheduler.SchedulerJobIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 重试定时任务运行
+      tags:
+      - 监控
+  /system/scheduler/run/stop:
+    post:
+      parameters:
+      - description: 请求参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/scheduler.SchedulerJobIDRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 停止定时任务运行
+      tags:
+      - 监控
   /system/user:
     delete:
       description: 用户接口

@@ -8,56 +8,21 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cloudwego/hertz/pkg/common/hlog"
 	"github.com/robfig/cron/v3"
 	"gosilite/application/framework/dal/model"
 	"gosilite/application/framework/dal/repository"
+	"gosilite/application/framework/jobs"
 	core "gosilite/application/framework/scheduler"
 	"gosilite/conf"
+	"gosilite/types/jobkeys"
 )
 
 var SystemSchedulerSVC *Service
 
 const (
-	TestJobKey       = "system.scheduler.test"
-	LogCleanupJobKey = "system.scheduler.log_cleanup"
+	TestJobKey       = jobkeys.SchedulerTest
+	LogCleanupJobKey = jobkeys.SchedulerLogCleanup
 )
-
-type testJob struct{}
-
-type logCleanupStore interface {
-	DeleteRunLogsBefore(context.Context, time.Time) (int64, error)
-}
-
-type logCleanupJob struct {
-	repo          logCleanupStore
-	retentionDays int
-}
-
-func (logCleanupJob) Key() string { return LogCleanupJobKey }
-
-func (j logCleanupJob) Run(ctx context.Context, _ string) (string, error) {
-	cutoff := time.Now().AddDate(0, 0, -j.retentionDays)
-	deleted, err := j.repo.DeleteRunLogsBefore(ctx, cutoff)
-	if err != nil {
-		return "", err
-	}
-	message := fmt.Sprintf("deleted %d execution logs older than %d days", deleted, j.retentionDays)
-	hlog.Infof("[scheduler] %s", message)
-	core.Info(ctx, "cleanup", "%s", message)
-	return message, nil
-}
-
-func (testJob) Key() string { return TestJobKey }
-func (testJob) Run(ctx context.Context, params string) (string, error) {
-	select {
-	case <-ctx.Done():
-		return "", ctx.Err()
-	default:
-	}
-	core.Info(ctx, "execute", "built-in scheduler test executed")
-	return "scheduler test executed", nil
-}
 
 type Service struct {
 	repo     repository.SchedulerRepository
@@ -78,8 +43,8 @@ func NewServiceWithRetention(repo repository.SchedulerRepository, cacheLease cor
 		retentionDays = 30
 	}
 	r := core.NewRegistry()
-	_ = r.Register(testJob{})
-	_ = r.Register(logCleanupJob{repo: repo, retentionDays: retentionDays})
+	_ = r.Register(jobs.SchedulerTest{})
+	_ = r.Register(jobs.SchedulerLogCleanup{Repo: repo, RetentionDays: retentionDays})
 	logs := core.NewLogSink(repo)
 	executor := core.NewExecutor(r, cacheLease, repo, time.Minute)
 	executor.SetLogSink(logs)
@@ -161,6 +126,29 @@ func (s *Service) Run(ctx context.Context, id int64) error {
 	}
 	return s.executor.Execute(ctx, toDef(m), "manual")
 }
+
+func (s *Service) Retry(ctx context.Context, runID int64) error {
+	run, err := s.repo.GetRun(ctx, runID)
+	if err != nil {
+		return err
+	}
+	if run.Status == core.RunStatusRunning || run.Status == core.RunStatusStopping {
+		return fmt.Errorf("scheduler run is still active")
+	}
+	return s.executor.Execute(ctx, core.Definition{ID: run.JobID, JobKey: run.JobKey, JobName: run.JobName, ParamsJSON: run.ParamsJSON, Timeout: time.Duration(run.TimeoutSec) * time.Second, ConfigVersion: run.ConfigVersion}, "manual")
+}
+
+func (s *Service) Stop(ctx context.Context, runID int64) error {
+	stopped, err := s.executor.Stop(ctx, runID)
+	if err != nil {
+		return err
+	}
+	if !stopped {
+		return fmt.Errorf("scheduler run is not running")
+	}
+	return nil
+}
+
 func (s *Service) Runs(ctx context.Context, id int64, p, n int) ([]*model.SystemJobRun, int64, error) {
 	return s.repo.ListRuns(ctx, id, p, n)
 }
@@ -228,5 +216,5 @@ func (s *Service) validate(m *model.SystemJob) error {
 	return err
 }
 func toDef(m *model.SystemJob) core.Definition {
-	return core.Definition{ID: m.ID, JobKey: m.JobKey, Timeout: time.Duration(m.TimeoutSec) * time.Second, RetryCount: int(m.RetryCount), ParamsJSON: m.ParamsJSON}
+	return core.Definition{ID: m.ID, JobKey: m.JobKey, JobName: m.JobName, Timeout: time.Duration(m.TimeoutSec) * time.Second, RetryCount: int(m.RetryCount), ParamsJSON: m.ParamsJSON, ConfigVersion: m.ConfigVersion}
 }

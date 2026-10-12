@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/common/hlog"
@@ -13,6 +14,9 @@ import (
 )
 
 const (
+	RunStatusRunning       = "running"
+	RunStatusStopping      = "stopping"
+	RunStatusStopped       = "stopped"
 	RunStatusSucceeded     = "succeeded"
 	RunStatusFailed        = "failed"
 	RunStatusTimedOut      = "timed_out"
@@ -20,24 +24,30 @@ const (
 )
 
 type Definition struct {
-	ID         int64
-	JobKey     string
-	Timeout    time.Duration
-	RetryCount int
-	ParamsJSON string
+	ID            int64
+	JobKey        string
+	Timeout       time.Duration
+	RetryCount    int
+	ParamsJSON    string
+	JobName       string
+	ConfigVersion int32
 }
 
 type Run struct {
-	ID          int64
-	JobID       int64
-	JobKey      string
-	Trigger     string
-	Attempt     int
-	Status      string
-	TriggeredAt time.Time
-	FinishedAt  time.Time
-	Output      string
-	Error       string
+	ID            int64
+	JobID         int64
+	JobKey        string
+	Trigger       string
+	Attempt       int
+	Status        string
+	TriggeredAt   time.Time
+	FinishedAt    time.Time
+	Output        string
+	Error         string
+	JobName       string
+	ParamsJSON    string
+	TimeoutSec    int32
+	ConfigVersion int32
 }
 
 type RunRepository interface {
@@ -45,15 +55,22 @@ type RunRepository interface {
 	ClearActiveRun(context.Context, int64, string) (bool, error)
 	CreateRun(context.Context, *Run) (int64, error)
 	FinishRun(context.Context, *Run) error
+	RequestStopRun(context.Context, int64) (bool, error)
+	IsRunStopping(context.Context, int64) (bool, error)
 }
 
+const durableStopPollInterval = time.Second
+
 type Executor struct {
-	registry *Registry
-	leases   LeaseStore
-	runs     RunRepository
-	logs     *LogSink
-	leaseTTL time.Duration
-	now      func() time.Time
+	registry         *Registry
+	leases           LeaseStore
+	runs             RunRepository
+	logs             *LogSink
+	leaseTTL         time.Duration
+	stopPollInterval time.Duration
+	now              func() time.Time
+	mu               sync.Mutex
+	cancels          map[int64]context.CancelFunc
 }
 
 type jobResult struct {
@@ -65,10 +82,36 @@ func NewExecutor(registry *Registry, leases LeaseStore, runs RunRepository, leas
 	if leaseTTL <= 0 {
 		leaseTTL = time.Minute
 	}
-	return &Executor{registry: registry, leases: leases, runs: runs, leaseTTL: leaseTTL, now: time.Now}
+	return &Executor{registry: registry, leases: leases, runs: runs, leaseTTL: leaseTTL, stopPollInterval: durableStopPollInterval, now: time.Now, cancels: map[int64]context.CancelFunc{}}
 }
 
 func (e *Executor) SetLogSink(logs *LogSink) { e.logs = logs }
+
+func (e *Executor) Stop(ctx context.Context, runID int64) (bool, error) {
+	stopped, err := e.runs.RequestStopRun(ctx, runID)
+	if err != nil || !stopped {
+		return stopped, err
+	}
+	e.mu.Lock()
+	cancel := e.cancels[runID]
+	e.mu.Unlock()
+	if cancel != nil {
+		cancel()
+	}
+	return true, nil
+}
+
+func (e *Executor) registerCancel(runID int64, cancel context.CancelFunc) {
+	e.mu.Lock()
+	e.cancels[runID] = cancel
+	e.mu.Unlock()
+}
+
+func (e *Executor) clearCancel(runID int64) {
+	e.mu.Lock()
+	delete(e.cancels, runID)
+	e.mu.Unlock()
+}
 
 func (e *Executor) log(run *Run, level, stage, format string, args ...any) {
 	message := fmt.Sprintf(format, args...)
@@ -93,7 +136,7 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 	attempts := def.RetryCount + 1
 	var lastErr error
 	for attempt := 1; attempt <= attempts; attempt++ {
-		run := &Run{JobID: def.ID, JobKey: def.JobKey, Trigger: trigger, Attempt: attempt, TriggeredAt: e.now()}
+		run := &Run{JobID: def.ID, JobKey: def.JobKey, Trigger: trigger, Attempt: attempt, Status: RunStatusRunning, TriggeredAt: e.now(), JobName: def.JobName, ParamsJSON: def.ParamsJSON, TimeoutSec: int32(def.Timeout / time.Second), ConfigVersion: def.ConfigVersion}
 		runID, err := e.runs.CreateRun(ctx, run)
 		if err != nil {
 			return err
@@ -138,6 +181,25 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 		if pending {
 			return runErr
 		}
+		if errors.Is(runErr, context.Canceled) {
+			stopping, err := e.runs.IsRunStopping(context.Background(), run.ID)
+			if err != nil {
+				return err
+			}
+			if stopping {
+				run.Status = RunStatusStopped
+				run.Error = ""
+				run.Output = output
+				run.FinishedAt = e.now()
+				e.log(run, "info", "finish", "run stopped cooperatively")
+				if err := e.runs.FinishRun(ctx, run); err != nil {
+					return err
+				}
+				_, _ = lease.Release(context.Background())
+				_, err := e.runs.ClearActiveRun(context.Background(), def.ID, activeToken)
+				return err
+			}
+		}
 		_, releaseErr := lease.Release(context.Background())
 		run.Output, run.FinishedAt = output, e.now()
 		if runErr == nil {
@@ -171,6 +233,15 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 
 func (e *Executor) runWithRenewal(ctx context.Context, job Job, def Definition, lease *Lease, run *Run, activeToken string) (string, error, bool) {
 	jobCtx, cancel := context.WithTimeout(ctx, def.Timeout)
+	stopping, err := e.runs.IsRunStopping(ctx, run.ID)
+	if err != nil {
+		cancel()
+		return "", err, false
+	}
+	if stopping {
+		cancel()
+	}
+	e.registerCancel(run.ID, cancel)
 	jobCtx = WithRunLogger(jobCtx, e.logs, run.ID, run.JobKey)
 	e.log(run, "info", "execute", "job execution started")
 	finished := make(chan jobResult, 1)
@@ -184,19 +255,35 @@ func (e *Executor) runWithRenewal(ctx context.Context, job Job, def Definition, 
 		})).Run()
 		finished <- result
 	}()
-	ticker := time.NewTicker(e.leaseTTL / 2)
-	defer ticker.Stop()
+	renewTicker := time.NewTicker(e.leaseTTL / 2)
+	defer renewTicker.Stop()
+	stopPollTicker := time.NewTicker(e.stopPollInterval)
+	defer stopPollTicker.Stop()
 	for {
 		select {
 		case result := <-finished:
 			cancel()
+			e.clearCancel(run.ID)
 			return result.output, result.err, false
 		case <-jobCtx.Done():
 			cancel()
+			e.clearCancel(run.ID)
+			if errors.Is(jobCtx.Err(), context.Canceled) {
+				e.log(run, "info", "execute", "stop requested; awaiting worker exit")
+				e.finishPendingRun(run, def.ID, activeToken, lease, finished, context.Canceled)
+				return "", context.Canceled, true
+			}
 			e.log(run, "error", "execute", "job context ended: %v", jobCtx.Err())
 			e.finishPendingRun(run, def.ID, activeToken, lease, finished, jobCtx.Err())
 			return "", jobCtx.Err(), true
-		case <-ticker.C:
+		case <-stopPollTicker.C:
+			stopping, err := e.runs.IsRunStopping(context.Background(), run.ID)
+			if err != nil {
+				e.log(run, "warn", "execute", "durable stop status poll failed: %v", err)
+			} else if stopping {
+				cancel()
+			}
+		case <-renewTicker.C:
 			ok, err := lease.Renew(ctx)
 			if err != nil || !ok {
 				cancel()
@@ -220,8 +307,14 @@ func (e *Executor) finishPendingRun(run *Run, jobID int64, activeToken string, l
 			select {
 			case result := <-finished:
 				_, _ = lease.Release(context.Background())
-				e.log(run, "error", "finish", "worker exited after terminal state: %v", terminalErr)
-				run.Output, run.Status, run.Error, run.FinishedAt = result.output, statusForError(terminalErr), terminalErr.Error(), e.now()
+				stopping, _ := e.runs.IsRunStopping(context.Background(), run.ID)
+				if errors.Is(terminalErr, context.Canceled) && stopping {
+					e.log(run, "info", "finish", "worker stopped cooperatively")
+					run.Output, run.Status, run.Error, run.FinishedAt = result.output, RunStatusStopped, "", e.now()
+				} else {
+					e.log(run, "error", "finish", "worker exited after terminal state: %v", terminalErr)
+					run.Output, run.Status, run.Error, run.FinishedAt = result.output, statusForError(terminalErr), terminalErr.Error(), e.now()
+				}
 				_ = e.runs.FinishRun(context.Background(), run)
 				_, _ = e.runs.ClearActiveRun(context.Background(), jobID, activeToken)
 				return

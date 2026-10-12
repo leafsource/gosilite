@@ -36,6 +36,10 @@ struct SchedulerJobRunDTO {
   8: string finishedAt
   9: string output
   10: string error
+  11: string jobName
+  12: string paramsJson
+  13: i32 timeoutSec
+  14: i32 configVersion
 }
 struct SchedulerJobRunListRequest { 1: i64 jobId (go.tag = "json:\"jobId,string\""), 2: i32 page = 1, 3: i32 pageSize = 10 }
 struct SchedulerJobRunListResponse { 1: list<SchedulerJobRunDTO> list, 2: i64 total }
@@ -68,5 +72,7 @@ service SystemSchedulerController {
   SchedulerJobRunListResponse RunList(1: SchedulerJobRunListRequest req)(api.get = "/system/scheduler/run/list")
   SchedulerJobRunLogListResponse RunLogList(1: SchedulerJobRunLogListRequest req)(api.get = "/system/scheduler/run/log/list")
   SchedulerJobRunLogListResponse RunLogStream(1: SchedulerJobRunLogListRequest req)(api.get = "/system/scheduler/run/log/stream")
+  i32 RunRetry(1: SchedulerJobIDRequest req)(api.post = "/system/scheduler/run/retry")
+  i32 RunStop(1: SchedulerJobIDRequest req)(api.post = "/system/scheduler/run/stop")
   SchedulerJobKeysResponse JobKeys()(api.get = "/system/scheduler/job/keys")
 }

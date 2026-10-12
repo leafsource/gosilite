@@ -59,6 +59,29 @@ type testRuns struct {
 	activeRunTokens map[int64]string
 }
 
+func (r *testRuns) RequestStopRun(_ context.Context, runID int64) (bool, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, run := range r.runs {
+		if run.ID == runID && run.Status == RunStatusRunning {
+			run.Status = RunStatusStopping
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (r *testRuns) IsRunStopping(_ context.Context, runID int64) (bool, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, run := range r.runs {
+		if run.ID == runID {
+			return run.Status == RunStatusStopping, nil
+		}
+	}
+	return false, nil
+}
+
 func (r *testRuns) ClaimActiveRun(_ context.Context, jobID int64, token string) (bool, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -123,7 +146,7 @@ func TestExecutorRetriesFailure(t *testing.T) {
 	}})
 	runs := &testRuns{}
 	e := NewExecutor(r, &testLease{}, runs, time.Second)
-	if err := e.Execute(context.Background(), Definition{ID: 1, JobKey: "system.scheduler.test", Timeout: time.Second, RetryCount: 1}, "manual"); err != nil {
+	if err := e.Execute(context.Background(), Definition{ID: 1, JobKey: "system.scheduler.test", JobName: "original", ParamsJSON: `{"value":1}`, Timeout: time.Second, RetryCount: 1, ConfigVersion: 7}, "manual"); err != nil {
 		t.Fatal(err)
 	}
 	if len(runs.runs) != 2 || runs.runs[0].Status != RunStatusFailed || runs.runs[1].Status != RunStatusSucceeded {
@@ -134,6 +157,11 @@ func TestExecutorRetriesFailure(t *testing.T) {
 	}
 	if len(runs.finished) != 2 || runs.finished[0] != runs.runs[0].ID || runs.finished[1] != runs.runs[1].ID {
 		t.Fatalf("finish must target created IDs: finished=%v runs=%+v", runs.finished, runs.runs)
+	}
+	for _, run := range runs.runs {
+		if run.JobName != "original" || run.ParamsJSON != `{"value":1}` || run.TimeoutSec != 1 || run.ConfigVersion != 7 {
+			t.Fatalf("run snapshot = %+v", run)
+		}
 	}
 }
 func TestExecutorPersistsCronWrapperPanicUnderRun(t *testing.T) {
@@ -248,6 +276,119 @@ func TestExecutorLeaseRenewalLossRetainsDurableFenceUntilWorkerExits(t *testing.
 		select {
 		case <-deadline:
 			t.Fatalf("active fence was not cleared after worker exit: finished=%d activeToken=%q", finished, activeToken)
+		case <-time.After(time.Millisecond):
+		}
+	}
+}
+
+func TestExecutorStopCancelsWorkerAndPreservesFenceUntilExit(t *testing.T) {
+	r := NewRegistry()
+	started := make(chan struct{})
+	exit := make(chan struct{})
+	_ = r.Register(testJob{"system.scheduler.test", func(ctx context.Context, _ string) (string, error) {
+		close(started)
+		<-ctx.Done()
+		<-exit
+		return "stopped", ctx.Err()
+	}})
+	runs := &testRuns{}
+	e := NewExecutor(r, &testLease{}, runs, time.Second)
+	finished := make(chan error, 1)
+	go func() {
+		finished <- e.Execute(context.Background(), Definition{ID: 1, JobKey: "system.scheduler.test", Timeout: time.Minute}, "manual")
+	}()
+	<-started
+	if stopped, err := e.Stop(context.Background(), 100); err != nil || !stopped {
+		t.Fatalf("stop = %v, %v", stopped, err)
+	}
+	if err := e.Execute(context.Background(), Definition{ID: 1, JobKey: "system.scheduler.test", Timeout: time.Second}, "manual"); err != nil {
+		t.Fatal(err)
+	}
+	runs.mu.Lock()
+	status, token := runs.runs[1].Status, runs.activeRunTokens[1]
+	runs.mu.Unlock()
+	if status != RunStatusSkippedLocked || token == "" {
+		t.Fatalf("fence not retained: status=%s token=%q", status, token)
+	}
+	close(exit)
+	if err := <-finished; !errors.Is(err, context.Canceled) {
+		t.Fatalf("execute = %v", err)
+	}
+	deadline := time.After(time.Second)
+	for {
+		runs.mu.Lock()
+		status, token := runs.runs[0].Status, runs.activeRunTokens[1]
+		runs.mu.Unlock()
+		if status == RunStatusStopped && token == "" {
+			return
+		}
+		select {
+		case <-deadline:
+			t.Fatalf("run was not stopped and cleared: status=%s token=%q", status, token)
+		case <-time.After(time.Millisecond):
+		}
+	}
+}
+
+func TestExecutorCrossReplicaStopPollsDurableStatusBeforeLeaseRenewal(t *testing.T) {
+	r := NewRegistry()
+	started := make(chan struct{})
+	workerCanceled := make(chan struct{})
+	exit := make(chan struct{})
+	_ = r.Register(testJob{"system.scheduler.test", func(ctx context.Context, _ string) (string, error) {
+		close(started)
+		<-ctx.Done()
+		close(workerCanceled)
+		<-exit
+		return "stopped", ctx.Err()
+	}})
+	runs := &testRuns{}
+	leases := &testLease{}
+	e := NewExecutor(r, leases, runs, time.Minute)
+	e.stopPollInterval = time.Millisecond
+	finished := make(chan error, 1)
+	go func() {
+		finished <- e.Execute(context.Background(), Definition{ID: 1, JobKey: "system.scheduler.test", Timeout: time.Minute, RetryCount: 1}, "manual")
+	}()
+	<-started
+
+	// This executor represents another replica and has no local cancel registration for the run.
+	remote := NewExecutor(r, &testLease{}, runs, 10*time.Millisecond)
+	if stopped, err := remote.Stop(context.Background(), 100); err != nil || !stopped {
+		t.Fatalf("cross-replica stop = %v, %v", stopped, err)
+	}
+	select {
+	case <-workerCanceled:
+	case <-time.After(time.Second):
+		t.Fatal("worker context was not canceled after durable stop request")
+	}
+	if err := <-finished; !errors.Is(err, context.Canceled) {
+		t.Fatalf("execute = %v", err)
+	}
+	runs.mu.Lock()
+	runCount := len(runs.runs)
+	activeToken := runs.activeRunTokens[1]
+	runs.mu.Unlock()
+	leases.mu.Lock()
+	leaseHeld := leases.held
+	leases.mu.Unlock()
+	if runCount != 1 || activeToken == "" || !leaseHeld {
+		t.Fatalf("stopped worker must retain fence and lease without retry: runs=%d activeToken=%q leaseHeld=%v", runCount, activeToken, leaseHeld)
+	}
+
+	close(exit)
+	deadline := time.After(time.Second)
+	for {
+		runs.mu.Lock()
+		status := runs.runs[0].Status
+		activeToken := runs.activeRunTokens[1]
+		runs.mu.Unlock()
+		if status == RunStatusStopped && activeToken == "" {
+			return
+		}
+		select {
+		case <-deadline:
+			t.Fatalf("run was not finalized as stopped: status=%s activeToken=%q", status, activeToken)
 		case <-time.After(time.Millisecond):
 		}
 	}

@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"gosilite/application/framework/jobs"
 )
 
 type cleanupStore struct {
@@ -18,7 +20,7 @@ func (s *cleanupStore) DeleteRunLogsBefore(_ context.Context, before time.Time) 
 
 func TestLogCleanupJobDeletesExpiredLogsAndReportsCount(t *testing.T) {
 	store := &cleanupStore{deleted: 3}
-	job := logCleanupJob{repo: store, retentionDays: 14}
+	job := jobs.SchedulerLogCleanup{Repo: store, RetentionDays: 14}
 	before := time.Now().Add(-14 * 24 * time.Hour)
 
 	output, err := job.Run(context.Background(), "{}")

@@ -3962,6 +3962,155 @@ const docTemplate = `{
                 }
             }
         },
+        "/system/scheduler/run/log/list": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "监控"
+                ],
+                "summary": "定时任务执行日志",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "0",
+                        "name": "afterId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "0",
+                        "name": "runId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/scheduler/run/log/stream": {
+            "get": {
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "监控"
+                ],
+                "summary": "定时任务执行日志实时订阅",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "0",
+                        "name": "afterId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "0",
+                        "name": "runId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/system/scheduler/run/retry": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "监控"
+                ],
+                "summary": "重试定时任务运行",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/scheduler.SchedulerJobIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/system/scheduler/run/stop": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "监控"
+                ],
+                "summary": "停止定时任务运行",
+                "parameters": [
+                    {
+                        "description": "请求参数",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/scheduler.SchedulerJobIDRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/system/user": {
             "put": {
                 "description": "用户接口",

@@ -15,6 +15,9 @@ type SchedulerRepository interface {
 	SaveJob(context.Context, *model.SystemJob) error
 	DeleteJob(context.Context, int64) error
 	UpdateStatus(context.Context, int64, int16) error
+	GetRun(context.Context, int64) (*model.SystemJobRun, error)
+	RequestStopRun(context.Context, int64) (bool, error)
+	IsRunStopping(context.Context, int64) (bool, error)
 	ClaimActiveRun(context.Context, int64, string) (bool, error)
 	ClearActiveRun(context.Context, int64, string) (bool, error)
 	CreateRun(context.Context, *scheduler.Run) (int64, error)
@@ -54,18 +57,20 @@ func (r *schedulerRepository) GetJob(c context.Context, id int64) (*model.System
 
 func (r *schedulerRepository) SaveJob(c context.Context, m *model.SystemJob) error {
 	if m.ID == 0 {
+		m.ConfigVersion = 1
 		return r.db.WithContext(c).Create(m).Error
 	}
 	now := time.Now()
 	result := r.db.WithContext(c).Model(&model.SystemJob{}).Where("id = ?", m.ID).Updates(map[string]any{
-		"job_key":     m.JobKey,
-		"job_name":    m.JobName,
-		"cron":        m.Cron,
-		"timeout_sec": m.TimeoutSec,
-		"params_json": m.ParamsJSON,
-		"retry_count": m.RetryCount,
-		"status":      m.Status,
-		"updated_at":  now,
+		"job_key":        m.JobKey,
+		"job_name":       m.JobName,
+		"cron":           m.Cron,
+		"timeout_sec":    m.TimeoutSec,
+		"params_json":    m.ParamsJSON,
+		"retry_count":    m.RetryCount,
+		"status":         m.Status,
+		"config_version": gorm.Expr("config_version + 1"),
+		"updated_at":     now,
 	})
 	if result.Error != nil {
 		return result.Error
@@ -74,6 +79,7 @@ func (r *schedulerRepository) SaveJob(c context.Context, m *model.SystemJob) err
 		return gorm.ErrRecordNotFound
 	}
 	m.UpdatedAt = now
+	m.ConfigVersion++
 	return nil
 }
 
@@ -99,6 +105,23 @@ func (r *schedulerRepository) UpdateStatus(c context.Context, id int64, status i
 	return nil
 }
 
+func (r *schedulerRepository) GetRun(c context.Context, id int64) (*model.SystemJobRun, error) {
+	var m model.SystemJobRun
+	err := r.db.WithContext(c).First(&m, id).Error
+	return &m, err
+}
+
+func (r *schedulerRepository) RequestStopRun(c context.Context, id int64) (bool, error) {
+	result := r.db.WithContext(c).Model(&model.SystemJobRun{}).Where("id = ? AND status = ?", id, "running").Updates(map[string]any{"status": "stopping"})
+	return result.RowsAffected == 1, result.Error
+}
+
+func (r *schedulerRepository) IsRunStopping(c context.Context, id int64) (bool, error) {
+	var count int64
+	err := r.db.WithContext(c).Model(&model.SystemJobRun{}).Where("id = ? AND status = ?", id, "stopping").Count(&count).Error
+	return count == 1, err
+}
+
 func (r *schedulerRepository) ClaimActiveRun(c context.Context, id int64, token string) (bool, error) {
 	result := r.db.WithContext(c).Model(&model.SystemJob{}).Where("id = ? AND active_run_token = ?", id, "").Updates(map[string]any{"active_run_token": token, "updated_at": time.Now()})
 	return result.RowsAffected == 1, result.Error
@@ -110,7 +133,7 @@ func (r *schedulerRepository) ClearActiveRun(c context.Context, id int64, token 
 }
 
 func (r *schedulerRepository) CreateRun(c context.Context, x *scheduler.Run) (int64, error) {
-	m := &model.SystemJobRun{JobID: x.JobID, JobKey: x.JobKey, Trigger: x.Trigger, Attempt: int32(x.Attempt), Status: x.Status, TriggeredAt: x.TriggeredAt}
+	m := &model.SystemJobRun{JobID: x.JobID, JobKey: x.JobKey, Trigger: x.Trigger, Attempt: int32(x.Attempt), Status: x.Status, TriggeredAt: x.TriggeredAt, JobName: x.JobName, ParamsJSON: x.ParamsJSON, TimeoutSec: x.TimeoutSec, ConfigVersion: x.ConfigVersion}
 	if err := r.db.WithContext(c).Create(m).Error; err != nil {
 		return 0, err
 	}
