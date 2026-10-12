@@ -5,7 +5,6 @@ struct SchedulerJobDTO {
   2: string jobKey
   3: string jobName
   4: string cron
-  5: string timezone
   6: i32 timeoutSec
   7: string paramsJson
   8: i32 retryCount
@@ -18,7 +17,6 @@ struct SchedulerJobSaveRequest {
   2: string jobKey
   3: string jobName
   4: string cron
-  5: string timezone
   6: i32 timeoutSec
   7: string paramsJson
   8: i32 retryCount
@@ -32,9 +30,9 @@ struct SchedulerJobRunDTO {
   2: i64 jobId (go.tag = "json:\"jobId,string\"")
   3: string jobKey
   4: string trigger
-  5: i32 attempt
+  5: i32 retryCount
   6: string status
-  7: string startedAt
+  7: string triggeredAt
   8: string finishedAt
   9: string output
   10: string error

@@ -15,7 +15,7 @@ import (
 
 func TestSaveJobUpdatePreservesActiveRunToken(t *testing.T) {
 	matcher := sqlmock.QueryMatcherFunc(func(expectedSQL, actualSQL string) error {
-		for _, column := range []string{"job_key", "job_name", "cron", "timezone", "timeout_sec", "params_json", "retry_count", "status", "updated_at"} {
+		for _, column := range []string{"job_key", "job_name", "cron", "timeout_sec", "params_json", "retry_count", "status", "updated_at"} {
 			if !strings.Contains(actualSQL, `"`+column+`"`) {
 				return fmt.Errorf("update does not include %s: %s", column, actualSQL)
 			}
@@ -47,7 +47,6 @@ func TestSaveJobUpdatePreservesActiveRunToken(t *testing.T) {
 		JobKey:         "system.scheduler.test",
 		JobName:        "renamed",
 		Cron:           "0 0 * * * *",
-		Timezone:       "Asia/Shanghai",
 		TimeoutSec:     30,
 		ParamsJSON:     `{"key":"value"}`,
 		RetryCount:     2,

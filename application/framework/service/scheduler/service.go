@@ -160,12 +160,7 @@ func (s *Service) refresh(m *model.SystemJob) error {
 	if m.Status == 0 {
 		return nil
 	}
-	loc, err := time.LoadLocation(m.Timezone)
-	if err != nil {
-		return err
-	}
-	spec := "CRON_TZ=" + loc.String() + " " + m.Cron
-	id, err := s.cron.AddFunc(spec, func() { _ = s.executor.Execute(context.Background(), toDef(m), "cron") })
+	id, err := s.cron.AddFunc(m.Cron, func() { _ = s.executor.Execute(context.Background(), toDef(m), "cron") })
 	if err == nil {
 		s.entries[m.ID] = id
 	}
@@ -178,9 +173,6 @@ func (s *Service) validate(m *model.SystemJob) error {
 	}
 	if strings.TrimSpace(m.JobName) == "" || strings.TrimSpace(m.Cron) == "" || m.TimeoutSec <= 0 || m.RetryCount < 0 {
 		return fmt.Errorf("invalid scheduler job configuration")
-	}
-	if _, err := time.LoadLocation(m.Timezone); err != nil {
-		return err
 	}
 	if !json.Valid([]byte(m.ParamsJSON)) {
 		return fmt.Errorf("paramsJson must be valid JSON")

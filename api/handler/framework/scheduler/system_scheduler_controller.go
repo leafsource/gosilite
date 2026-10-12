@@ -11,19 +11,27 @@ import (
 )
 
 func dto(m *dalModel.SystemJob) *apiModel.SchedulerJobDTO {
-	return &apiModel.SchedulerJobDTO{ID: m.ID, JobKey: m.JobKey, JobName: m.JobName, Cron: m.Cron, Timezone: m.Timezone, TimeoutSec: m.TimeoutSec, ParamsJson: m.ParamsJSON, RetryCount: m.RetryCount, Status: int32(m.Status), CreatedAt: m.CreatedAt.Format(time.RFC3339), UpdatedAt: m.UpdatedAt.Format(time.RFC3339)}
+	return &apiModel.SchedulerJobDTO{ID: m.ID, JobKey: m.JobKey, JobName: m.JobName, Cron: m.Cron, TimeoutSec: m.TimeoutSec, ParamsJson: m.ParamsJSON, RetryCount: m.RetryCount, Status: int32(m.Status), CreatedAt: m.CreatedAt.Format(time.RFC3339), UpdatedAt: m.UpdatedAt.Format(time.RFC3339)}
 }
 func save(r *apiModel.SchedulerJobSaveRequest) *dalModel.SystemJob {
-	m := &dalModel.SystemJob{JobKey: r.JobKey, JobName: r.JobName, Cron: r.Cron, Timezone: r.Timezone, TimeoutSec: r.TimeoutSec, ParamsJSON: r.ParamsJson, RetryCount: r.RetryCount, Status: int16(r.Status)}
+	m := &dalModel.SystemJob{JobKey: r.JobKey, JobName: r.JobName, Cron: r.Cron, TimeoutSec: r.TimeoutSec, ParamsJSON: r.ParamsJson, RetryCount: r.RetryCount, Status: int16(r.Status)}
 	if r.ID != nil {
 		m.ID = *r.ID
 	}
 	return m
 }
 
+func runDTO(x *dalModel.SystemJobRun) *apiModel.SchedulerJobRunDTO {
+	z := &apiModel.SchedulerJobRunDTO{ID: x.ID, JobId: x.JobID, JobKey: x.JobKey, Trigger: x.Trigger, RetryCount: x.Attempt - 1, Status: x.Status, TriggeredAt: x.TriggeredAt.Format(time.RFC3339), Output: x.Output, Error: x.Error}
+	if x.FinishedAt != nil {
+		z.FinishedAt = x.FinishedAt.Format(time.RFC3339)
+	}
+	return z
+}
+
 // JobList 定时任务列表
 // @Summary 定时任务列表
-// @Tags 系统管理
+// @Tags 监控
 // @Produce json
 // @Param data query apiModel.SchedulerJobListRequest false "查询参数"
 // @Success 200 {object} map[string]interface{}
@@ -48,7 +56,7 @@ func JobList(ctx context.Context, c *app.RequestContext) {
 
 // JobGet 定时任务详情
 // @Summary 定时任务详情
-// @Tags 系统管理
+// @Tags 监控
 // @Produce json
 // @Param data query apiModel.SchedulerJobIDRequest true "查询参数"
 // @Success 200 {object} map[string]interface{}
@@ -69,7 +77,7 @@ func JobGet(ctx context.Context, c *app.RequestContext) {
 
 // JobCreate 新增定时任务
 // @Summary 新增定时任务
-// @Tags 系统管理
+// @Tags 监控
 // @Produce json
 // @Param data body apiModel.SchedulerJobSaveRequest true "请求参数"
 // @Success 200 {object} map[string]interface{}
@@ -90,7 +98,7 @@ func JobCreate(ctx context.Context, c *app.RequestContext) {
 
 // JobUpdate 修改定时任务
 // @Summary 修改定时任务
-// @Tags 系统管理
+// @Tags 监控
 // @Produce json
 // @Param data body apiModel.SchedulerJobSaveRequest true "请求参数"
 // @Success 200 {object} map[string]interface{}
@@ -111,7 +119,7 @@ func JobUpdate(ctx context.Context, c *app.RequestContext) {
 
 // JobRemove 删除定时任务
 // @Summary 删除定时任务
-// @Tags 系统管理
+// @Tags 监控
 // @Produce json
 // @Param data body apiModel.SchedulerJobIDRequest true "请求参数"
 // @Success 200 {object} map[string]interface{}
@@ -131,7 +139,7 @@ func JobRemove(ctx context.Context, c *app.RequestContext) {
 
 // JobChangeStatus 启停定时任务
 // @Summary 启停定时任务
-// @Tags 系统管理
+// @Tags 监控
 // @Produce json
 // @Param data body apiModel.SchedulerJobIDRequest true "请求参数"
 // @Success 200 {object} map[string]interface{}
@@ -160,7 +168,7 @@ func JobChangeStatus(ctx context.Context, c *app.RequestContext) {
 
 // JobRun 手动运行定时任务
 // @Summary 手动运行定时任务
-// @Tags 系统管理
+// @Tags 监控
 // @Produce json
 // @Param data body apiModel.SchedulerJobIDRequest true "请求参数"
 // @Success 200 {object} map[string]interface{}
@@ -180,7 +188,7 @@ func JobRun(ctx context.Context, c *app.RequestContext) {
 
 // RunList 定时任务运行记录
 // @Summary 定时任务运行记录
-// @Tags 系统管理
+// @Tags 监控
 // @Produce json
 // @Param data query apiModel.SchedulerJobRunListRequest true "查询参数"
 // @Success 200 {object} map[string]interface{}
@@ -198,18 +206,14 @@ func RunList(ctx context.Context, c *app.RequestContext) {
 	}
 	out := make([]*apiModel.SchedulerJobRunDTO, 0, len(xs))
 	for _, x := range xs {
-		z := &apiModel.SchedulerJobRunDTO{ID: x.ID, JobId: x.JobID, JobKey: x.JobKey, Trigger: x.Trigger, Attempt: x.Attempt, Status: x.Status, StartedAt: x.StartedAt.Format(time.RFC3339), Output: x.Output, Error: x.Error}
-		if x.FinishedAt != nil {
-			z.FinishedAt = x.FinishedAt.Format(time.RFC3339)
-		}
-		out = append(out, z)
+		out = append(out, runDTO(x))
 	}
 	R.SuccessWithData(ctx, c, &apiModel.SchedulerJobRunListResponse{List: out, Total: n})
 }
 
 // JobKeys 可用任务键
 // @Summary 可用任务键
-// @Tags 系统管理
+// @Tags 监控
 // @Produce json
 // @Success 200 {object} map[string]interface{}
 // @Router /system/scheduler/job/keys [GET]

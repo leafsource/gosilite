@@ -8,6 +8,12 @@ import (
 	core "gosilite/application/framework/scheduler"
 )
 
+func TestTestJobKeyIsStable(t *testing.T) {
+	if TestJobKey != "system.scheduler.test" {
+		t.Fatalf("test job key = %q, want %q", TestJobKey, "system.scheduler.test")
+	}
+}
+
 func TestValidateRequiresSixFieldCron(t *testing.T) {
 	registry := core.NewRegistry()
 	if err := registry.Register(testJob{}); err != nil {
@@ -18,7 +24,6 @@ func TestValidateRequiresSixFieldCron(t *testing.T) {
 	job := &model.SystemJob{
 		JobKey:     TestJobKey,
 		JobName:    "test",
-		Timezone:   "Asia/Shanghai",
 		TimeoutSec: 1,
 		ParamsJSON: "{}",
 		Cron:       "0 0 * * * *",

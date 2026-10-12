@@ -276,8 +276,6 @@ definitions:
         type: integer
       timeoutSec:
         type: integer
-      timezone:
-        type: string
     type: object
   syscfg.ConfigSaveRequest:
     properties:
@@ -2968,7 +2966,7 @@ paths:
             type: object
       summary: 删除定时任务
       tags:
-      - 系统管理
+      - 监控
     get:
       parameters:
       - example: "0"
@@ -2985,7 +2983,7 @@ paths:
             type: object
       summary: 定时任务详情
       tags:
-      - 系统管理
+      - 监控
     post:
       parameters:
       - description: 请求参数
@@ -3004,7 +3002,7 @@ paths:
             type: object
       summary: 新增定时任务
       tags:
-      - 系统管理
+      - 监控
     put:
       parameters:
       - description: 请求参数
@@ -3023,7 +3021,7 @@ paths:
             type: object
       summary: 修改定时任务
       tags:
-      - 系统管理
+      - 监控
   /system/scheduler/job/keys:
     get:
       produces:
@@ -3036,7 +3034,7 @@ paths:
             type: object
       summary: 可用任务键
       tags:
-      - 系统管理
+      - 监控
   /system/scheduler/job/list:
     get:
       parameters:
@@ -3056,7 +3054,7 @@ paths:
             type: object
       summary: 定时任务列表
       tags:
-      - 系统管理
+      - 监控
   /system/scheduler/job/run:
     post:
       parameters:
@@ -3076,7 +3074,7 @@ paths:
             type: object
       summary: 手动运行定时任务
       tags:
-      - 系统管理
+      - 监控
   /system/scheduler/job/status:
     put:
       parameters:
@@ -3096,7 +3094,7 @@ paths:
             type: object
       summary: 启停定时任务
       tags:
-      - 系统管理
+      - 监控
   /system/scheduler/run/list:
     get:
       parameters:
@@ -3120,7 +3118,7 @@ paths:
             type: object
       summary: 定时任务运行记录
       tags:
-      - 系统管理
+      - 监控
   /system/user:
     delete:
       description: 用户接口

@@ -58,7 +58,6 @@ func (r *schedulerRepository) SaveJob(c context.Context, m *model.SystemJob) err
 		"job_key":     m.JobKey,
 		"job_name":    m.JobName,
 		"cron":        m.Cron,
-		"timezone":    m.Timezone,
 		"timeout_sec": m.TimeoutSec,
 		"params_json": m.ParamsJSON,
 		"retry_count": m.RetryCount,
@@ -108,7 +107,7 @@ func (r *schedulerRepository) ClearActiveRun(c context.Context, id int64, token 
 }
 
 func (r *schedulerRepository) CreateRun(c context.Context, x *scheduler.Run) (int64, error) {
-	m := &model.SystemJobRun{JobID: x.JobID, JobKey: x.JobKey, Trigger: x.Trigger, Attempt: int32(x.Attempt), Status: x.Status, StartedAt: x.StartedAt}
+	m := &model.SystemJobRun{JobID: x.JobID, JobKey: x.JobKey, Trigger: x.Trigger, Attempt: int32(x.Attempt), Status: x.Status, TriggeredAt: x.TriggeredAt}
 	if err := r.db.WithContext(c).Create(m).Error; err != nil {
 		return 0, err
 	}

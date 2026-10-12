@@ -13,7 +13,6 @@ type SchedulerJobDTO struct {
 	JobKey     string `thrift:"jobKey,2" form:"jobKey" json:"jobKey" query:"jobKey"`
 	JobName    string `thrift:"jobName,3" form:"jobName" json:"jobName" query:"jobName"`
 	Cron       string `thrift:"cron,4" form:"cron" json:"cron" query:"cron"`
-	Timezone   string `thrift:"timezone,5" form:"timezone" json:"timezone" query:"timezone"`
 	TimeoutSec int32  `thrift:"timeoutSec,6" form:"timeoutSec" json:"timeoutSec" query:"timeoutSec"`
 	ParamsJson string `thrift:"paramsJson,7" form:"paramsJson" json:"paramsJson" query:"paramsJson"`
 	RetryCount int32  `thrift:"retryCount,8" form:"retryCount" json:"retryCount" query:"retryCount"`
@@ -45,10 +44,6 @@ func (p *SchedulerJobDTO) GetCron() (v string) {
 	return p.Cron
 }
 
-func (p *SchedulerJobDTO) GetTimezone() (v string) {
-	return p.Timezone
-}
-
 func (p *SchedulerJobDTO) GetTimeoutSec() (v int32) {
 	return p.TimeoutSec
 }
@@ -78,7 +73,6 @@ var fieldIDToName_SchedulerJobDTO = map[int16]string{
 	2:  "jobKey",
 	3:  "jobName",
 	4:  "cron",
-	5:  "timezone",
 	6:  "timeoutSec",
 	7:  "paramsJson",
 	8:  "retryCount",
@@ -133,14 +127,6 @@ func (p *SchedulerJobDTO) Read(iprot thrift.TProtocol) (err error) {
 		case 4:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -267,17 +253,6 @@ func (p *SchedulerJobDTO) ReadField4(iprot thrift.TProtocol) error {
 	p.Cron = _field
 	return nil
 }
-func (p *SchedulerJobDTO) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Timezone = _field
-	return nil
-}
 func (p *SchedulerJobDTO) ReadField6(iprot thrift.TProtocol) error {
 
 	var _field int32
@@ -365,10 +340,6 @@ func (p *SchedulerJobDTO) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField4(oprot); err != nil {
 			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
 			goto WriteFieldError
 		}
 		if err = p.writeField6(oprot); err != nil {
@@ -479,23 +450,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-
-func (p *SchedulerJobDTO) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("timezone", thrift.STRING, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Timezone); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 
 func (p *SchedulerJobDTO) writeField6(oprot thrift.TProtocol) (err error) {
@@ -613,7 +567,6 @@ type SchedulerJobSaveRequest struct {
 	JobKey     string `thrift:"jobKey,2" form:"jobKey" json:"jobKey" query:"jobKey"`
 	JobName    string `thrift:"jobName,3" form:"jobName" json:"jobName" query:"jobName"`
 	Cron       string `thrift:"cron,4" form:"cron" json:"cron" query:"cron"`
-	Timezone   string `thrift:"timezone,5" form:"timezone" json:"timezone" query:"timezone"`
 	TimeoutSec int32  `thrift:"timeoutSec,6" form:"timeoutSec" json:"timeoutSec" query:"timeoutSec"`
 	ParamsJson string `thrift:"paramsJson,7" form:"paramsJson" json:"paramsJson" query:"paramsJson"`
 	RetryCount int32  `thrift:"retryCount,8" form:"retryCount" json:"retryCount" query:"retryCount"`
@@ -648,10 +601,6 @@ func (p *SchedulerJobSaveRequest) GetCron() (v string) {
 	return p.Cron
 }
 
-func (p *SchedulerJobSaveRequest) GetTimezone() (v string) {
-	return p.Timezone
-}
-
 func (p *SchedulerJobSaveRequest) GetTimeoutSec() (v int32) {
 	return p.TimeoutSec
 }
@@ -673,7 +622,6 @@ var fieldIDToName_SchedulerJobSaveRequest = map[int16]string{
 	2: "jobKey",
 	3: "jobName",
 	4: "cron",
-	5: "timezone",
 	6: "timeoutSec",
 	7: "paramsJson",
 	8: "retryCount",
@@ -730,14 +678,6 @@ func (p *SchedulerJobSaveRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 4:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField4(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		case 5:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -848,17 +788,6 @@ func (p *SchedulerJobSaveRequest) ReadField4(iprot thrift.TProtocol) error {
 	p.Cron = _field
 	return nil
 }
-func (p *SchedulerJobSaveRequest) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Timezone = _field
-	return nil
-}
 func (p *SchedulerJobSaveRequest) ReadField6(iprot thrift.TProtocol) error {
 
 	var _field int32
@@ -924,10 +853,6 @@ func (p *SchedulerJobSaveRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField4(oprot); err != nil {
 			fieldId = 4
-			goto WriteFieldError
-		}
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
 			goto WriteFieldError
 		}
 		if err = p.writeField6(oprot); err != nil {
@@ -1032,23 +957,6 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
-}
-
-func (p *SchedulerJobSaveRequest) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("timezone", thrift.STRING, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Timezone); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 
 func (p *SchedulerJobSaveRequest) writeField6(oprot thrift.TProtocol) (err error) {
@@ -1665,16 +1573,16 @@ func (p *SchedulerJobIDRequest) String() string {
 }
 
 type SchedulerJobRunDTO struct {
-	ID         int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
-	JobId      int64  `thrift:"jobId,2" json:"jobId,string" form:"jobId" query:"jobId"`
-	JobKey     string `thrift:"jobKey,3" form:"jobKey" json:"jobKey" query:"jobKey"`
-	Trigger    string `thrift:"trigger,4" form:"trigger" json:"trigger" query:"trigger"`
-	Attempt    int32  `thrift:"attempt,5" form:"attempt" json:"attempt" query:"attempt"`
-	Status     string `thrift:"status,6" form:"status" json:"status" query:"status"`
-	StartedAt  string `thrift:"startedAt,7" form:"startedAt" json:"startedAt" query:"startedAt"`
-	FinishedAt string `thrift:"finishedAt,8" form:"finishedAt" json:"finishedAt" query:"finishedAt"`
-	Output     string `thrift:"output,9" form:"output" json:"output" query:"output"`
-	Error      string `thrift:"error,10" form:"error" json:"error" query:"error"`
+	ID          int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
+	JobId       int64  `thrift:"jobId,2" json:"jobId,string" form:"jobId" query:"jobId"`
+	JobKey      string `thrift:"jobKey,3" form:"jobKey" json:"jobKey" query:"jobKey"`
+	Trigger     string `thrift:"trigger,4" form:"trigger" json:"trigger" query:"trigger"`
+	RetryCount  int32  `thrift:"retryCount,5" form:"retryCount" json:"retryCount" query:"retryCount"`
+	Status      string `thrift:"status,6" form:"status" json:"status" query:"status"`
+	TriggeredAt string `thrift:"triggeredAt,7" form:"triggeredAt" json:"triggeredAt" query:"triggeredAt"`
+	FinishedAt  string `thrift:"finishedAt,8" form:"finishedAt" json:"finishedAt" query:"finishedAt"`
+	Output      string `thrift:"output,9" form:"output" json:"output" query:"output"`
+	Error       string `thrift:"error,10" form:"error" json:"error" query:"error"`
 }
 
 func NewSchedulerJobRunDTO() *SchedulerJobRunDTO {
@@ -1700,16 +1608,16 @@ func (p *SchedulerJobRunDTO) GetTrigger() (v string) {
 	return p.Trigger
 }
 
-func (p *SchedulerJobRunDTO) GetAttempt() (v int32) {
-	return p.Attempt
+func (p *SchedulerJobRunDTO) GetRetryCount() (v int32) {
+	return p.RetryCount
 }
 
 func (p *SchedulerJobRunDTO) GetStatus() (v string) {
 	return p.Status
 }
 
-func (p *SchedulerJobRunDTO) GetStartedAt() (v string) {
-	return p.StartedAt
+func (p *SchedulerJobRunDTO) GetTriggeredAt() (v string) {
+	return p.TriggeredAt
 }
 
 func (p *SchedulerJobRunDTO) GetFinishedAt() (v string) {
@@ -1729,9 +1637,9 @@ var fieldIDToName_SchedulerJobRunDTO = map[int16]string{
 	2:  "jobId",
 	3:  "jobKey",
 	4:  "trigger",
-	5:  "attempt",
+	5:  "retryCount",
 	6:  "status",
-	7:  "startedAt",
+	7:  "triggeredAt",
 	8:  "finishedAt",
 	9:  "output",
 	10: "error",
@@ -1917,7 +1825,7 @@ func (p *SchedulerJobRunDTO) ReadField5(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Attempt = _field
+	p.RetryCount = _field
 	return nil
 }
 func (p *SchedulerJobRunDTO) ReadField6(iprot thrift.TProtocol) error {
@@ -1939,7 +1847,7 @@ func (p *SchedulerJobRunDTO) ReadField7(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.StartedAt = _field
+	p.TriggeredAt = _field
 	return nil
 }
 func (p *SchedulerJobRunDTO) ReadField8(iprot thrift.TProtocol) error {
@@ -2109,10 +2017,10 @@ WriteFieldEndError:
 }
 
 func (p *SchedulerJobRunDTO) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("attempt", thrift.I32, 5); err != nil {
+	if err = oprot.WriteFieldBegin("retryCount", thrift.I32, 5); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteI32(p.Attempt); err != nil {
+	if err := oprot.WriteI32(p.RetryCount); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -2143,10 +2051,10 @@ WriteFieldEndError:
 }
 
 func (p *SchedulerJobRunDTO) writeField7(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("startedAt", thrift.STRING, 7); err != nil {
+	if err = oprot.WriteFieldBegin("triggeredAt", thrift.STRING, 7); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.StartedAt); err != nil {
+	if err := oprot.WriteString(p.TriggeredAt); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {

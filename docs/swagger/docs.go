@@ -3701,7 +3701,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统管理"
+                    "监控"
                 ],
                 "summary": "定时任务详情",
                 "parameters": [
@@ -3727,7 +3727,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统管理"
+                    "监控"
                 ],
                 "summary": "修改定时任务",
                 "parameters": [
@@ -3756,7 +3756,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统管理"
+                    "监控"
                 ],
                 "summary": "新增定时任务",
                 "parameters": [
@@ -3785,7 +3785,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统管理"
+                    "监控"
                 ],
                 "summary": "删除定时任务",
                 "parameters": [
@@ -3816,7 +3816,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统管理"
+                    "监控"
                 ],
                 "summary": "可用任务键",
                 "responses": {
@@ -3836,7 +3836,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统管理"
+                    "监控"
                 ],
                 "summary": "定时任务列表",
                 "parameters": [
@@ -3868,7 +3868,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统管理"
+                    "监控"
                 ],
                 "summary": "手动运行定时任务",
                 "parameters": [
@@ -3899,7 +3899,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统管理"
+                    "监控"
                 ],
                 "summary": "启停定时任务",
                 "parameters": [
@@ -3930,7 +3930,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "系统管理"
+                    "监控"
                 ],
                 "summary": "定时任务运行记录",
                 "parameters": [
@@ -4786,9 +4786,6 @@ const docTemplate = `{
                 },
                 "timeoutSec": {
                     "type": "integer"
-                },
-                "timezone": {
-                    "type": "string"
                 }
             }
         },

@@ -25,16 +25,16 @@ type Definition struct {
 }
 
 type Run struct {
-	ID         int64
-	JobID      int64
-	JobKey     string
-	Trigger    string
-	Attempt    int
-	Status     string
-	StartedAt  time.Time
-	FinishedAt time.Time
-	Output     string
-	Error      string
+	ID          int64
+	JobID       int64
+	JobKey      string
+	Trigger     string
+	Attempt     int
+	Status      string
+	TriggeredAt time.Time
+	FinishedAt  time.Time
+	Output      string
+	Error       string
 }
 
 type RunRepository interface {
@@ -72,7 +72,7 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 	attempts := def.RetryCount + 1
 	var lastErr error
 	for attempt := 1; attempt <= attempts; attempt++ {
-		run := &Run{JobID: def.ID, JobKey: def.JobKey, Trigger: trigger, Attempt: attempt, StartedAt: e.now()}
+		run := &Run{JobID: def.ID, JobKey: def.JobKey, Trigger: trigger, Attempt: attempt, TriggeredAt: e.now()}
 		runID, err := e.runs.CreateRun(ctx, run)
 		if err != nil {
 			return err

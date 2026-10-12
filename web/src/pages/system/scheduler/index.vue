@@ -45,9 +45,6 @@
         <t-form-item label="Cron">
           <t-input v-model="form.cron" placeholder="0 0 * * * *（秒 分 时 日 月 周）" />
         </t-form-item>
-        <t-form-item label="时区">
-          <t-input v-model="form.timezone" :maxlength="64" placeholder="Asia/Shanghai" />
-        </t-form-item>
         <t-form-item label="超时秒数">
           <t-input v-model="form.timeoutSec" type="number" placeholder="60" />
         </t-form-item>
@@ -82,9 +79,11 @@
             {{ runStatusText((row as SchedulerRun).status) }}
           </t-tag>
         </template>
+        <template #triggeredAt="{ row }">{{ formatRunTime((row as SchedulerRun).triggeredAt) }}</template>
+        <template #finishedAt="{ row }">{{ formatRunTime((row as SchedulerRun).finishedAt) }}</template>
         <template #detail="{ row }">
           <t-space size="small">
-            <t-link v-if="(row as SchedulerRun).output" theme="primary" @click="showRunDetail((row as SchedulerRun).output, '输出')">输出</t-link>
+            <t-link v-if="(row as SchedulerRun).output" theme="primary" @click="showRunDetail((row as SchedulerRun).output, '执行日志')">执行日志</t-link>
             <t-link v-if="(row as SchedulerRun).error" theme="danger" @click="showRunDetail((row as SchedulerRun).error, '错误')">错误</t-link>
             <span v-if="!(row as SchedulerRun).output && !(row as SchedulerRun).error">—</span>
           </t-space>
@@ -99,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-defineOptions({ name: 'SystemScheduler' });
+defineOptions({ name: 'MonitorScheduler' });
 
 import { computed, onMounted, ref } from 'vue';
 import { MessagePlugin } from 'tdesign-vue-next';
@@ -147,8 +146,7 @@ const statusOptions = [
 const columns: STableColumn[] = [
   { colKey: 'jobKey', title: '任务键', minWidth: 180, ellipsis: true },
   { colKey: 'jobName', title: '任务名称', minWidth: 150, ellipsis: true },
-  { colKey: 'cron', title: 'Cron', minWidth: 140, ellipsis: true },
-  { colKey: 'timezone', title: '时区', width: 150 },
+  { colKey: 'cron', title: 'Cron（服务器本地时间）', minWidth: 200, ellipsis: true },
   { colKey: 'timeoutSec', title: '超时（秒）', width: 110 },
   { colKey: 'retryCount', title: '重试次数', width: 100 },
   { colKey: 'status', title: '状态', width: 90, cell: 'status' },
@@ -156,10 +154,10 @@ const columns: STableColumn[] = [
 ];
 const runColumns: STableColumn[] = [
   { colKey: 'trigger', title: '触发方式', width: 100 },
-  { colKey: 'attempt', title: '尝试', width: 80 },
+  { colKey: 'retryCount', title: '重试次数', width: 100 },
   { colKey: 'status', title: '状态', width: 120, cell: 'status' },
-  { colKey: 'startedAt', title: '开始时间', minWidth: 190 },
-  { colKey: 'finishedAt', title: '结束时间', minWidth: 190 },
+  { colKey: 'triggeredAt', title: '触发时间', minWidth: 190, cell: 'triggeredAt' },
+  { colKey: 'finishedAt', title: '结束时间', minWidth: 190, cell: 'finishedAt' },
   { colKey: 'detail', title: '详情', width: 120, cell: 'detail' },
 ];
 
@@ -168,7 +166,6 @@ function createForm(): SchedulerJobSave {
     jobKey: '',
     jobName: '',
     cron: '0 0 * * * *',
-    timezone: 'Asia/Shanghai',
     timeoutSec: 60,
     paramsJson: '{}',
     retryCount: 0,
@@ -248,6 +245,14 @@ function runStatusText(status: string) {
   return { succeeded: '成功', failed: '失败', timed_out: '超时', skipped_locked: '锁占用' }[status] ?? status;
 }
 
+function formatRunTime(value: string): string {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const pad = (part: number) => String(part).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
 function showRunDetail(content: string, title: string) {
   runDetail.value = content;
   runDetailTitle.value = title;
@@ -261,7 +266,6 @@ function open(job?: SchedulerJob) {
         jobKey: job.jobKey,
         jobName: job.jobName,
         cron: job.cron,
-        timezone: job.timezone,
         timeoutSec: job.timeoutSec,
         paramsJson: job.paramsJson,
         retryCount: job.retryCount,
@@ -278,7 +282,6 @@ async function submit() {
       jobKey: form.value.jobKey.trim(),
       jobName: form.value.jobName.trim(),
       cron: form.value.cron.trim(),
-      timezone: form.value.timezone.trim(),
       paramsJson: form.value.paramsJson.trim(),
       timeoutSec: Number(form.value.timeoutSec),
       retryCount: Number(form.value.retryCount),
