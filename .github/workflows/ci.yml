@@ -32,17 +32,6 @@ jobs:
           --health-interval 5s
           --health-timeout 3s
           --health-retries 20
-      rustfs:
-        image: rustfs/rustfs:latest
-        env:
-          RUSTFS_ACCESS_KEY: gosilite
-          RUSTFS_SECRET_KEY: gosilite-secret
-        ports: [19000:9000]
-        options: >-
-          --health-cmd "wget -q --spider http://127.0.0.1:9000/ || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 20
     steps:
       - uses: actions/checkout@v4
         with:
