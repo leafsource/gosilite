@@ -36,11 +36,11 @@ type memStringCmd struct {
 	err error
 }
 
-func (c *memStringCmd) Err() error               { return c.err }
-func (c *memStringCmd) Result() (string, error)  { return c.val, c.err }
-func (c *memStringCmd) Val() string              { return c.val }
-func (c *memStringCmd) Int64() (int64, error)    { return strconv.ParseInt(c.val, 10, 64) }
-func (c *memStringCmd) Bytes() ([]byte, error)   { return []byte(c.val), c.err }
+func (c *memStringCmd) Err() error              { return c.err }
+func (c *memStringCmd) Result() (string, error) { return c.val, c.err }
+func (c *memStringCmd) Val() string             { return c.val }
+func (c *memStringCmd) Int64() (int64, error)   { return strconv.ParseInt(c.val, 10, 64) }
+func (c *memStringCmd) Bytes() ([]byte, error)  { return []byte(c.val), c.err }
 
 type memIntCmd struct {
 	val int64
@@ -53,9 +53,9 @@ func (c *memIntCmd) Val() int64             { return c.val }
 
 type memBoolCmd struct{ val bool }
 
-func (c *memBoolCmd) Err() error             { return nil }
-func (c *memBoolCmd) Result() (bool, error)  { return c.val, nil }
-func (c *memBoolCmd) Val() bool              { return c.val }
+func (c *memBoolCmd) Err() error            { return nil }
+func (c *memBoolCmd) Result() (bool, error) { return c.val, nil }
+func (c *memBoolCmd) Val() bool             { return c.val }
 
 type memStatusCmd struct{ val string }
 
@@ -105,6 +105,10 @@ func (m *memCache) IncrBy(ctx context.Context, key string, value int64) cache.In
 
 func (m *memCache) Incr(ctx context.Context, key string) cache.IntCmd {
 	return m.IncrBy(ctx, key, 1)
+}
+
+func (m *memCache) IncrWithTTL(ctx context.Context, key string, expiration time.Duration) (int64, error) {
+	return m.Incr(ctx, key).Result()
 }
 
 func (m *memCache) HSet(ctx context.Context, key string, values ...interface{}) cache.IntCmd {

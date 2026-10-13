@@ -12,20 +12,22 @@ const TableNameSystemUser = "system_user"
 
 // SystemUser mapped from table <system_user>
 type SystemUser struct {
-	ID          int64     `gorm:"column:id;primaryKey;comment:用户唯一编码" json:"id"`              // 用户唯一编码
-	Account     string    `gorm:"column:account;comment:账号" json:"account"`                   // 账号
-	MobilePhone string    `gorm:"column:mobile_phone;comment:电话号码" json:"mobile_phone"`       // 电话号码
-	Email       string    `gorm:"column:email;comment:邮箱地址" json:"email"`                     // 邮箱地址
-	Username    string    `gorm:"column:username;comment:用户名称" json:"username"`               // 用户名称
-	AvatarURL   string    `gorm:"column:avatar_url;comment:用户头像" json:"avatar_url"`           // 用户头像
-	State       string    `gorm:"column:state;comment:用户状态" json:"state"`                     // 用户状态
-	Password    string    `gorm:"column:password;comment:用户密码" json:"password"`               // 用户密码
-	IsRemove    int16     `gorm:"column:is_remove;comment:是否删除：0-未删除，1-已删除" json:"is_remove"` // 是否删除：0-未删除，1-已删除
-	UpdateTime  time.Time `gorm:"column:update_time;comment:修改时间" json:"update_time"`         // 修改时间
-	CreateTime  time.Time `gorm:"column:create_time;comment:创建时间" json:"create_time"`         // 创建时间
-	CreateBy    string    `gorm:"column:create_by;comment:创建人ID" json:"create_by"`            // 创建人ID
-	UpdateBy    string    `gorm:"column:update_by;comment:修改人ID" json:"update_by"`            // 修改人ID
-	DeptID      int64     `gorm:"column:dept_id;not null;comment:所属部门" json:"dept_id"`        // 所属部门
+	ID                     int64     `gorm:"column:id;primaryKey;comment:用户唯一编码" json:"id"`              // 用户唯一编码
+	Account                string    `gorm:"column:account;comment:账号" json:"account"`                   // 账号
+	MobilePhone            string    `gorm:"column:mobile_phone;comment:电话号码" json:"mobile_phone"`       // 电话号码
+	Email                  string    `gorm:"column:email;comment:邮箱地址" json:"email"`                     // 邮箱地址
+	Username               string    `gorm:"column:username;comment:用户名称" json:"username"`               // 用户名称
+	AvatarURL              string    `gorm:"column:avatar_url;comment:用户头像" json:"avatar_url"`           // 用户头像
+	State                  string    `gorm:"column:state;comment:用户状态" json:"state"`                     // 用户状态
+	Password               string    `gorm:"column:password;comment:用户密码" json:"password"`               // 用户密码
+	IsRemove               int16     `gorm:"column:is_remove;comment:是否删除：0-未删除，1-已删除" json:"is_remove"` // 是否删除：0-未删除，1-已删除
+	UpdateTime             time.Time `gorm:"column:update_time;comment:修改时间" json:"update_time"`         // 修改时间
+	CreateTime             time.Time `gorm:"column:create_time;comment:创建时间" json:"create_time"`         // 创建时间
+	CreateBy               string    `gorm:"column:create_by;comment:创建人ID" json:"create_by"`            // 创建人ID
+	UpdateBy               string    `gorm:"column:update_by;comment:修改人ID" json:"update_by"`            // 修改人ID
+	DeptID                 int64     `gorm:"column:dept_id;not null;comment:所属部门" json:"dept_id"`        // 所属部门
+	LoginFailureCount      int32     `gorm:"column:login_failure_count;not null" json:"login_failure_count"`
+	LoginPermanentlyLocked bool      `gorm:"column:login_permanently_locked;not null" json:"login_permanently_locked"`
 }
 
 // TableName SystemUser's table name

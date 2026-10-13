@@ -71,6 +71,13 @@
           <s-tag-dict v-if="row.state" dict-type="sys_state" :value="row.state" />
           <span v-else>-</span>
         </template>
+        <template #loginSecurity="{ row }">
+          <t-tag v-if="row.loginPermanentlyLocked" theme="danger" variant="light">永久锁定</t-tag>
+          <t-tag v-else-if="row.loginFailureCount > 0" theme="warning" variant="light">
+            失败 {{ row.loginFailureCount }} 次
+          </t-tag>
+          <span v-else>正常</span>
+        </template>
         <template #op="{ row }">
           <t-dropdown
             v-if="userMenuVisible()"
@@ -103,7 +110,7 @@
             <t-input
               v-model="form.password"
               type="password"
-              :placeholder="isEdit ? '不修改请留空' : '请输入初始密码'"
+              :placeholder="isEdit ? '重置密码将解除永久锁定；不修改请留空' : '请输入初始密码'"
               clearable
             />
           </t-form-item>
@@ -248,6 +255,7 @@ const columns: PrimaryTableCol[] = [
   { title: '手机号', colKey: 'mobilePhone', width: 140 },
   { title: '邮箱', colKey: 'email', minWidth: 200 },
   { title: '状态', colKey: 'state', width: 100 },
+  { title: '登录安全', colKey: 'loginSecurity', width: 110, cell: 'loginSecurity' },
   { title: '操作', colKey: 'op', width: 64, fixed: 'right' },
 ];
 

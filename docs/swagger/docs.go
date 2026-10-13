@@ -4924,6 +4924,9 @@ const docTemplate = `{
                 "jobName": {
                     "type": "string"
                 },
+                "maxInstances": {
+                    "type": "integer"
+                },
                 "paramsJson": {
                     "type": "string"
                 },

@@ -14,5 +14,7 @@ const (
 	AuthUserRefreshGenerationPrefix  = "gosilite:auth:user_refresh_gen:"
 	AuthAccessTokenDenyPrefix        = "gosilite:auth:access_deny:"
 	AuthOnlineSessionsKey            = "gosilite:auth:online_sessions"
+	AuthLoginFailurePrefix           = "gosilite:auth:login_failure:"
+	AuthLoginTemporaryLockPrefix     = "gosilite:auth:login_lock:"
 	AuthBearerPrefix                 = "Bearer "
 )

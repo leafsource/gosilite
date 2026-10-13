@@ -239,6 +239,10 @@ type StringSliceCmd interface {
 }
 
 // MonitorOperations 缓存监控：前缀扫描与类型识别（有界，禁止 KEYS）。
+type AtomicCounter interface {
+	IncrWithTTL(ctx context.Context, key string, expiration time.Duration) (int64, error)
+}
+
 type LeaseOperations interface {
 	AcquireLease(ctx context.Context, key, token string, ttl time.Duration) (bool, error)
 	RenewLease(ctx context.Context, key, token string, ttl time.Duration) (bool, error)

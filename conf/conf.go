@@ -20,14 +20,15 @@ var (
 type Config struct {
 	Env string
 
-	Server    Server    `yaml:"server"`
-	JWT       JWT       `yaml:"jwt"`
-	Database  Database  `yaml:"database"`
-	Redis     Redis     `yaml:"redis"`
-	Storage   Storage   `yaml:"storage"`
-	Monitor   Monitor   `yaml:"monitor"`
-	Docs      Docs      `yaml:"docs"`
-	Scheduler Scheduler `yaml:"scheduler"`
+	Server        Server        `yaml:"server"`
+	JWT           JWT           `yaml:"jwt"`
+	Database      Database      `yaml:"database"`
+	Redis         Redis         `yaml:"redis"`
+	Storage       Storage       `yaml:"storage"`
+	Monitor       Monitor       `yaml:"monitor"`
+	Docs          Docs          `yaml:"docs"`
+	Scheduler     Scheduler     `yaml:"scheduler"`
+	LoginSecurity LoginSecurity `yaml:"login_security"`
 }
 
 // Docs 开发文档静态站（Hugo 产物）托管配置。
@@ -37,6 +38,12 @@ type Docs struct {
 
 type Scheduler struct {
 	LogRetentionDays int `yaml:"log_retention_days" validate:"min=1"`
+}
+
+type LoginSecurity struct {
+	MaxFailures          int `yaml:"max_failures" validate:"min=1,max=9"`
+	FailureWindowMinutes int `yaml:"failure_window_minutes" validate:"min=1"`
+	LockMinutes          int `yaml:"lock_minutes" validate:"min=1"`
 }
 
 // Monitor 数据监控：指标出口与采集开关（业务热路径仅 O(1) 打点）。

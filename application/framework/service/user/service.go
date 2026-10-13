@@ -6,6 +6,7 @@ import (
 	"gosilite/application/framework/dal/repository"
 	"gosilite/application/infra/cache"
 	"gosilite/application/infra/imagex"
+	"gosilite/conf"
 
 	"gorm.io/gorm"
 )
@@ -15,11 +16,13 @@ var SystemUserSVC *Service
 
 // Service holds user and session business operations.
 type Service struct {
-	repo     repository.ISystemUserRepository
-	imageOSS imagex.ImageX
-	sessions *SessionStore
-	posts    repository.IPostRepository
-	roleRBAC repository.IRoleRBACRepository
+	repo                  repository.ISystemUserRepository
+	imageOSS              imagex.ImageX
+	sessions              *SessionStore
+	posts                 repository.IPostRepository
+	roleRBAC              repository.IRoleRBACRepository
+	cache                 cache.CacheClient
+	loginSecurityDefaults conf.LoginSecurity
 	// ossFileRepo 台账仓储：按 fileId 回查对象 key 更新头像（spec S2.11 统一文件服务）
 	ossFileRepo repository.IOssFileRepository
 }
@@ -27,12 +30,14 @@ type Service struct {
 // NewService builds a user service with explicit dependencies.
 func NewService(db *gorm.DB, imageOSS imagex.ImageX, cacheClient cache.CacheClient) *Service {
 	return &Service{
-		repo:        repository.NewSystemUserRepository(db),
-		ossFileRepo: repository.NewOssFileRepository(db),
-		imageOSS: imageOSS,
-		sessions: NewSessionStore(cacheClient),
-		posts:    repository.NewPostRepository(db),
-		roleRBAC: repository.NewRoleRBACRepository(db),
+		repo:                  repository.NewSystemUserRepository(db),
+		ossFileRepo:           repository.NewOssFileRepository(db),
+		imageOSS:              imageOSS,
+		cache:                 cacheClient,
+		loginSecurityDefaults: conf.GetConf().LoginSecurity,
+		sessions:              NewSessionStore(cacheClient),
+		posts:                 repository.NewPostRepository(db),
+		roleRBAC:              repository.NewRoleRBACRepository(db),
 	}
 }
 

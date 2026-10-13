@@ -113,6 +113,12 @@ func (r *redisClient) Incr(ctx context.Context, key string) cache.IntCmd {
 	return r.client.Incr(ctx, key)
 }
 
+const incrWithTTLScript = `local n = redis.call('incr', KEYS[1]); if n == 1 then redis.call('expire', KEYS[1], ARGV[1]); end; return n`
+
+func (r *redisClient) IncrWithTTL(ctx context.Context, key string, expiration time.Duration) (int64, error) {
+	return r.client.Eval(ctx, incrWithTTLScript, []string{key}, int64(expiration.Seconds())).Int64()
+}
+
 // IncrBy increments a key by the given value
 // 将键的值增加指定数量
 func (r *redisClient) IncrBy(ctx context.Context, key string, value int64) cache.IntCmd {
