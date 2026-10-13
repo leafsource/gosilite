@@ -51,8 +51,8 @@ type Run struct {
 }
 
 type RunRepository interface {
-	ClaimActiveRun(context.Context, int64, string) (bool, error)
-	ClearActiveRun(context.Context, int64, string) (bool, error)
+	AcquireRunSlot(context.Context, int64) (bool, error)
+	ReleaseRunSlot(context.Context, int64) (bool, error)
 	CreateRun(context.Context, *Run) (int64, error)
 	FinishRun(context.Context, *Run) error
 	RequestStopRun(context.Context, int64) (bool, error)
@@ -143,25 +143,24 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 		}
 		run.ID = runID
 		e.log(run, "info", "trigger", "run created: trigger=%s attempt=%d", trigger, attempt)
-		activeToken := randomToken()
-		claimed, claimErr := e.runs.ClaimActiveRun(ctx, def.ID, activeToken)
-		if claimErr != nil {
-			e.log(run, "error", "lock", "active execution fence unavailable: %v", claimErr)
-			run.Status, run.Error, run.FinishedAt = RunStatusFailed, "active execution fence unavailable: "+claimErr.Error(), e.now()
+		acquired, acquireErr := e.runs.AcquireRunSlot(ctx, def.ID)
+		if acquireErr != nil {
+			e.log(run, "error", "capacity", "execution capacity unavailable: %v", acquireErr)
+			run.Status, run.Error, run.FinishedAt = RunStatusFailed, "execution capacity unavailable: "+acquireErr.Error(), e.now()
 			if finishErr := e.runs.FinishRun(ctx, run); finishErr != nil {
 				return finishErr
 			}
-			return claimErr
+			return acquireErr
 		}
-		if !claimed {
-			e.log(run, "warn", "lock", "active execution fence held")
-			run.Status, run.Error, run.FinishedAt = RunStatusSkippedLocked, "job active execution fence held", e.now()
+		if !acquired {
+			e.log(run, "warn", "capacity", "job execution capacity exhausted")
+			run.Status, run.Error, run.FinishedAt = RunStatusSkippedLocked, "job execution capacity exhausted", e.now()
 			return e.runs.FinishRun(ctx, run)
 		}
 
-		lease, locked, err := AcquireLease(ctx, e.leases, def.JobKey, randomToken(), e.leaseTTL)
+		lease, locked, err := AcquireLease(ctx, e.leases, def.JobKey+":"+randomToken(), randomToken(), e.leaseTTL)
 		if err != nil {
-			_, _ = e.runs.ClearActiveRun(context.Background(), def.ID, activeToken)
+			_, _ = e.runs.ReleaseRunSlot(context.Background(), def.ID)
 			e.log(run, "error", "lock", "redis lease unavailable: %v", err)
 			run.Status, run.Error, run.FinishedAt = RunStatusFailed, "redis lease unavailable: "+err.Error(), e.now()
 			if finishErr := e.runs.FinishRun(ctx, run); finishErr != nil {
@@ -170,14 +169,14 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 			return err
 		}
 		if !locked {
-			_, _ = e.runs.ClearActiveRun(context.Background(), def.ID, activeToken)
+			_, _ = e.runs.ReleaseRunSlot(context.Background(), def.ID)
 			e.log(run, "warn", "lock", "redis lease held by another instance")
 			run.Status, run.Error, run.FinishedAt = RunStatusSkippedLocked, "job lease held by another instance", e.now()
 			return e.runs.FinishRun(ctx, run)
 		}
 
 		e.log(run, "info", "lock", "redis lease acquired")
-		output, runErr, pending := e.runWithRenewal(ctx, job, def, lease, run, activeToken)
+		output, runErr, pending := e.runWithRenewal(ctx, job, def, lease, run)
 		if pending {
 			return runErr
 		}
@@ -196,7 +195,7 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 					return err
 				}
 				_, _ = lease.Release(context.Background())
-				_, err := e.runs.ClearActiveRun(context.Background(), def.ID, activeToken)
+				_, err := e.runs.ReleaseRunSlot(context.Background(), def.ID)
 				return err
 			}
 		}
@@ -216,9 +215,9 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 		if finishErr != nil {
 			return finishErr
 		}
-		_, clearErr := e.runs.ClearActiveRun(context.Background(), def.ID, activeToken)
-		if clearErr != nil {
-			return clearErr
+		_, releaseSlotErr := e.runs.ReleaseRunSlot(context.Background(), def.ID)
+		if releaseSlotErr != nil {
+			return releaseSlotErr
 		}
 		if releaseErr != nil {
 			return releaseErr
@@ -231,7 +230,7 @@ func (e *Executor) Execute(ctx context.Context, def Definition, trigger string) 
 	return lastErr
 }
 
-func (e *Executor) runWithRenewal(ctx context.Context, job Job, def Definition, lease *Lease, run *Run, activeToken string) (string, error, bool) {
+func (e *Executor) runWithRenewal(ctx context.Context, job Job, def Definition, lease *Lease, run *Run) (string, error, bool) {
 	jobCtx, cancel := context.WithTimeout(ctx, def.Timeout)
 	stopping, err := e.runs.IsRunStopping(ctx, run.ID)
 	if err != nil {
@@ -270,11 +269,11 @@ func (e *Executor) runWithRenewal(ctx context.Context, job Job, def Definition, 
 			e.clearCancel(run.ID)
 			if errors.Is(jobCtx.Err(), context.Canceled) {
 				e.log(run, "info", "execute", "stop requested; awaiting worker exit")
-				e.finishPendingRun(run, def.ID, activeToken, lease, finished, context.Canceled)
+				e.finishPendingRun(run, def.ID, lease, finished, context.Canceled)
 				return "", context.Canceled, true
 			}
 			e.log(run, "error", "execute", "job context ended: %v", jobCtx.Err())
-			e.finishPendingRun(run, def.ID, activeToken, lease, finished, jobCtx.Err())
+			e.finishPendingRun(run, def.ID, lease, finished, jobCtx.Err())
 			return "", jobCtx.Err(), true
 		case <-stopPollTicker.C:
 			stopping, err := e.runs.IsRunStopping(context.Background(), run.ID)
@@ -292,14 +291,14 @@ func (e *Executor) runWithRenewal(ctx context.Context, job Job, def Definition, 
 					leaseErr = err
 				}
 				e.log(run, "error", "lock", "redis lease renewal lost: %v", leaseErr)
-				e.finishPendingRun(run, def.ID, activeToken, lease, finished, leaseErr)
+				e.finishPendingRun(run, def.ID, lease, finished, leaseErr)
 				return "", leaseErr, true
 			}
 		}
 	}
 }
 
-func (e *Executor) finishPendingRun(run *Run, jobID int64, activeToken string, lease *Lease, finished <-chan jobResult, terminalErr error) {
+func (e *Executor) finishPendingRun(run *Run, jobID int64, lease *Lease, finished <-chan jobResult, terminalErr error) {
 	go func() {
 		ticker := time.NewTicker(e.leaseTTL / 2)
 		defer ticker.Stop()
@@ -316,7 +315,7 @@ func (e *Executor) finishPendingRun(run *Run, jobID int64, activeToken string, l
 					run.Output, run.Status, run.Error, run.FinishedAt = result.output, statusForError(terminalErr), terminalErr.Error(), e.now()
 				}
 				_ = e.runs.FinishRun(context.Background(), run)
-				_, _ = e.runs.ClearActiveRun(context.Background(), jobID, activeToken)
+				_, _ = e.runs.ReleaseRunSlot(context.Background(), jobID)
 				return
 			case <-ticker.C:
 				_, _ = lease.Renew(context.Background())

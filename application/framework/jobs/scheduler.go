@@ -19,13 +19,20 @@ type SchedulerTest struct{}
 func (SchedulerTest) Key() string { return jobkeys.SchedulerTest }
 
 func (SchedulerTest) Run(ctx context.Context, _ string) (string, error) {
-	select {
-	case <-ctx.Done():
-		return "", ctx.Err()
-	default:
+	const totalSteps = 10
+
+	core.Info(ctx, "execute", "built-in scheduler test started: %d seconds", totalSteps)
+	for step := 1; step <= totalSteps; step++ {
+		select {
+		case <-ctx.Done():
+			core.Warn(ctx, "execute", "built-in scheduler test canceled at step %d/%d", step, totalSteps)
+			return "", ctx.Err()
+		case <-time.After(time.Second):
+			core.Info(ctx, "execute", "built-in scheduler test progress: %d/%d", step, totalSteps)
+		}
 	}
-	core.Info(ctx, "execute", "built-in scheduler test executed")
-	return "scheduler test executed", nil
+	core.Info(ctx, "execute", "built-in scheduler test completed")
+	return "scheduler test completed after 10 seconds", nil
 }
 
 type SchedulerLogCleanup struct {

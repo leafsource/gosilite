@@ -15,10 +15,10 @@ import (
 )
 
 func dto(m *dalModel.SystemJob) *apiModel.SchedulerJobDTO {
-	return &apiModel.SchedulerJobDTO{ID: m.ID, JobKey: m.JobKey, JobName: m.JobName, Cron: m.Cron, TimeoutSec: m.TimeoutSec, ParamsJson: m.ParamsJSON, RetryCount: m.RetryCount, Status: int32(m.Status), CreatedAt: m.CreatedAt.Format(time.RFC3339), UpdatedAt: m.UpdatedAt.Format(time.RFC3339)}
+	return &apiModel.SchedulerJobDTO{ID: m.ID, JobKey: m.JobKey, JobName: m.JobName, Cron: m.Cron, TimeoutSec: m.TimeoutSec, ParamsJson: m.ParamsJSON, RetryCount: m.RetryCount, Status: int32(m.Status), MaxInstances: m.MaxInstances, CreatedAt: m.CreatedAt.Format(time.RFC3339), UpdatedAt: m.UpdatedAt.Format(time.RFC3339)}
 }
 func save(r *apiModel.SchedulerJobSaveRequest) *dalModel.SystemJob {
-	m := &dalModel.SystemJob{JobKey: r.JobKey, JobName: r.JobName, Cron: r.Cron, TimeoutSec: r.TimeoutSec, ParamsJSON: r.ParamsJson, RetryCount: r.RetryCount, Status: int16(r.Status)}
+	m := &dalModel.SystemJob{JobKey: r.JobKey, JobName: r.JobName, Cron: r.Cron, TimeoutSec: r.TimeoutSec, ParamsJSON: r.ParamsJson, RetryCount: r.RetryCount, Status: int16(r.Status), MaxInstances: r.MaxInstances}
 	if r.ID != nil {
 		m.ID = *r.ID
 	}
@@ -238,7 +238,7 @@ func RunStop(ctx context.Context, c *app.RequestContext) {
 // @Summary 定时任务运行记录
 // @Tags 监控
 // @Produce json
-// @Param data query apiModel.SchedulerJobRunListRequest true "查询参数"
+// @Param data query apiModel.SchedulerJobRunListRequest false "查询参数"
 // @Success 200 {object} map[string]interface{}
 // @Router /system/scheduler/run/list [GET]
 func RunList(ctx context.Context, c *app.RequestContext) {

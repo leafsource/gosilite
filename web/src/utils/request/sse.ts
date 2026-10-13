@@ -24,14 +24,17 @@ export interface SSEConnection {
 }
 
 function buildURL(url: string, params?: SSEOptions['params']): string {
-  if (!params) return url;
+  const host = import.meta.env.VITE_IS_REQUEST_PROXY !== 'true' ? '' : import.meta.env.VITE_API_URL;
+  const baseURL = `${host}${import.meta.env.VITE_API_URL_PREFIX}`;
+  const target = `${baseURL}${url}`;
+  if (!params) return target;
   const query = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined) query.set(key, String(value));
   });
-  const separator = url.includes('?') ? '&' : '?';
+  const separator = target.includes('?') ? '&' : '?';
   const text = query.toString();
-  return text ? `${url}${separator}${text}` : url;
+  return text ? `${target}${separator}${text}` : target;
 }
 
 function parseFrame(frame: string): SSEEvent | undefined {

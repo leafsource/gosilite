@@ -11,6 +11,8 @@ type SystemJob struct {
 	ParamsJSON     string    `gorm:"column:params_json"`
 	RetryCount     int32     `gorm:"column:retry_count"`
 	Status         int16     `gorm:"column:status"`
+	MaxInstances   int32     `gorm:"column:max_instances"`
+	ActiveRunCount int32     `gorm:"column:active_run_count"`
 	ActiveRunToken string    `gorm:"column:active_run_token"`
 	ConfigVersion  int32     `gorm:"column:config_version"`
 	CreatedAt      time.Time `gorm:"column:created_at"`

@@ -18,11 +18,11 @@ type SchedulerRepository interface {
 	GetRun(context.Context, int64) (*model.SystemJobRun, error)
 	RequestStopRun(context.Context, int64) (bool, error)
 	IsRunStopping(context.Context, int64) (bool, error)
-	ClaimActiveRun(context.Context, int64, string) (bool, error)
-	ClearActiveRun(context.Context, int64, string) (bool, error)
+	AcquireRunSlot(context.Context, int64) (bool, error)
+	ReleaseRunSlot(context.Context, int64) (bool, error)
 	CreateRun(context.Context, *scheduler.Run) (int64, error)
 	FinishRun(context.Context, *scheduler.Run) error
-	ListRuns(context.Context, int64, int, int) ([]*model.SystemJobRun, int64, error)
+	ListRuns(context.Context, *int64, int, int) ([]*model.SystemJobRun, int64, error)
 	CreateRunLog(context.Context, *scheduler.LogEntry) (int64, error)
 	ListRunLogs(context.Context, int64, int64, int, int) ([]*model.SystemJobRunLog, int64, error)
 	DeleteRunLogsBefore(context.Context, time.Time) (int64, error)
@@ -69,6 +69,7 @@ func (r *schedulerRepository) SaveJob(c context.Context, m *model.SystemJob) err
 		"params_json":    m.ParamsJSON,
 		"retry_count":    m.RetryCount,
 		"status":         m.Status,
+		"max_instances":  m.MaxInstances,
 		"config_version": gorm.Expr("config_version + 1"),
 		"updated_at":     now,
 	})
@@ -122,13 +123,17 @@ func (r *schedulerRepository) IsRunStopping(c context.Context, id int64) (bool, 
 	return count == 1, err
 }
 
-func (r *schedulerRepository) ClaimActiveRun(c context.Context, id int64, token string) (bool, error) {
-	result := r.db.WithContext(c).Model(&model.SystemJob{}).Where("id = ? AND active_run_token = ?", id, "").Updates(map[string]any{"active_run_token": token, "updated_at": time.Now()})
+func (r *schedulerRepository) AcquireRunSlot(c context.Context, id int64) (bool, error) {
+	result := r.db.WithContext(c).Model(&model.SystemJob{}).
+		Where("id = ? AND active_run_count < max_instances", id).
+		Updates(map[string]any{"active_run_count": gorm.Expr("active_run_count + 1"), "updated_at": time.Now()})
 	return result.RowsAffected == 1, result.Error
 }
 
-func (r *schedulerRepository) ClearActiveRun(c context.Context, id int64, token string) (bool, error) {
-	result := r.db.WithContext(c).Model(&model.SystemJob{}).Where("id = ? AND active_run_token = ?", id, token).Updates(map[string]any{"active_run_token": "", "updated_at": time.Now()})
+func (r *schedulerRepository) ReleaseRunSlot(c context.Context, id int64) (bool, error) {
+	result := r.db.WithContext(c).Model(&model.SystemJob{}).
+		Where("id = ? AND active_run_count > 0", id).
+		Updates(map[string]any{"active_run_count": gorm.Expr("active_run_count - 1"), "updated_at": time.Now()})
 	return result.RowsAffected == 1, result.Error
 }
 
@@ -156,7 +161,7 @@ func (r *schedulerRepository) FinishRun(c context.Context, x *scheduler.Run) err
 	return nil
 }
 
-func (r *schedulerRepository) ListRuns(c context.Context, id int64, p, s int) ([]*model.SystemJobRun, int64, error) {
+func (r *schedulerRepository) ListRuns(c context.Context, jobID *int64, p, s int) ([]*model.SystemJobRun, int64, error) {
 	if p < 1 {
 		p = 1
 	}
@@ -165,7 +170,10 @@ func (r *schedulerRepository) ListRuns(c context.Context, id int64, p, s int) ([
 	}
 	var out []*model.SystemJobRun
 	var n int64
-	q := r.db.WithContext(c).Model(&model.SystemJobRun{}).Where("job_id = ?", id)
+	q := r.db.WithContext(c).Model(&model.SystemJobRun{})
+	if jobID != nil {
+		q = q.Where("job_id = ?", *jobID)
+	}
 	if e := q.Count(&n).Error; e != nil {
 		return nil, 0, e
 	}

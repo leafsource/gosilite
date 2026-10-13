@@ -20,19 +20,27 @@ func (j testJob) Run(c context.Context, p string) (string, error) { return j.run
 type testLease struct {
 	mu        sync.Mutex
 	held      bool
+	keys      map[string]bool
 	fail      bool
 	renewFail bool
 }
 
-func (l *testLease) Acquire(_ context.Context, _, _ string, _ time.Duration) (bool, error) {
+func (l *testLease) Acquire(_ context.Context, key, _ string, _ time.Duration) (bool, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	if l.fail {
 		return false, errors.New("down")
 	}
-	if l.held {
+	if l.held && len(l.keys) == 0 {
 		return false, nil
 	}
+	if l.keys == nil {
+		l.keys = map[string]bool{}
+	}
+	if l.keys[key] {
+		return false, nil
+	}
+	l.keys[key] = true
 	l.held = true
 	return true, nil
 }
@@ -56,7 +64,10 @@ type testRuns struct {
 	mu              sync.Mutex
 	runs            []*Run
 	finished        []int64
-	activeRunTokens map[int64]string
+	activeRunCounts map[int64]int
+	maxInstances    map[int64]int
+	acquireCalls    int
+	releaseCalls    int
 }
 
 func (r *testRuns) RequestStopRun(_ context.Context, runID int64) (bool, error) {
@@ -82,26 +93,32 @@ func (r *testRuns) IsRunStopping(_ context.Context, runID int64) (bool, error) {
 	return false, nil
 }
 
-func (r *testRuns) ClaimActiveRun(_ context.Context, jobID int64, token string) (bool, error) {
+func (r *testRuns) AcquireRunSlot(_ context.Context, jobID int64) (bool, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if r.activeRunTokens == nil {
-		r.activeRunTokens = map[int64]string{}
+	if r.activeRunCounts == nil {
+		r.activeRunCounts = map[int64]int{}
 	}
-	if r.activeRunTokens[jobID] != "" {
+	limit := r.maxInstances[jobID]
+	if limit == 0 {
+		limit = 1
+	}
+	if r.activeRunCounts[jobID] >= limit {
 		return false, nil
 	}
-	r.activeRunTokens[jobID] = token
+	r.activeRunCounts[jobID]++
+	r.acquireCalls++
 	return true, nil
 }
 
-func (r *testRuns) ClearActiveRun(_ context.Context, jobID int64, token string) (bool, error) {
+func (r *testRuns) ReleaseRunSlot(_ context.Context, jobID int64) (bool, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if r.activeRunTokens[jobID] != token {
+	if r.activeRunCounts[jobID] == 0 {
 		return false, nil
 	}
-	r.activeRunTokens[jobID] = ""
+	r.activeRunCounts[jobID]--
+	r.releaseCalls++
 	return true, nil
 }
 
@@ -162,6 +179,58 @@ func TestExecutorRetriesFailure(t *testing.T) {
 		if run.JobName != "original" || run.ParamsJSON != `{"value":1}` || run.TimeoutSec != 1 || run.ConfigVersion != 7 {
 			t.Fatalf("run snapshot = %+v", run)
 		}
+	}
+	if runs.acquireCalls != 2 || runs.releaseCalls != 2 {
+		t.Fatalf("each retry must reacquire and release a slot: acquire=%d release=%d", runs.acquireCalls, runs.releaseCalls)
+	}
+}
+
+func TestExecutorAllowsConfiguredConcurrentInstances(t *testing.T) {
+	r := NewRegistry()
+	started := make(chan struct{}, 2)
+	release := make(chan struct{})
+	_ = r.Register(testJob{"system.scheduler.test", func(context.Context, string) (string, error) {
+		started <- struct{}{}
+		<-release
+		return "done", nil
+	}})
+	runs := &testRuns{maxInstances: map[int64]int{1: 2}}
+	e := NewExecutor(r, &testLease{}, runs, time.Second)
+	errs := make(chan error, 2)
+	for range 2 {
+		go func() {
+			errs <- e.Execute(context.Background(), Definition{ID: 1, JobKey: "system.scheduler.test", Timeout: time.Second}, "manual")
+		}()
+	}
+	<-started
+	<-started
+	runs.mu.Lock()
+	active := runs.activeRunCounts[1]
+	runs.mu.Unlock()
+	if active != 2 {
+		t.Fatalf("active run count = %d, want 2", active)
+	}
+	if err := e.Execute(context.Background(), Definition{ID: 1, JobKey: "system.scheduler.test", Timeout: time.Second}, "manual"); err != nil {
+		t.Fatal(err)
+	}
+	runs.mu.Lock()
+	third := runs.runs[2]
+	runs.mu.Unlock()
+	if third.Status != RunStatusSkippedLocked {
+		t.Fatalf("third run status = %q, want capacity skip", third.Status)
+	}
+	close(release)
+	if err := <-errs; err != nil {
+		t.Fatal(err)
+	}
+	if err := <-errs; err != nil {
+		t.Fatal(err)
+	}
+	runs.mu.Lock()
+	active = runs.activeRunCounts[1]
+	runs.mu.Unlock()
+	if active != 0 {
+		t.Fatalf("active run count = %d after exits, want 0", active)
 	}
 }
 func TestExecutorPersistsCronWrapperPanicUnderRun(t *testing.T) {
@@ -257,10 +326,10 @@ func TestExecutorLeaseRenewalLossRetainsDurableFenceUntilWorkerExits(t *testing.
 	}
 	runs.mu.Lock()
 	second := runs.runs[1]
-	activeToken := runs.activeRunTokens[1]
+	activeToken := runs.activeRunCounts[1]
 	runs.mu.Unlock()
-	if second.Status != RunStatusSkippedLocked || activeToken == "" {
-		t.Fatalf("competing execution ran despite lost Redis lease: second=%+v activeToken=%q", second, activeToken)
+	if second.Status != RunStatusSkippedLocked || activeToken != 1 {
+		t.Fatalf("competing execution ran despite lost Redis lease: second=%+v activeRunCount=%d", second, activeToken)
 	}
 
 	close(block)
@@ -268,14 +337,14 @@ func TestExecutorLeaseRenewalLossRetainsDurableFenceUntilWorkerExits(t *testing.
 	for {
 		runs.mu.Lock()
 		finished := len(runs.finished)
-		activeToken := runs.activeRunTokens[1]
+		activeToken := runs.activeRunCounts[1]
 		runs.mu.Unlock()
-		if finished == 2 && activeToken == "" {
+		if finished == 2 && activeToken == 0 {
 			break
 		}
 		select {
 		case <-deadline:
-			t.Fatalf("active fence was not cleared after worker exit: finished=%d activeToken=%q", finished, activeToken)
+			t.Fatalf("active slot was not released after worker exit: finished=%d activeRunCount=%d", finished, activeToken)
 		case <-time.After(time.Millisecond):
 		}
 	}
@@ -305,10 +374,10 @@ func TestExecutorStopCancelsWorkerAndPreservesFenceUntilExit(t *testing.T) {
 		t.Fatal(err)
 	}
 	runs.mu.Lock()
-	status, token := runs.runs[1].Status, runs.activeRunTokens[1]
+	status, token := runs.runs[1].Status, runs.activeRunCounts[1]
 	runs.mu.Unlock()
-	if status != RunStatusSkippedLocked || token == "" {
-		t.Fatalf("fence not retained: status=%s token=%q", status, token)
+	if status != RunStatusSkippedLocked || token != 1 {
+		t.Fatalf("slot not retained: status=%s activeRunCount=%d", status, token)
 	}
 	close(exit)
 	if err := <-finished; !errors.Is(err, context.Canceled) {
@@ -317,14 +386,14 @@ func TestExecutorStopCancelsWorkerAndPreservesFenceUntilExit(t *testing.T) {
 	deadline := time.After(time.Second)
 	for {
 		runs.mu.Lock()
-		status, token := runs.runs[0].Status, runs.activeRunTokens[1]
+		status, token := runs.runs[0].Status, runs.activeRunCounts[1]
 		runs.mu.Unlock()
-		if status == RunStatusStopped && token == "" {
+		if status == RunStatusStopped && token == 0 {
 			return
 		}
 		select {
 		case <-deadline:
-			t.Fatalf("run was not stopped and cleared: status=%s token=%q", status, token)
+			t.Fatalf("run was not stopped and slot released: status=%s activeRunCount=%d", status, token)
 		case <-time.After(time.Millisecond):
 		}
 	}
@@ -367,13 +436,13 @@ func TestExecutorCrossReplicaStopPollsDurableStatusBeforeLeaseRenewal(t *testing
 	}
 	runs.mu.Lock()
 	runCount := len(runs.runs)
-	activeToken := runs.activeRunTokens[1]
+	activeToken := runs.activeRunCounts[1]
 	runs.mu.Unlock()
 	leases.mu.Lock()
 	leaseHeld := leases.held
 	leases.mu.Unlock()
-	if runCount != 1 || activeToken == "" || !leaseHeld {
-		t.Fatalf("stopped worker must retain fence and lease without retry: runs=%d activeToken=%q leaseHeld=%v", runCount, activeToken, leaseHeld)
+	if runCount != 1 || activeToken != 1 || !leaseHeld {
+		t.Fatalf("stopped worker must retain slot and lease without retry: runs=%d activeRunCount=%d leaseHeld=%v", runCount, activeToken, leaseHeld)
 	}
 
 	close(exit)
@@ -381,14 +450,14 @@ func TestExecutorCrossReplicaStopPollsDurableStatusBeforeLeaseRenewal(t *testing
 	for {
 		runs.mu.Lock()
 		status := runs.runs[0].Status
-		activeToken := runs.activeRunTokens[1]
+		activeToken := runs.activeRunCounts[1]
 		runs.mu.Unlock()
-		if status == RunStatusStopped && activeToken == "" {
+		if status == RunStatusStopped && activeToken == 0 {
 			return
 		}
 		select {
 		case <-deadline:
-			t.Fatalf("run was not finalized as stopped: status=%s activeToken=%q", status, activeToken)
+			t.Fatalf("run was not finalized as stopped: status=%s activeRunCount=%d", status, activeToken)
 		case <-time.After(time.Millisecond):
 		}
 	}

@@ -64,6 +64,9 @@ func (s *Service) Get(ctx context.Context, id int64) (*model.SystemJob, error) {
 	return s.repo.GetJob(ctx, id)
 }
 func (s *Service) Save(ctx context.Context, m *model.SystemJob) error {
+	if m.MaxInstances == 0 {
+		m.MaxInstances = 1
+	}
 	if err := s.validate(m); err != nil {
 		return err
 	}
@@ -124,7 +127,8 @@ func (s *Service) Run(ctx context.Context, id int64) error {
 	if err != nil {
 		return err
 	}
-	return s.executor.Execute(ctx, toDef(m), "manual")
+	s.executeAsync(toDef(m))
+	return nil
 }
 
 func (s *Service) Retry(ctx context.Context, runID int64) error {
@@ -135,7 +139,14 @@ func (s *Service) Retry(ctx context.Context, runID int64) error {
 	if run.Status == core.RunStatusRunning || run.Status == core.RunStatusStopping {
 		return fmt.Errorf("scheduler run is still active")
 	}
-	return s.executor.Execute(ctx, core.Definition{ID: run.JobID, JobKey: run.JobKey, JobName: run.JobName, ParamsJSON: run.ParamsJSON, Timeout: time.Duration(run.TimeoutSec) * time.Second, ConfigVersion: run.ConfigVersion}, "manual")
+	s.executeAsync(core.Definition{ID: run.JobID, JobKey: run.JobKey, JobName: run.JobName, ParamsJSON: run.ParamsJSON, Timeout: time.Duration(run.TimeoutSec) * time.Second, ConfigVersion: run.ConfigVersion})
+	return nil
+}
+
+func (s *Service) executeAsync(def core.Definition) {
+	go func() {
+		_ = s.executor.Execute(context.Background(), def, "manual")
+	}()
 }
 
 func (s *Service) Stop(ctx context.Context, runID int64) error {
@@ -149,8 +160,8 @@ func (s *Service) Stop(ctx context.Context, runID int64) error {
 	return nil
 }
 
-func (s *Service) Runs(ctx context.Context, id int64, p, n int) ([]*model.SystemJobRun, int64, error) {
-	return s.repo.ListRuns(ctx, id, p, n)
+func (s *Service) Runs(ctx context.Context, jobID *int64, p, n int) ([]*model.SystemJobRun, int64, error) {
+	return s.repo.ListRuns(ctx, jobID, p, n)
 }
 func (s *Service) RunLogs(ctx context.Context, runID, afterID int64, p, n int) ([]*model.SystemJobRunLog, int64, error) {
 	return s.repo.ListRunLogs(ctx, runID, afterID, p, n)
@@ -206,7 +217,7 @@ func (s *Service) validate(m *model.SystemJob) error {
 	if _, ok := s.registry.Get(m.JobKey); !ok {
 		return fmt.Errorf("scheduler job not registered: %s", m.JobKey)
 	}
-	if strings.TrimSpace(m.JobName) == "" || strings.TrimSpace(m.Cron) == "" || m.TimeoutSec <= 0 || m.RetryCount < 0 {
+	if strings.TrimSpace(m.JobName) == "" || strings.TrimSpace(m.Cron) == "" || m.TimeoutSec <= 0 || m.RetryCount < 0 || m.MaxInstances < 1 {
 		return fmt.Errorf("invalid scheduler job configuration")
 	}
 	if !json.Valid([]byte(m.ParamsJSON)) {

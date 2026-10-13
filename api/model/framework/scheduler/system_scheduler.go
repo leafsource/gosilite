@@ -9,16 +9,17 @@ import (
 )
 
 type SchedulerJobDTO struct {
-	ID         int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
-	JobKey     string `thrift:"jobKey,2" form:"jobKey" json:"jobKey" query:"jobKey"`
-	JobName    string `thrift:"jobName,3" form:"jobName" json:"jobName" query:"jobName"`
-	Cron       string `thrift:"cron,4" form:"cron" json:"cron" query:"cron"`
-	TimeoutSec int32  `thrift:"timeoutSec,6" form:"timeoutSec" json:"timeoutSec" query:"timeoutSec"`
-	ParamsJson string `thrift:"paramsJson,7" form:"paramsJson" json:"paramsJson" query:"paramsJson"`
-	RetryCount int32  `thrift:"retryCount,8" form:"retryCount" json:"retryCount" query:"retryCount"`
-	Status     int32  `thrift:"status,9" form:"status" json:"status" query:"status"`
-	CreatedAt  string `thrift:"createdAt,10" form:"createdAt" json:"createdAt" query:"createdAt"`
-	UpdatedAt  string `thrift:"updatedAt,11" form:"updatedAt" json:"updatedAt" query:"updatedAt"`
+	ID           int64  `thrift:"id,1" json:"id,string" form:"id" query:"id"`
+	JobKey       string `thrift:"jobKey,2" form:"jobKey" json:"jobKey" query:"jobKey"`
+	JobName      string `thrift:"jobName,3" form:"jobName" json:"jobName" query:"jobName"`
+	Cron         string `thrift:"cron,4" form:"cron" json:"cron" query:"cron"`
+	TimeoutSec   int32  `thrift:"timeoutSec,6" form:"timeoutSec" json:"timeoutSec" query:"timeoutSec"`
+	ParamsJson   string `thrift:"paramsJson,7" form:"paramsJson" json:"paramsJson" query:"paramsJson"`
+	RetryCount   int32  `thrift:"retryCount,8" form:"retryCount" json:"retryCount" query:"retryCount"`
+	Status       int32  `thrift:"status,9" form:"status" json:"status" query:"status"`
+	CreatedAt    string `thrift:"createdAt,10" form:"createdAt" json:"createdAt" query:"createdAt"`
+	UpdatedAt    string `thrift:"updatedAt,11" form:"updatedAt" json:"updatedAt" query:"updatedAt"`
+	MaxInstances int32  `thrift:"maxInstances,12" form:"maxInstances" json:"maxInstances" query:"maxInstances"`
 }
 
 func NewSchedulerJobDTO() *SchedulerJobDTO {
@@ -68,6 +69,10 @@ func (p *SchedulerJobDTO) GetUpdatedAt() (v string) {
 	return p.UpdatedAt
 }
 
+func (p *SchedulerJobDTO) GetMaxInstances() (v int32) {
+	return p.MaxInstances
+}
+
 var fieldIDToName_SchedulerJobDTO = map[int16]string{
 	1:  "id",
 	2:  "jobKey",
@@ -79,6 +84,7 @@ var fieldIDToName_SchedulerJobDTO = map[int16]string{
 	9:  "status",
 	10: "createdAt",
 	11: "updatedAt",
+	12: "maxInstances",
 }
 
 func (p *SchedulerJobDTO) Read(iprot thrift.TProtocol) (err error) {
@@ -175,6 +181,14 @@ func (p *SchedulerJobDTO) Read(iprot thrift.TProtocol) (err error) {
 		case 11:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField11(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 12:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField12(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -319,6 +333,17 @@ func (p *SchedulerJobDTO) ReadField11(iprot thrift.TProtocol) error {
 	p.UpdatedAt = _field
 	return nil
 }
+func (p *SchedulerJobDTO) ReadField12(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.MaxInstances = _field
+	return nil
+}
 
 func (p *SchedulerJobDTO) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -364,6 +389,10 @@ func (p *SchedulerJobDTO) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField11(oprot); err != nil {
 			fieldId = 11
+			goto WriteFieldError
+		}
+		if err = p.writeField12(oprot); err != nil {
+			fieldId = 12
 			goto WriteFieldError
 		}
 	}
@@ -554,6 +583,23 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
 }
 
+func (p *SchedulerJobDTO) writeField12(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("maxInstances", thrift.I32, 12); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.MaxInstances); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
+}
+
 func (p *SchedulerJobDTO) String() string {
 	if p == nil {
 		return "<nil>"
@@ -563,14 +609,15 @@ func (p *SchedulerJobDTO) String() string {
 }
 
 type SchedulerJobSaveRequest struct {
-	ID         *int64 `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
-	JobKey     string `thrift:"jobKey,2" form:"jobKey" json:"jobKey" query:"jobKey"`
-	JobName    string `thrift:"jobName,3" form:"jobName" json:"jobName" query:"jobName"`
-	Cron       string `thrift:"cron,4" form:"cron" json:"cron" query:"cron"`
-	TimeoutSec int32  `thrift:"timeoutSec,6" form:"timeoutSec" json:"timeoutSec" query:"timeoutSec"`
-	ParamsJson string `thrift:"paramsJson,7" form:"paramsJson" json:"paramsJson" query:"paramsJson"`
-	RetryCount int32  `thrift:"retryCount,8" form:"retryCount" json:"retryCount" query:"retryCount"`
-	Status     int32  `thrift:"status,9" form:"status" json:"status" query:"status"`
+	ID           *int64 `thrift:"id,1,optional" json:"id,string" form:"id" query:"id"`
+	JobKey       string `thrift:"jobKey,2" form:"jobKey" json:"jobKey" query:"jobKey"`
+	JobName      string `thrift:"jobName,3" form:"jobName" json:"jobName" query:"jobName"`
+	Cron         string `thrift:"cron,4" form:"cron" json:"cron" query:"cron"`
+	TimeoutSec   int32  `thrift:"timeoutSec,6" form:"timeoutSec" json:"timeoutSec" query:"timeoutSec"`
+	ParamsJson   string `thrift:"paramsJson,7" form:"paramsJson" json:"paramsJson" query:"paramsJson"`
+	RetryCount   int32  `thrift:"retryCount,8" form:"retryCount" json:"retryCount" query:"retryCount"`
+	Status       int32  `thrift:"status,9" form:"status" json:"status" query:"status"`
+	MaxInstances int32  `thrift:"maxInstances,10" form:"maxInstances" json:"maxInstances" query:"maxInstances"`
 }
 
 func NewSchedulerJobSaveRequest() *SchedulerJobSaveRequest {
@@ -617,15 +664,20 @@ func (p *SchedulerJobSaveRequest) GetStatus() (v int32) {
 	return p.Status
 }
 
+func (p *SchedulerJobSaveRequest) GetMaxInstances() (v int32) {
+	return p.MaxInstances
+}
+
 var fieldIDToName_SchedulerJobSaveRequest = map[int16]string{
-	1: "id",
-	2: "jobKey",
-	3: "jobName",
-	4: "cron",
-	6: "timeoutSec",
-	7: "paramsJson",
-	8: "retryCount",
-	9: "status",
+	1:  "id",
+	2:  "jobKey",
+	3:  "jobName",
+	4:  "cron",
+	6:  "timeoutSec",
+	7:  "paramsJson",
+	8:  "retryCount",
+	9:  "status",
+	10: "maxInstances",
 }
 
 func (p *SchedulerJobSaveRequest) IsSetID() bool {
@@ -710,6 +762,14 @@ func (p *SchedulerJobSaveRequest) Read(iprot thrift.TProtocol) (err error) {
 		case 9:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField9(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 10:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField10(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -832,6 +892,17 @@ func (p *SchedulerJobSaveRequest) ReadField9(iprot thrift.TProtocol) error {
 	p.Status = _field
 	return nil
 }
+func (p *SchedulerJobSaveRequest) ReadField10(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.MaxInstances = _field
+	return nil
+}
 
 func (p *SchedulerJobSaveRequest) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -869,6 +940,10 @@ func (p *SchedulerJobSaveRequest) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField9(oprot); err != nil {
 			fieldId = 9
+			goto WriteFieldError
+		}
+		if err = p.writeField10(oprot); err != nil {
+			fieldId = 10
 			goto WriteFieldError
 		}
 	}
@@ -1025,6 +1100,23 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 9 end error: ", p), err)
+}
+
+func (p *SchedulerJobSaveRequest) writeField10(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("maxInstances", thrift.I32, 10); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.MaxInstances); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 10 end error: ", p), err)
 }
 
 func (p *SchedulerJobSaveRequest) String() string {
@@ -2311,9 +2403,9 @@ func (p *SchedulerJobRunDTO) String() string {
 }
 
 type SchedulerJobRunListRequest struct {
-	JobId    int64 `thrift:"jobId,1" json:"jobId,string" form:"jobId" query:"jobId"`
-	Page     int32 `thrift:"page,2" form:"page" json:"page" query:"page"`
-	PageSize int32 `thrift:"pageSize,3" form:"pageSize" json:"pageSize" query:"pageSize"`
+	JobId    *int64 `thrift:"jobId,1,optional" json:"jobId,string" form:"jobId" query:"jobId"`
+	Page     int32  `thrift:"page,2" form:"page" json:"page" query:"page"`
+	PageSize int32  `thrift:"pageSize,3" form:"pageSize" json:"pageSize" query:"pageSize"`
 }
 
 func NewSchedulerJobRunListRequest() *SchedulerJobRunListRequest {
@@ -2328,8 +2420,13 @@ func (p *SchedulerJobRunListRequest) InitDefault() {
 	p.PageSize = 10
 }
 
+var SchedulerJobRunListRequest_JobId_DEFAULT int64
+
 func (p *SchedulerJobRunListRequest) GetJobId() (v int64) {
-	return p.JobId
+	if !p.IsSetJobId() {
+		return SchedulerJobRunListRequest_JobId_DEFAULT
+	}
+	return *p.JobId
 }
 
 func (p *SchedulerJobRunListRequest) GetPage() (v int32) {
@@ -2344,6 +2441,10 @@ var fieldIDToName_SchedulerJobRunListRequest = map[int16]string{
 	1: "jobId",
 	2: "page",
 	3: "pageSize",
+}
+
+func (p *SchedulerJobRunListRequest) IsSetJobId() bool {
+	return p.JobId != nil
 }
 
 func (p *SchedulerJobRunListRequest) Read(iprot thrift.TProtocol) (err error) {
@@ -2420,11 +2521,11 @@ ReadStructEndError:
 
 func (p *SchedulerJobRunListRequest) ReadField1(iprot thrift.TProtocol) error {
 
-	var _field int64
+	var _field *int64
 	if v, err := iprot.ReadI64(); err != nil {
 		return err
 	} else {
-		_field = v
+		_field = &v
 	}
 	p.JobId = _field
 	return nil
@@ -2489,14 +2590,16 @@ WriteStructEndError:
 }
 
 func (p *SchedulerJobRunListRequest) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("jobId", thrift.I64, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI64(p.JobId); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
+	if p.IsSetJobId() {
+		if err = oprot.WriteFieldBegin("jobId", thrift.I64, 1); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.JobId); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
 	}
 	return nil
 WriteFieldBeginError:

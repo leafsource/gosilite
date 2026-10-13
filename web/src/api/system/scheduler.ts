@@ -14,7 +14,7 @@ export const toggleSchedulerJob = (id: string) => request.put({ url: '/system/sc
 export const runSchedulerJob = (id: string) => request.post({ url: '/system/scheduler/job/run', data: { id } });
 export const retrySchedulerRun = (id: string) => request.post({ url: '/system/scheduler/run/retry', data: { id } });
 export const stopSchedulerRun = (id: string) => request.post({ url: '/system/scheduler/run/stop', data: { id } });
-export const listSchedulerRuns = (params: { jobId: string; page: number; pageSize: number }) =>
+export const listSchedulerRuns = (params: { jobId?: string; page: number; pageSize: number }) =>
   request.get<{ list: SchedulerRun[]; total: number }>({ url: '/system/scheduler/run/list', params });
 export const listSchedulerRunLogs = (params: { runId: string; afterId?: string; page?: number; pageSize?: number }) =>
   request.get<{ list: SchedulerRunLog[]; total: number }>({ url: '/system/scheduler/run/log/list', params });

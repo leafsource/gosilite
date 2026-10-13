@@ -11,6 +11,7 @@ struct SchedulerJobDTO {
   9: i32 status
   10: string createdAt
   11: string updatedAt
+  12: i32 maxInstances
 }
 struct SchedulerJobSaveRequest {
   1: optional i64 id (go.tag = "json:\"id,string\"")
@@ -21,6 +22,7 @@ struct SchedulerJobSaveRequest {
   7: string paramsJson
   8: i32 retryCount
   9: i32 status
+  10: i32 maxInstances
 }
 struct SchedulerJobListRequest { 1: i32 page = 1, 2: i32 pageSize = 10 }
 struct SchedulerJobListResponse { 1: list<SchedulerJobDTO> list, 2: i64 total }
@@ -41,7 +43,7 @@ struct SchedulerJobRunDTO {
   13: i32 timeoutSec
   14: i32 configVersion
 }
-struct SchedulerJobRunListRequest { 1: i64 jobId (go.tag = "json:\"jobId,string\""), 2: i32 page = 1, 3: i32 pageSize = 10 }
+struct SchedulerJobRunListRequest { 1: optional i64 jobId (go.tag = "json:\"jobId,string\""), 2: i32 page = 1, 3: i32 pageSize = 10 }
 struct SchedulerJobRunListResponse { 1: list<SchedulerJobRunDTO> list, 2: i64 total }
 struct SchedulerJobRunLogDTO {
   1: i64 id (go.tag = "json:\"id,string\"")

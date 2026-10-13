@@ -28,7 +28,7 @@ commits: e5382ca..958d876
 
 任务能力由 Go 代码中的稳定 `job_key` 常量及注册中心提供。`job_key` 使用小写点分业务语义，禁止从函数名、类型名或数据库 ID 推导；同一 Key 只能注册一个 Job，实现重构时 Key 不变。管理员仅能从注册表选择 Job Key，并配置 cron、超时、任务参数与额外重试次数；cron 按服务进程系统本地时间运行；不支持脚本或任意 HTTP 回调。
 
-`system_job` 保存任务定义和 `active_run_token`，`system_job_run` 保存每次尝试的不可变运行记录。执行器在启动 worker 前以条件更新原子认领空的 `active_run_token`；仅持有相同 token 的 worker 在实际退出后才能清除它。随后使用 Redis `SET key token NX PX` 获取任务级租约；成功持锁后以 token 校验的 Lua 续租与释放锁。抢锁失败、数据库 fence 被占用写入 `skipped_locked`，Redis 或 fence 不可用时拒绝执行。若 Redis 续租失败，已启动 worker 的 fence 继续保留到其退出，因此后续执行即使重新获得 Redis 也必须跳过。为安全起见，系统绝不自动回收遗留 token；进程崩溃或无法完成清理后，恢复必须由未来显式的运维操作完成。任务运行带超时 context；失败后的总尝试次数为 `retry_count + 1`，每次重试重新获取锁。停机、禁用与抢锁期间遗漏的 cron 时刻不补跑。
+`system_job` 保存任务定义、`max_instances`（默认 1）和 `active_run_count`，`system_job_run` 保存每次尝试的不可变运行记录。执行器在启动 worker 前以 `active_run_count < max_instances` 的条件更新原子获取容量槽；只在 worker 实际退出后才释放槽。历史 `active_run_token` 保留用于迁移安全，但不参与并发判定。每个已获得容量槽的运行使用独立 Redis 租约键；抢锁失败或容量耗尽写入 `skipped_locked`，Redis 或容量存储不可用时拒绝执行。若 Redis 续租失败，已启动 worker 的容量槽继续保留到其退出。任务运行带超时 context；失败后的总尝试次数为 `retry_count + 1`，每次重试重新获取容量槽。停机、禁用与抢锁期间遗漏的 cron 时刻不补跑。
 
 任务定义和运行记录通过 IDL 暴露为系统管理接口，所有 i64 ID 使用字符串 JSON 契约。任务变更热更新本进程 cron 表；每个副本均装载任务，Redis 锁选择唯一执行者。内置 `system.scheduler.test` Job 使用安全的计数型测试行为，并能在运行记录和日志中验证执行结果。
 
