@@ -186,6 +186,11 @@ func (s *Service) AdminUpdate(ctx context.Context, u *model.SystemUser, roleIDs,
 			return err
 		}
 		old.Password = hashed
+		old.LoginFailureCount = 0
+		old.LoginPermanentlyLocked = false
+		if err := s.clearLoginLock(ctx, old.Account); err != nil {
+			return err
+		}
 	}
 	old.Account = u.Account
 	old.Username = u.Username

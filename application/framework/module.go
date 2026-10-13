@@ -54,13 +54,13 @@ func (m *Module) Init(ctx context.Context, deps *infra.AppDependencies) error {
 	if deps == nil || deps.DB == nil {
 		return fmt.Errorf("framework module: infra dependencies are required")
 	}
+	config.InitService(repository.NewConfigRepository(deps.DB))
 	user.InitService(ctx, deps.DB, deps.ImageOSS, deps.Cache)
 	role.InitService(ctx, deps.DB)
 	menu.InitService(ctx, deps.DB)
 	dept.InitService(ctx, deps.DB)
 	post.InitService(ctx, deps.DB)
 	dict.InitService(repository.NewDictRepository(deps.DB))
-	config.InitService(repository.NewConfigRepository(deps.DB))
 	notice.InitService(repository.NewNoticeRepository(deps.DB))
 	message.InitService(repository.NewMessageRepository(deps.DB))
 	syslog.InitService(repository.NewSysLogRepository(deps.DB))

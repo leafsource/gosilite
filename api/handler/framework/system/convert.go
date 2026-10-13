@@ -99,6 +99,7 @@ func adminUserDTO(u *model.SystemUser, deptName string, roleIDs, postIDs []int64
 		MobilePhone: u.MobilePhone, Email: u.Email, State: u.State,
 		DeptId: u.DeptID, DeptName: deptName,
 		RoleIds: formatIDs(roleIDs), PostIds: formatIDs(postIDs), AvatarUrl: u.AvatarURL,
+		LoginFailureCount: u.LoginFailureCount, LoginPermanentlyLocked: u.LoginPermanentlyLocked,
 	}
 }
 

@@ -3,11 +3,13 @@ package repository
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"gosilite/application/framework/dal/model"
 	"gosilite/application/framework/dal/query"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // SystemUserRepository 仓库接口
@@ -49,6 +51,8 @@ type ISystemUserRepository interface {
 	UpdateState(ctx context.Context, userID int64, state string) error
 
 	UpdateAvatar(ctx context.Context, userId int64, avatarKey string) error
+	RecordLoginFailure(ctx context.Context, userID int64, permanentThreshold int32) (bool, error)
+	ResetLoginSecurity(ctx context.Context, userID int64) error
 }
 
 // SystemUserRepositoryImpl 仓库实现
@@ -110,11 +114,12 @@ func (r *SystemUserRepositoryImpl) List(ctx context.Context, page, pageSize int)
 
 // GetByAccount 根据账号获取SystemUser
 func (r *SystemUserRepositoryImpl) GetByAccount(ctx context.Context, account string) (*model.SystemUser, error) {
-	entity, err := r.query.SystemUser.Where(r.query.SystemUser.Account.Eq(account)).First()
+	var entity model.SystemUser
+	err := r.db.WithContext(ctx).Where("LOWER(account) = ?", strings.ToLower(account)).First(&entity).Error
 	if err != nil {
 		return nil, err
 	}
-	return entity, nil
+	return &entity, nil
 }
 
 func (r *SystemUserRepositoryImpl) FindRoleCodes(ctx context.Context, userId int64) []string {
@@ -148,6 +153,33 @@ func (r *SystemUserRepositoryImpl) FindPermissionCodes(ctx context.Context, user
 func (r *SystemUserRepositoryImpl) UpdateAvatar(ctx context.Context, userId int64, avatarKey string) error {
 	_, err := r.query.SystemUser.WithContext(ctx).Where(r.query.SystemUser.ID.Eq(userId)).Update(r.query.SystemUser.AvatarURL, avatarKey)
 	return err
+}
+
+func (r *SystemUserRepositoryImpl) RecordLoginFailure(ctx context.Context, userID int64, permanentThreshold int32) (bool, error) {
+	var permanentlyLocked bool
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var user model.SystemUser
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", userID).First(&user).Error; err != nil {
+			return err
+		}
+		if user.LoginPermanentlyLocked {
+			permanentlyLocked = true
+			return nil
+		}
+		user.LoginFailureCount++
+		if user.LoginFailureCount >= permanentThreshold {
+			user.LoginPermanentlyLocked = true
+			permanentlyLocked = true
+		}
+		return tx.Save(&user).Error
+	})
+	return permanentlyLocked, err
+}
+
+func (r *SystemUserRepositoryImpl) ResetLoginSecurity(ctx context.Context, userID int64) error {
+	return r.db.WithContext(ctx).Model(&model.SystemUser{}).
+		Where("id = ?", userID).
+		Updates(map[string]any{"login_failure_count": 0, "login_permanently_locked": false}).Error
 }
 
 func (r *SystemUserRepositoryImpl) AdminList(ctx context.Context, page, pageSize int, keyword string, deptID int64, state string, deptIDs []int64, allDept bool) ([]*model.SystemUser, int64, error) {

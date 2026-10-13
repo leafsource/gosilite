@@ -44,6 +44,7 @@ gosilite 后端是单一 CloudWeGo Hertz 服务（`GO_ENV=test go run .`，端�
 |---|---|
 | 路由 | `POST /user/login`、`POST /user/refresh` **免登录**（`api/router/framework/user/middleware.go:26,58` 返回 nil）；`GET /user/info`、`GET /user/profile`、`POST /user/logout`、`POST /user/password`、`PUT /user/profile/avatar` 挂 `permission.Default()`（仅校验登录） |
 | 会话字段 | `accessToken` / `tokenType` / `expiresIn` / `refreshToken`，camelCase（`idl/framework/user.thrift:53-57`） |
+| 登录防护 | YAML `login_security` 提供默认值；系统参数 `sys.login.max_failures`、`sys.login.failure_window_minutes`、`sys.login.lock_minutes` 可即时覆盖。15 分钟内默认 5 次错误会临时锁定 30 分钟；累计 10 次错误永久锁定，管理员重置密码后解除。所有失败统一返回凭据错误，不暴露锁定状态。 |
 | refresh 存储 | Redis，前缀 `gosilite:auth:refresh:`（`types/consts/consts.go:13`）；`SessionStore` 签发/校验/吊销（`service/user/session.go:39,55,77`） |
 | 轮换与吊销 | 刷新即轮换并 `MoveOnline` 迁移在线会话；`RevokeUserRefreshTokens` 按用户代际整批吊销（改密时调用，`session.go:84`）；access 可进黑名单 `DenyAccessToken`（`session.go:89`，前缀 `gosilite:auth:access_deny:`） |
 | 在线会话 | Redis `gosilite:auth:online_sessions`（无数据表，见 `0015` 迁移注释），供在线用户页与强退使用 |

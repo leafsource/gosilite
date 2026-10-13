@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -13,16 +12,7 @@ import (
 )
 
 func (s *Service) Login(ctx context.Context, account, password string) (*int64, error) {
-	user, err := s.repo.GetByAccount(ctx, account)
-	if err != nil {
-		return nil, err
-	}
-
-	if !bcrypt.CheckPassword(user.Password, password) {
-		return nil, errors.New("密码错误")
-	}
-
-	return &user.ID, nil
+	return s.login(ctx, account, password)
 }
 
 func (s *Service) Authorizator(ctx context.Context, userId int64) (*ctxutil.LoginUser, error) {
