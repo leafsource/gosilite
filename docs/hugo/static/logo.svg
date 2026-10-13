@@ -1,0 +1,16 @@
+<svg width="1em" height="1em" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="G">
+  <defs>
+    <linearGradient id="gsl-g" x1="12" y1="10" x2="52" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2563EB"/>
+      <stop offset="0.45" stop-color="#22A3FF"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+    <linearGradient id="gsl-facet" x1="46" y1="8" x2="58" y2="22" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7DD3FC"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#gsl-g)" d="M56.6202 36.3412 A25 25 0 1 1 47.3915 12.2997 L40.7424 20.8102 A14.2 14.2 0 1 0 45.9843 34.4658 Z"/>
+  <path fill="url(#gsl-g)" d="M29.8 26 H56.2693 A25 25 0 0 1 56.2693 38 H29.8 Z"/>
+  <path fill="url(#gsl-facet)" d="M47.3915 12.2997 L40.7424 20.8102 L43.7124 17.8402 L50.3615 9.3297 Z"/>
+</svg>

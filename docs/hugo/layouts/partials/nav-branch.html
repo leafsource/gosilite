@@ -1,0 +1,26 @@
+{{/* 文件夹树分支（递归）：每个 section 一个 <details>（当前页所在分支 open），
+     内含该文件夹直挂 md（.RegularPages）与子文件夹（.Sections）。 */}}
+{{ $sections := .sections }}
+{{ $cur := .cur }}
+{{ range $sections }}
+  {{ $isCurrent := eq .RelPermalink $cur.RelPermalink }}
+  {{ $isOpen := or $isCurrent ($cur.IsDescendant .) }}
+  <li class="np-sec">
+    <details{{ if $isOpen }} open{{ end }}>
+      <summary>
+        <a href="{{ .RelPermalink }}" class="np-a{{ if $isCurrent }} is-active{{ end }}"{{ if $isCurrent }} aria-current="page"{{ end }}>{{ .Title }}</a>
+      </summary>
+      <ul class="np-group">
+        {{ range .RegularPages.ByWeight }}
+          {{ $active := eq .RelPermalink $cur.RelPermalink }}
+          <li>
+            <a href="{{ .RelPermalink }}" class="np-a{{ if $active }} is-active{{ end }}"{{ if $active }} aria-current="page"{{ end }}>{{ .Title }}</a>
+          </li>
+        {{ end }}
+        {{ if .Sections }}
+          {{ partial "nav-branch.html" (dict "sections" .Sections "cur" $cur) }}
+        {{ end }}
+      </ul>
+    </details>
+  </li>
+{{ end }}

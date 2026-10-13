@@ -1,0 +1,84 @@
+import { request } from '@/utils/request';
+
+export interface LoginParams {
+  username: string;
+  password: string;
+}
+
+export interface SessionTokenResponse {
+  accessToken: string;
+  tokenType: string;
+  expiresIn: number;
+  refreshToken: string;
+}
+
+export interface UserProfile {
+  id: string;
+  account: string;
+  username: string;
+  avatarURL: string;
+}
+
+export interface UserAuthInfo {
+  user: UserProfile;
+  roles: string[];
+  permissions: string[];
+}
+
+export interface ChangePasswordParams {
+  currentPassword: string;
+  newPassword: string;
+}
+
+/** 个人资料（GET /user/profile）；email 等增强字段由后端补齐，缺失时前端占位 */
+export interface ProfileResponse {
+  id: string;
+  account: string;
+  username: string;
+  avatarURL: string;
+  email?: string;
+  mobilePhone?: string;
+  state?: string;
+  createdAt?: string;
+}
+
+const Api = {
+  Login: '/user/login',
+  Info: '/user/info',
+  Refresh: '/user/refresh',
+  Logout: '/user/logout',
+  Password: '/user/password',
+  Profile: '/user/profile',
+};
+
+export function login(data: LoginParams) {
+  return request.post<SessionTokenResponse>({ url: Api.Login, data }, { withToken: false, skipAuthRefresh: true });
+}
+
+export function fetchUserInfo() {
+  return request.get<UserAuthInfo>({ url: Api.Info });
+}
+
+export function refreshSession(refreshToken: string) {
+  return request.post<SessionTokenResponse>(
+    { url: Api.Refresh, data: { refreshToken } },
+    { withToken: false, skipAuthRefresh: true },
+  );
+}
+
+export function logout(refreshToken?: string) {
+  return request.post({ url: Api.Logout, data: { refreshToken } }, { skipAuthRefresh: true });
+}
+
+export function changePassword(data: ChangePasswordParams) {
+  return request.post({ url: Api.Password, data }, { skipAuthRefresh: true });
+}
+
+export function fetchProfile() {
+  return request.get<ProfileResponse>({ url: Api.Profile });
+}
+
+/** 更新头像（统一文件服务第二步：fileId 来自 /common/file/upload，spec S2.11） */
+export function updateProfileAvatar(fileId: string) {
+  return request.put<{ avatarURL: string }>({ url: '/user/profile/avatar', data: { fileId } });
+}

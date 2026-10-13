@@ -1,0 +1,81 @@
+package repository
+
+import (
+	"context"
+	"gorm.io/gorm"
+	"gosilite/{{.ModelPackage}}"
+	"gosilite/{{.QueryPackage}}"
+)
+
+// {{.RepositoryName}} 仓库接口
+type I{{.RepositoryName}} interface {
+	// Create 创建{{.StructName}}
+	Create(ctx context.Context, {{.StructName}} *model.{{.StructName}}) error
+	
+	// GetByID 根据ID获取{{.StructName}}
+	GetByID(ctx context.Context, id int64) (*model.{{.StructName}}, error)
+	
+	// Update 更新{{.StructName}}
+	Update(ctx context.Context, {{.StructName}} *model.{{.StructName}}) error
+	
+	// Delete 删除{{.StructName}}
+	Delete(ctx context.Context, id int64) error
+	
+	// List 获取{{.StructName}}列表
+	List(ctx context.Context, page, pageSize int) ([]*model.{{.StructName}}, int64, error)
+}
+
+// {{.RepositoryName}}Impl 仓库实现
+type {{.RepositoryName}}Impl struct {
+	query *query.Query
+}
+
+// New{{.RepositoryName}} 创建仓库实例
+func New{{.RepositoryName}}(db *gorm.DB) I{{.RepositoryName}} {
+	return &{{.RepositoryName}}Impl{
+		query: query.Use(db),
+	}
+}
+
+// Create 创建{{.StructName}}
+func (r *{{.RepositoryName}}Impl) Create(ctx context.Context, {{.StructName}} *model.{{.StructName}}) error {
+	return r.query.{{.StructName}}.WithContext(ctx).Create({{.StructName}})
+}
+
+// GetByID 根据ID获取{{.StructName}}
+func (r *{{.RepositoryName}}Impl) GetByID(ctx context.Context, id int64) (*model.{{.StructName}}, error) {
+	entity, err := r.query.{{.StructName}}.Where(r.query.{{.StructName}}.ID.Eq(id)).First()
+	if err != nil {
+		return nil, err
+	}
+	return entity, nil
+}
+
+// Update 更新{{.StructName}}
+func (r *{{.RepositoryName}}Impl) Update(ctx context.Context, {{.StructName}} *model.{{.StructName}}) error {
+	return r.query.{{.StructName}}.WithContext(ctx).Save({{.StructName}})
+}
+
+// Delete 删除{{.StructName}}
+func (r *{{.RepositoryName}}Impl) Delete(ctx context.Context, id int64) error {
+	_, err := r.query.{{.StructName}}.WithContext(ctx).Where(r.query.{{.StructName}}.ID.Eq(id)).Delete()
+	return err
+}
+
+// List 获取{{.StructName}}列表
+func (r *{{.RepositoryName}}Impl) List(ctx context.Context, page, pageSize int) ([]*model.{{.StructName}}, int64, error) {
+	// 计算总数
+	total, err := r.query.{{.StructName}}.WithContext(ctx).Count()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// 分页查询
+	offset := (page - 1) * pageSize
+	entities, err := r.query.{{.StructName}}.WithContext(ctx).Offset(offset).Limit(pageSize).Find()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return entities, total, nil
+}

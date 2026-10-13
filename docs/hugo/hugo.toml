@@ -1,0 +1,15 @@
+# gosilite 开发文档（Hugo 静态站）
+# 由 Hertz 通过 adaptor + http.FileServer 托管在 /docs/ 下（见 main.go）。
+# baseURL 带 /docs 前缀：.RelPermalink 等生成的站内链接自动落在 Hertz 托管路径下，
+# 避免 iframe 内点链接走出 /docs 被前端 SPA 兜底（套娃）。
+baseURL = '/docs/'
+# .Lastmod 取 git 提交时间（footer「最后修改于」用）；无 git 时回落文件 mtime
+enableGitInfo = true
+title = 'gosilite 开发文档'
+publishDir = 'public'
+# 不需要 RSS/sitemap/taxonomy；站内链接在 layouts 中硬编码 /docs/ 前缀。
+disableKinds = ['RSS', 'sitemap', 'taxonomy', 'term', 'robotsTXT']
+
+[markup.goldmark.renderer]
+  # 允许原文 HTML（图表/嵌入块）
+  unsafe = true

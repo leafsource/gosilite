@@ -1,0 +1,75 @@
+import path from 'node:path';
+
+import vue from '@vitejs/plugin-vue';
+import vueJsx from '@vitejs/plugin-vue-jsx';
+import browserslist from 'browserslist';
+import { browserslistToTargets } from 'lightningcss';
+import type { ConfigEnv, UserConfig } from 'vite';
+import { loadEnv } from 'vite';
+import svgLoader from 'vite-svg-loader';
+
+const CWD = process.cwd();
+
+const CSS_BROWSERS_QUERY = ['baseline widely available'];
+const cssTargets = browserslistToTargets(browserslist(CSS_BROWSERS_QUERY));
+
+// https://vitejs.dev/config/
+export default ({ mode }: ConfigEnv): UserConfig => {
+  const { VITE_BASE_URL, VITE_API_URL_PREFIX } = loadEnv(mode, CWD);
+  return {
+    base: VITE_BASE_URL,
+
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+
+    css: {
+      transformer: 'lightningcss',
+      lightningcss: {
+        targets: cssTargets,
+      },
+      devSourcemap: true,
+      preprocessorOptions: {
+        less: {
+          modifyVars: {
+            hack: `true; @import (reference) "${path.resolve('src/style/variables.less')}";`,
+          },
+          math: 'strict',
+          javascriptEnabled: true,
+        },
+      },
+    },
+
+    plugins: [vue(), vueJsx(), svgLoader()],
+
+    server: {
+      port: 3002,
+      host: '0.0.0.0',
+      allowedHosts: true,
+      proxy: {
+        // 本地 Hertz 后端无 /api 前缀，代理时剥离后转发
+        [VITE_API_URL_PREFIX]: {
+          target: 'http://127.0.0.1:8888/',
+          rewrite: (path) => path.replace(new RegExp(`^${VITE_API_URL_PREFIX}`), ''),
+        },
+        // Hugo 文档站由 Hertz 托管，路径原样透传
+        '/docs': {
+          target: 'http://127.0.0.1:8888/',
+        },
+      },
+    },
+
+    // https://github.com/vueuse/vueuse/issues/5387#issuecomment-4734186040
+    build: {
+      cssMinify: 'lightningcss',
+      rolldownOptions: {
+        onLog(level, log, defaultHandler) {
+          if (log.code === 'INVALID_ANNOTATION') return null;
+          else defaultHandler(level, log);
+        },
+      },
+    },
+  };
+};

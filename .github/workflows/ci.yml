@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: gosilite
+          POSTGRES_USER: gosilite
+          POSTGRES_PASSWORD: gosilite
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U gosilite -d gosilite"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: [6379:6379]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+      rustfs:
+        image: rustfs/rustfs:latest
+        env:
+          RUSTFS_ACCESS_KEY: gosilite
+          RUSTFS_SECRET_KEY: gosilite-secret
+        ports: [19000:9000]
+        options: >-
+          --health-cmd "wget -q --spider http://127.0.0.1:9000/ || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: "0.167.0"
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Install frontend dependencies
+        run: npm ci --prefix web
+      - name: Initialize final schema
+        env:
+          GOSILITE_SCHEMA_DSN: postgresql://gosilite:gosilite@127.0.0.1:5432/gosilite?sslmode=disable
+        run: ./script/init-schema.sh
+      - name: Verify source and builds
+        run: WEB=1 ./script/check.sh
+      - name: Reject whitespace errors
+        run: git diff --check "$(git merge-base origin/main HEAD)" HEAD

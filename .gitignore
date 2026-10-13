@@ -1,33 +1,52 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
+*.o
+*.a
+*.so
+_obj
+_test
+*.[568vq]
+[568vq].out
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+_testmain.go
 *.exe
 *.exe~
-*.dll
-*.so
-*.dylib
-
-# Test binary, built with `go test -c`
 *.test
+*.prof
+*.rar
+*.zip
+*.gz
+*.psd
+*.bmd
+*.cfg
+*.pptx
+*.log
+*nohup.out
+*settings.pyc
+*.sublime-project
+*.sublime-workspace
+!.gitkeep
+.DS_Store
+/.idea
+/.vscode
+/output
+*.local.yml
 
-# Code coverage profiles and other test artifacts
-*.out
-coverage.*
-!coverage.go
-*.coverprofile
-profile.cov
+log/*
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+node_modules
+dist
 
-# Go workspace file
-go.work
-go.work.sum
+# 构建产物
+/codegen
+/package-lock.json
+docs/hugo/public/
+docs/hugo/.hugo_build.lock
+script/bin/
 
-# env file
+# 环境变量文件（密钥不入库，模板 .env.example 除外）
 .env
-
-# Editor/IDE
-# .idea/
-# .vscode/
+.env.*
+!.env.example

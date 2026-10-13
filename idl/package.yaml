@@ -1,0 +1,42 @@
+layouts:
+  - path: handler.go
+    body: |-
+      package {{.PackageName}}
+      import (
+       "context"
+
+       "github.com/cloudwego/hertz/pkg/app"
+      {{- range $k, $v := .Imports}}
+       {{$k}} "{{$v.Package}}"
+      {{- end}}
+       R "gosilite/pkg/utils/response"
+      )
+      {{range $_, $MethodInfo := .Methods}}
+      {{$MethodInfo.Comment}}
+      func {{$MethodInfo.Name}}(ctx context.Context, c *app.RequestContext) {
+       var err error
+       {{if ne $MethodInfo.RequestTypeName "" -}}
+       var req {{$MethodInfo.RequestTypeName}}
+       err = c.BindAndValidate(&req)
+       if err != nil {
+          R.InvalidParamRequestResponse(c, err.Error())
+          return
+       }
+       {{end}}
+        resp := &{{$MethodInfo.ReturnTypeName}}{}
+        // TODO: 实现业务逻辑
+
+       R.SuccessWithData(ctx, c, resp)
+      }
+      {{end}}
+    update_behavior:
+      import_tpl:
+        - |-
+          {{$OutDirs := GetUniqueHandlerOutDir .Methods}}
+          {{- range $_, $OutDir := $OutDirs}}
+            {{if eq $OutDir "" -}}
+              "{{$.ProjPackage}}/application/framework/service"
+            {{- else -}}
+              "{{$.ProjPackage}}/application/framework/service/{{$OutDir}}"
+            {{end}}
+          {{- end}}

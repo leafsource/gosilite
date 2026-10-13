@@ -1,0 +1,370 @@
+<template>
+  <div class="s-table">
+    <!-- 第 1 行：查询条件（查询后生效；showSearch=false 时整行隐藏） -->
+    <div v-if="showSearch" class="s-table__search">
+      <t-input
+        v-model="keyword"
+        class="s-table__keyword"
+        type="search"
+        :placeholder="keywordPlaceholder"
+        clearable
+        @enter="onSearch"
+      />
+      <template v-for="f in searchFields" :key="f.name">
+        <t-select
+          v-if="f.type === 'select'"
+          :model-value="fieldModelValue(f.name)"
+          :placeholder="fieldPlaceholder(f)"
+          :options="f.options ?? []"
+          clearable
+          style="flex: 0 0 160px"
+          @change="
+            (v) => {
+              extraParams[f.name] = v;
+              onSearch();
+            }
+          "
+        />
+        <t-tree-select
+          v-else-if="f.type === 'tree-select'"
+          :model-value="fieldModelValue(f.name)"
+          :data="f.treeData ?? []"
+          :placeholder="fieldPlaceholder(f)"
+          clearable
+          style="flex: 0 0 200px"
+          @change="
+            (v) => {
+              extraParams[f.name] = v;
+              onSearch();
+            }
+          "
+        />
+        <t-date-range-picker
+          v-else-if="f.type === 'daterange'"
+          :model-value="(extraParams[f.name] ?? []) as string[]"
+          :placeholder="f.placeholder ?? ['开始日期', '结束日期']"
+          value-type="YYYY-MM-DD"
+          clearable
+          style="flex: 0 0 250px"
+          @change="
+            (v) => {
+              const arr = Array.isArray(v) ? v : [];
+              extraParams[f.name] = arr.length ? arr : undefined;
+              onSearch();
+            }
+          "
+        />
+        <t-input
+          v-else
+          :model-value="(extraParams[f.name] ?? '') as string"
+          :placeholder="fieldPlaceholder(f)"
+          clearable
+          style="flex: 0 0 160px"
+          @enter="onSearch"
+          @change="
+            (v) => {
+              extraParams[f.name] = v;
+            }
+          "
+        />
+      </template>
+      <div class="s-table__actions">
+        <t-button theme="primary" @click="onSearch">查询</t-button>
+        <t-button variant="outline" @click="onReset">重置</t-button>
+      </div>
+    </div>
+
+    <!-- 第 2 行：批量操作（最左侧）+ 功能操作区（贴着 刷新 / 列设置） -->
+    <div class="s-table__toolbar">
+      <div v-if="$slots.batch && selectedRows.length" class="s-table__batch">
+        <span class="s-table__batch-count">已选 {{ selectedRows.length }} 项</span>
+        <t-link size="small" @click="clearSelection">取消选择</t-link>
+        <slot name="batch" :selected="selectedRows" :selected-keys="selectedRowKeys" :clear="clearSelection" />
+      </div>
+      <div class="s-table__toolbar-right">
+        <div class="s-table__toolbar-actions">
+          <slot name="toolbar" />
+        </div>
+        <div class="s-table__toolbar-tools">
+          <t-tooltip content="刷新">
+            <t-button variant="text" shape="square" @click="emit('refresh')">
+              <template #icon><refresh-icon /></template>
+            </t-button>
+          </t-tooltip>
+          <t-popup v-model:visible="columnCtlVisible" trigger="click" placement="bottom-right">
+            <span>
+              <t-tooltip content="列设置">
+                <t-button variant="text" shape="square">
+                  <template #icon><setting-icon /></template>
+                </t-button>
+              </t-tooltip>
+            </span>
+            <template #content>
+              <div class="s-table__column-panel">
+                <div
+                  v-for="k in panelKeys"
+                  :key="k"
+                  class="s-table__column-item"
+                  :class="{
+                    'is-dragging': dragKey === k,
+                    'is-drop-target': dragOverKey === k && dragKey !== k,
+                  }"
+                  draggable="true"
+                  @dragstart="onDragStart(k)"
+                  @dragover.prevent="onDragOver(k)"
+                  @drop.prevent="onDrop(k)"
+                  @dragend="onDragEnd"
+                >
+                  <span class="s-table__column-grip"><move-icon size="16" /></span>
+                  <t-checkbox :checked="columnVisible.includes(k)" @change="(v: any) => toggleColumn(k, Boolean(v))" />
+                  <span class="s-table__column-name">{{ colTitle(k) }}</span>
+                </div>
+                <div v-if="!panelKeys.length" class="s-table__column-name" style="padding: 8px 12px">无列可配置</div>
+              </div>
+            </template>
+          </t-popup>
+        </div>
+      </div>
+    </div>
+
+    <!-- 内层表格：tree 模式需 EnhancedTable（t-table 不含 tree 能力），否则保持 t-table -->
+    <component
+      :is="innerTable"
+      :row-key="rowKey"
+      :data="data as any"
+      :columns="visibleColumns as any"
+      :loading="loading"
+      :pagination="(paginated ? pagination : undefined) as TableProps['pagination']"
+      :selected-row-keys="selectedRowKeys"
+      :tree="tree"
+      hover
+      @page-change="onPageChange"
+      @select-change="onSelectChange"
+    >
+      <template v-for="(_, name) in $slots" #[name]="slotData">
+        <slot :name="name" v-bind="slotData || {}" />
+      </template>
+    </component>
+  </div>
+</template>
+<script setup lang="ts">
+import './s-table.css';
+
+import { MoveIcon, RefreshIcon, SettingIcon } from 'tdesign-icons-vue-next';
+import type { TableProps } from 'tdesign-vue-next';
+import { EnhancedTable, Table } from 'tdesign-vue-next';
+import { computed, ref, watch } from 'vue';
+
+import { useConfigStore } from '@/store';
+
+import type { STableColumn, STableSearchField, STableTreeConfig } from './sTable';
+
+defineOptions({ name: 'STable' });
+
+const props = withDefaults(
+  defineProps<{
+    rowKey?: string;
+    columns: STableColumn[];
+    data: Array<Record<string, unknown>>;
+    total?: number;
+    page?: number;
+    pageSize?: number;
+    loading?: boolean;
+    keywordPlaceholder?: string;
+    showSearch?: boolean;
+    searchFields?: STableSearchField[];
+    defaultVisibleKeys?: string[];
+    selectable?: boolean;
+    tree?: STableTreeConfig;
+    paginated?: boolean;
+    defaultParams?: Record<string, unknown>;
+  }>(),
+  {
+    rowKey: 'id',
+    total: 0,
+    page: 1,
+    loading: false,
+    keywordPlaceholder: '请输入关键字',
+    showSearch: true,
+    searchFields: () => [],
+    defaultVisibleKeys: undefined,
+    selectable: true,
+    tree: undefined,
+    paginated: true,
+    defaultParams: () => ({}),
+  },
+);
+
+const emit = defineEmits<{
+  (e: 'search', params: Record<string, unknown>): void;
+  (e: 'reset'): void;
+  (e: 'refresh'): void;
+  (e: 'page-change', page: number, pageSize: number): void;
+  (e: 'selection-change', selected: Array<Record<string, unknown>>): void;
+}>();
+
+const configStore = useConfigStore();
+
+const innerTable = computed(() => (props.tree ? EnhancedTable : Table));
+
+const keyword = ref('');
+const extraParams = ref<Record<string, unknown>>({ ...props.defaultParams });
+const columnVisible = ref<string[]>([]);
+const columnOrder = ref<string[]>([]);
+const columnCtlVisible = ref(false);
+
+const selectedRowKeys = ref<Array<string | number>>([]);
+const selectedRows = ref<Array<Record<string, unknown>>>([]);
+
+const dragKey = ref<string | null>(null);
+const dragOverKey = ref<string | null>(null);
+
+const colKey = (c: STableColumn): string => String((c as { colKey?: string }).colKey ?? '');
+
+const colTitle = (k: string): string => {
+  const hit = props.columns.find((c) => colKey(c) === k) as { title?: unknown } | undefined;
+  return String(hit?.title || k);
+};
+
+// 树节点列不可在列设置中隐藏，否则树展开入口丢失（treeNodeColumnIndex 默认取第 0 列）
+const treeColKey = computed(() => {
+  if (!props.tree) return '';
+  const col = props.columns[props.tree.treeNodeColumnIndex ?? 0];
+  return col ? colKey(col) : '';
+});
+
+const panelKeys = computed(() => columnOrder.value.filter((k) => k !== treeColKey.value));
+
+// 模板中避免写 `as string | number`（`|` 会被 vue/no-deprecated-filter 误判为过滤器）
+function fieldModelValue(name: string): string | number | undefined {
+  return extraParams.value[name] as string | number | undefined;
+}
+
+// 单值控件的 placeholder（daterange 才允许 string[]）
+function fieldPlaceholder(f: STableSearchField): string {
+  if (typeof f.placeholder === 'string') return f.placeholder;
+  return f.label ?? '';
+}
+
+function initVisible() {
+  const keys = props.columns.map(colKey).filter(Boolean);
+  columnOrder.value = props.defaultVisibleKeys?.length
+    ? [...props.defaultVisibleKeys, ...keys.filter((k) => !props.defaultVisibleKeys!.includes(k))]
+    : [...keys];
+  columnVisible.value = props.defaultVisibleKeys?.length
+    ? props.defaultVisibleKeys.filter((k) => keys.includes(k))
+    : [...keys];
+}
+
+watch(
+  () => props.columns,
+  () => initVisible(),
+  { immediate: true, deep: true },
+);
+
+const selectionColumn: STableColumn = { colKey: 'row-select', type: 'multiple', width: 64, fixed: 'left' };
+
+const visibleColumns = computed(() => {
+  const cols = columnOrder.value
+    .map((k) => props.columns.find((c) => colKey(c) === k))
+    .filter((c): c is STableColumn => {
+      if (!c) return false;
+      const k = colKey(c);
+      return !k || columnVisible.value.includes(k) || k === treeColKey.value;
+    });
+  return props.selectable ? [selectionColumn, ...cols] : cols;
+});
+
+function onSelectChange(keys: Array<string | number>, options?: { selectedRowData?: Array<Record<string, unknown>> }) {
+  selectedRowKeys.value = keys;
+  selectedRows.value = options?.selectedRowData ?? [];
+  emit('selection-change', selectedRows.value);
+}
+
+function clearSelection() {
+  if (!selectedRowKeys.value.length && !selectedRows.value.length) return;
+  selectedRowKeys.value = [];
+  selectedRows.value = [];
+  emit('selection-change', []);
+}
+
+// 数据刷新/检索后，旧选择已不可靠，统一清空
+watch(
+  () => props.data,
+  () => clearSelection(),
+);
+
+const pagination = computed(() => ({
+  current: props.page,
+  pageSize: props.pageSize ?? configStore.pageDefault,
+  total: props.total,
+  showJumper: true,
+}));
+
+function buildParams(): Record<string, unknown> {
+  return { keyword: keyword.value || undefined, ...extraParams.value };
+}
+
+function onSearch() {
+  emit('search', buildParams());
+}
+
+function onReset() {
+  keyword.value = '';
+  // 恢复到默认筛选（如默认时间范围），避免重置后全量查询
+  extraParams.value = { ...props.defaultParams };
+  emit('reset');
+}
+
+function onPageChange(ctx: { current?: number; pageSize?: number }) {
+  emit('page-change', ctx.current ?? props.page, ctx.pageSize ?? props.pageSize ?? configStore.pageDefault);
+}
+
+function toggleColumn(k: string, on: boolean) {
+  const set = new Set(columnVisible.value);
+  if (on) set.add(k);
+  else set.delete(k);
+  columnVisible.value = columnOrder.value.filter((x) => set.has(x));
+}
+
+function onDragStart(k: string) {
+  dragKey.value = k;
+}
+
+function onDragOver(k: string) {
+  dragOverKey.value = k;
+}
+
+function onDrop(target: string) {
+  const from = dragKey.value;
+  dragKey.value = null;
+  dragOverKey.value = null;
+  if (!from || from === target) return;
+  const order = [...columnOrder.value];
+  const fi = order.indexOf(from);
+  const ti = order.indexOf(target);
+  if (fi < 0 || ti < 0) return;
+  order.splice(fi, 1);
+  order.splice(ti, 0, from);
+  columnOrder.value = order;
+  // 保持可见集跟随新顺序
+  const set = new Set(columnVisible.value);
+  columnVisible.value = order.filter((k) => set.has(k));
+}
+
+function onDragEnd() {
+  dragKey.value = null;
+  dragOverKey.value = null;
+}
+
+defineExpose({
+  keyword,
+  extraParams,
+  buildParams,
+  columnOrder,
+  columnVisible,
+  selectedRowKeys,
+  selectedRows,
+  clearSelection,
+});
+</script>

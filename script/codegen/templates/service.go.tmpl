@@ -1,0 +1,47 @@
+package {{.PackageName}}
+
+import (
+	"context"
+	"gosilite/{{.ModelPackage}}"
+	"gosilite/{{.FullPackage}}/repository"
+	"gorm.io/gorm"
+)
+
+// {{.StructName}}SVC is the package facade for handlers; set once by InitService.
+var {{.StructName}}SVC *Service
+
+// Service holds {{.StructName}} business operations.
+type Service struct {
+	repo repository.I{{.RepositoryName}}
+}
+
+// NewService builds the service with explicit dependencies.
+func NewService(db *gorm.DB) *Service {
+	return &Service{repo: repository.New{{.RepositoryName}}(db)}
+}
+
+// InitService installs the package facade used by handlers.
+func InitService(ctx context.Context, db *gorm.DB) *Service {
+	{{.StructName}}SVC = NewService(db)
+	return {{.StructName}}SVC
+}
+
+func (s *Service) Create(ctx context.Context, entity *model.{{.StructName}}) error {
+	return s.repo.Create(ctx, entity)
+}
+
+func (s *Service) GetByID(ctx context.Context, id int64) (*model.{{.StructName}}, error) {
+	return s.repo.GetByID(ctx, id)
+}
+
+func (s *Service) Update(ctx context.Context, entity *model.{{.StructName}}) error {
+	return s.repo.Update(ctx, entity)
+}
+
+func (s *Service) Delete(ctx context.Context, id int64) error {
+	return s.repo.Delete(ctx, id)
+}
+
+func (s *Service) List(ctx context.Context, page, pageSize int) ([]*model.{{.StructName}}, int64, error) {
+	return s.repo.List(ctx, page, pageSize)
+}

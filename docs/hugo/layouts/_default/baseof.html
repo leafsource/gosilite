@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} · {{ .Site.Title }}{{ end }}</title>
+  <style>
+    :root {
+      --brand: #0052d9;
+      --ink: #1f2329;
+      --muted: #5f6b7a;
+      --line: #e7eaef;
+      --side: #f7f8fa;
+      --hd-h: 56px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--hd-h) + 16px); }
+    body { margin: 0; font: 15px/1.75 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--ink); background: #fff; }
+    a { color: var(--brand); }
+
+    /* 页头 */
+    .hd { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 16px; height: var(--hd-h); padding: 0 20px; background: #fff; border-bottom: 1px solid var(--line); }
+    .hd .brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 16px; color: var(--brand); text-decoration: none; white-space: nowrap; }
+    .hd .brand-logo { width: 26px; height: 26px; display: block; }
+
+    /* 移动端导航（窄屏显示，复用同一 partial） */
+    .mnav { display: none; margin-left: auto; position: relative; }
+    .mnav > summary { list-style: none; cursor: pointer; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; font-size: 13px; color: var(--muted); user-select: none; }
+    .mnav > summary::-webkit-details-marker { display: none; }
+    .mnav[open] > .mnav-body { position: absolute; right: 0; top: calc(100% + 8px); width: min(78vw, 300px); max-height: 70vh; overflow: auto; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgba(31, 35, 41, .12); padding: 8px; }
+
+    /* 三栏：左右栏通栏铺满高度，导航块自身 sticky */
+    .shell { display: grid; grid-template-columns: 248px minmax(0, 1fr) 224px; max-width: 1440px; margin: 0 auto; min-height: calc(100vh - var(--hd-h)); }
+
+    /* 左栏页树 */
+    .sb { background: var(--side); border-right: 1px solid var(--line); }
+    .sb-in { position: sticky; top: var(--hd-h); max-height: calc(100vh - var(--hd-h)); overflow: auto; padding: 18px 10px 40px; }
+    .np { list-style: none; margin: 0; padding: 0; }
+    .np .np { padding-left: 12px; }
+    .np-a { display: block; padding: 7px 12px; border-radius: 6px; color: #33415c; text-decoration: none; font-size: 14px; }
+    .np-a:hover { background: #eceff4; color: var(--brand); }
+    .np-a.is-active { background: #e8f0fe; color: var(--brand); font-weight: 600; }
+    /* 树形文件夹（details 折叠） */
+    .np summary { list-style: none; cursor: pointer; position: relative; }
+    .np summary::-webkit-details-marker { display: none; }
+    .np summary::before { content: ""; position: absolute; left: 4px; top: 13px; width: 5px; height: 5px; border-right: 1.5px solid #8a94a6; border-bottom: 1.5px solid #8a94a6; transform: rotate(-45deg); transition: transform .12s; }
+    .np details[open] > summary::before { transform: rotate(45deg) translate(-1px, -1px); }
+    .np summary .np-a { padding-left: 18px; }
+    .np-group { list-style: none; margin: 0; padding: 0 0 4px 12px; }
+    .np-group .np-a { padding-left: 30px; font-size: 13.5px; }
+
+    /* 中栏正文 */
+    .md { min-width: 0; padding: 32px 44px 72px; }
+    .md h1 { font-size: 27px; line-height: 1.35; margin: 4px 0 18px; }
+    .md h2 { font-size: 20px; margin: 36px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+    .md h3 { font-size: 16.5px; margin: 26px 0 10px; }
+    .md p { margin: 10px 0; }
+    .md a.anchor { opacity: 0; margin-left: .35em; color: var(--muted); text-decoration: none; font-weight: 400; }
+    .md h2:hover a.anchor, .md h3:hover a.anchor, .md a.anchor:focus { opacity: 1; }
+    .md code { background: #eef1f6; border-radius: 4px; padding: 1px 6px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .md pre { background: #1f2329; color: #d7dbe2; border-radius: 8px; padding: 14px 16px; overflow-x: auto; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .md pre code { background: none; padding: 0; color: inherit; }
+    .md table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; }
+    .md th, .md td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+    .md th { background: var(--side); }
+    .md blockquote { margin: 12px 0; padding: 2px 14px; border-left: 3px solid var(--brand); background: var(--side); color: var(--muted); }
+    .md ul, .md ol { padding-left: 22px; }
+    .md li { margin: 4px 0; }
+
+    /* 首页卡片 */
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+    .card { display: block; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 18px; text-decoration: none; color: inherit; transition: border-color .15s; }
+    .card:hover { border-color: var(--brand); }
+    .card strong { display: block; font-size: 15px; margin-bottom: 6px; color: var(--brand); }
+    .card span { font-size: 13px; color: var(--muted); }
+
+    /* 右栏 TOC */
+    .tp { border-left: 1px solid var(--line); }
+    .tp-in { position: sticky; top: var(--hd-h); max-height: calc(100vh - var(--hd-h)); overflow: auto; padding: 32px 20px 40px 16px; font-size: 13px; }
+    .tp-title { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: .04em; margin-bottom: 8px; }
+    .tp nav > ul { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+    .tp nav ul ul { list-style: none; margin: 0; padding-left: 12px; }
+    .tp nav a { display: block; padding: 4px 10px; color: var(--muted); text-decoration: none; line-height: 1.5; border-left: 2px solid transparent; margin-left: -1px; }
+    .tp nav a:hover { color: var(--brand); border-left-color: var(--brand); }
+    .tp nav ul > li > a { color: #33415c; }
+
+    .foot { margin-top: 56px; font-size: 12px; color: #9aa5b8; }
+
+    /* 响应式 */
+    /* 响应式：中后台 iframe 常见 ~700–900px，左栏一直保留（可收窄）；
+       仅真手机宽度才收进页头「目录」 */
+    @media (max-width: 1100px) {
+      .shell { grid-template-columns: 220px minmax(0, 1fr); }
+      .tp { display: none; }
+    }
+    @media (max-width: 520px) {
+      .shell { grid-template-columns: 1fr; }
+      .sb { display: none; }
+      .mnav { display: block; }
+      .md { padding: 24px 18px 56px; }
+      .cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hd">
+    <a class="brand" href="/docs/"><img class="brand-logo" src="/docs/logo.svg" alt="gosilite">{{ .Site.Title }}</a>
+    <details class="mnav">
+      <summary>目录</summary>
+      <div class="mnav-body">{{ partial "nav-pages.html" . }}</div>
+    </details>
+  </header>
+  <div class="shell">
+    <aside class="sb"><div class="sb-in">{{ partial "nav-pages.html" . }}</div></aside>
+    <main class="md">
+      {{ block "main" . }}{{ end }}
+      <p class="foot">
+        {{- $mod := .Lastmod -}}
+        {{- if ge $mod.Year 2 }}最后修改于 {{ $mod.Format "2006-01-02" }} · {{ end -}}
+        {{ .Site.Title -}}
+      </p>
+    </main>
+    <aside class="tp">
+      {{ if .IsPage }}
+        <div class="tp-in">
+          <div class="tp-title">本页目录</div>
+          {{ .TableOfContents }}
+        </div>
+      {{ end }}
+    </aside>
+  </div>
+</body>
+</html>

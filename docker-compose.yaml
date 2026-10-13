@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gosilite-postgres
+    environment:
+      POSTGRES_DB: gosilite
+      POSTGRES_USER: gosilite
+      POSTGRES_PASSWORD: gosilite
+    ports:
+      - "5432:5432"
+    volumes:
+      - gosilite-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gosilite -d gosilite"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: gosilite-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - gosilite-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: gosilite-rustfs
+    environment:
+      RUSTFS_ACCESS_KEY: gosilite
+      RUSTFS_SECRET_KEY: gosilite-secret
+    ports:
+      - "19000:9000"
+      - "19001:9001"
+    volumes:
+      - gosilite-rustfs:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:9000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  gosilite-postgres:
+  gosilite-redis:
+  gosilite-rustfs:
