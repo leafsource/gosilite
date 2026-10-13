@@ -36,11 +36,15 @@ docker compose up -d
 
 连接参数不用改：`conf/conf.yaml` 的本地默认值（DSN `127.0.0.1:5432`、Redis `127.0.0.1:6379`、存储 `http://127.0.0.1:19000`）与上表一一对应，密钥与环境差异的覆盖方式见 `.env.example`。
 
-## 3. 起后端
+## 3. 初始化数据库并起后端
+
+v0.1.0 只支持在空 PostgreSQL 数据库上初始化最终 schema；脚本会拒绝覆盖已有核心表。
 
 ```bash
+./script/init-schema.sh
+
 export PATH="$HOME/.local/go/bin:$PATH"   # go 不在 PATH 时
-GO_ENV=test go run .                      # Hertz 监听 :8888
+GO_ENV=test go run .                       # Hertz 监听 :8888
 ```
 
 另开终端探活：
@@ -113,6 +117,8 @@ script/build-docs.sh       # 构建 docs/hugo → docs/hugo/public
 
 - [概览](/docs/overview/) — 技术栈、架构依赖与能力清单
 - [后端](/docs/backend/) — 分层职责、逐模块说明、生成边界
-- [前端](/docs/frontend/) — 动态路由、组件清单、开发规范
-- [常见问题](/docs/faq/) — 401/403、菜单不显示、迁移与生成物等踩坑速查
+- [前端](/docs/frontend/) — 动态路由、组件与开发规范
+- [新增业务模块](/docs/module-development/) — 从 schema、IDL 到前端与验收的固定路径
+- [发布 v0.1.0](/docs/release/) — 数据库初始化、生产访问面与 main 合并步骤
+- [常见问题](/docs/faq/) — 401/403、菜单不显示、schema 与生成物等踩坑速查
 - [参考](/docs/reference/) — 命令、配置、信封与权限码速查

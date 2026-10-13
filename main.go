@@ -45,11 +45,11 @@ import (
 	_ "gosilite/docs/swagger"
 )
 
-// Package main SkyX Cloud API
+// Package main Gosilite API
 //
-// @title SkyX Cloud API
-// @version 1.0.0
-// @description SkyX Cloud Platform API Documentation
+// @title Gosilite API
+// @version 0.1.0
+// @description Gosilite Platform API Documentation
 // @BasePath /
 // @securityDefinitions.apikey BearerAuth
 // @in header
@@ -162,8 +162,7 @@ func registerMiddleware(h *server.Hertz) {
 	//ctx-cache
 	h.Use(middleware.ContextCacheMW())
 
-	// pprof
-	if conf.GetConf().Server.EnablePprof {
+	if conf.GetConf().Server.EnablePprof && conf.GetConf().Env != "prod" {
 		pprof.Register(h)
 	}
 	// gzip

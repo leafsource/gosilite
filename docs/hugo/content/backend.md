@@ -27,8 +27,8 @@ gosilite 后端是单一 CloudWeGo Hertz 服务（`GO_ENV=test go run .`，端�
 
 ### 响应信封与错误码
 
-- 统一 `{"code": int32, "msg": string, "data": …}`；成功 `code=200, msg="success"`（`pkg/utils/response/response.go:73-79`）。业务错误经 `errorx.StatusError` 由 `response.Error` 输出：**HTTP 状态仍为 200，错误语义由 code 表达**。
-- 序列化经 `jsonid`：int64 id 在响应中输出为字符串（`response.go:23-36`），前端无需自行处理大整数精度。
+- 统一 `{"code": int32, "msg": string, "data": …}`；成功 `code=200, msg="success"`。业务错误经 `errorx.StatusError` 由 `response.Error` 输出：**HTTP 状态仍为 200，错误语义由 code 表达**。
+- HTTP 的 i64 标识字段在 IDL 源头使用 `json:"field,string"`；前端将其作为字符串传递，避免 JavaScript `Number` 精度丢失。
 - 错误码集中在 `types/errno/*.go`，按域分段并在 `init()` 注册文案：Passport `700xxxxxx`（如 `700012006` 认证失败，**前端依赖、勿改**，`user.go:7`）、系统 `701000001+`（`system.go:7-18`）、对象存储 `701000034+`（`oss_config.go:6-11`）等。
 
 ### Swagger 注解（强制）
@@ -59,7 +59,7 @@ gosilite 后端是单一 CloudWeGo Hertz 服务（`GO_ENV=test go run .`，端�
 |---|---|
 | 路由 | `/system/user/*`（list/create/update/remove/status/roles）、`/system/role/*`（含 `GET/PUT /system/role/authorize`）、`/system/menu/*`（tree/list/CRUD）、`GET /menu/routes`（挂 `permission.Default()`，登录即可，见 `menu/middleware.go:11-13`） |
 | 权限码 | `system:user:list/add/edit/remove`、`system:role:list/add/edit/remove/assign`、`system:menu:list/add/edit/remove`（出处 `api/router/framework/system/middleware.go`） |
-| 表 | `system_user`、`system_user_role`、`system_role`、`system_role_permission`、`system_menu`（基线 `script/postgres.sql`）、`system_role_menu`、`system_user_post`、`system_role_dept`（`0002_system_rbac.sql`） |
+| 表 | `system_user`、`system_user_role`、`system_role`、`system_role_permission`、`system_menu`、`system_role_menu`、`system_user_post`、`system_role_dept`（均位于 v0.1.0 最终 schema） |
 | 数据范围 | `system_role.data_scope`：1 全部 / 2 本部门 / 3 本部门及以下 / 4 仅本人 / 5 自定义（`0002_system_rbac.sql:52`） |
 | 鉴权实现 | `permission.Default()` = 仅登录；`permission.HPermissions(...)` = 权限码校验，支持 `*` 通配（`api/middleware/permission/permission.go:196,204,232`）；码模式统一为 `system:<域>:<动作>` |
 
@@ -125,7 +125,7 @@ gosilite 后端是单一 CloudWeGo Hertz 服务（`GO_ENV=test go run .`，端�
 | 在线用户 | `GET /system/online/list`、`POST /system/online/force`，权限码 `system:online:list/force`；数据来自 Redis 在线会话，菜单 4701（`0015`） |
 | 数据监控 | `GET /system/monitor/datasource|server|sql|firewall|uri|http|storage`，全部 `system:monitor:list`（`monitor/middleware.go:40-99`）；菜单 4702（`0016`） |
 | 缓存监控 | `GET /system/cache/prefix/list`、`/system/cache/key/list`、`/system/cache/value`，删除/清空 `POST /system/cache/key/delete`、`/system/cache/prefix/clear`；`system:cachemonitor:list/delete`；菜单 4703（`0017`） |
-| 系统接口页 | 菜单 4704，权限码 `system:apimonitor:list`（`0018_monitor_api.sql:7`），页面内嵌 Swagger UI；`0022_system_tool.sql` 已将其从系统监控改挂系统工具（component `tool/api/index`） |
+| 系统接口页 | 菜单 4704，权限码 `system:apimonitor:list`，页面内嵌 Swagger UI，位于系统工具（component `tool/api/index`） |
 | `/metrics` | Prometheus 指标走**独立端口**：`monitor.enable_metrics`、`metrics_addr: ":9091"`、`metrics_path: "/metrics"`（`conf/conf.yaml:42-44`），与业务 8888 隔离；底座在 `application/base/metrics` |
 | 入口文件 | `application/framework/service/monitor/service.go`（页面数据）+ `cache.go`（缓存探针）；Handler `api/handler/framework/monitor/` |
 
@@ -140,6 +140,18 @@ gosilite 后端是单一 CloudWeGo Hertz 服务（`GO_ENV=test go run .`，端�
 | 访问规则 ossrule | 路由 `/system/oss/rule/*`（含 `PUT .../overwrite` 覆盖开关、`DELETE .../cache` 刷新缓存）；权限码 `system:ossRule:list/add/edit/remove/refresh`；表 `system_oss_rule` |
 | 统一文件 common.file | `POST /common/file/upload`（登录即可，multipart 字段 `file`，≤20MB）、`GET /common/file/download`（按台账 id 回流附件，**非 JSON 信封**）——`common_file_controller.go:16-71`；台账由 `ossfile.Service.Upload` 自动记录 |
 | 动态切换 | `infra/storage/dynamic.Controller` 按当前启用的配置动态解析客户端，热切换时 `Invalidate()`（`dynamic/dynamic.go:75-127`） |
+
+## 定时调度（service/scheduler）
+
+一段已编译的 Job 可由管理员配置 cron、超时、重试和全局并发实例上限；每次运行保存不可变快照、持久化日志，并通过 SSE 回放和实时展示。
+
+| 项 | 事实 |
+|---|---|
+| 路由 | `/system/scheduler/job/*`、`/system/scheduler/run/*` 与日志 SSE；权限码 `system:scheduler:*` |
+| 表 | `system_job`、`system_job_run`、`system_job_run_log` |
+| 集群安全 | Redis 执行租约 + 数据库容量槽；停止为协作式取消，不强杀 goroutine |
+| Job 组织 | 稳定 key 在 `types/jobkeys/`；框架 Job 在 `application/framework/jobs/`；领域 Job 在 `application/<domain>/jobs/` |
+| 日志保留 | `scheduler.log_retention_days`，默认 30 天；仅清理执行日志，不删除运行摘要 |
 
 ## 基础设施 infra
 
@@ -162,7 +174,7 @@ gosilite 后端是单一 CloudWeGo Hertz 服务（`GO_ENV=test go run .`，端�
 | 要改什么 | 动哪里 | 怎么再生 |
 |---|---|---|
 | HTTP 契约/路由 | `idl/framework/*.thrift` | `hz update -I idl -idl <file> -customize_package idl/package.yaml` |
-| 表结构 | `script/migrations/*.sql` | 重跑 gorm gen / `script/codegen` |
+| 表结构 | `script/schema/v0.1.0.sql` | 在空库初始化后重跑 gorm gen / `script/codegen` |
 | 表模型与查询 | 生成源（表 + `script/codegen/codegen.go`） | gorm gen → `dal/model/*.gen.go`、`dal/query/*.gen.go` |
 | CRUD/Service 初稿 | `script/codegen/templates/*.tmpl` | `script/codegen`（**只生成不存在的文件**，之后归手写） |
 | 业务规则/装配/前端 | service、module、`web/src` | 不生成，直接改 |
@@ -173,12 +185,11 @@ gosilite 后端是单一 CloudWeGo Hertz 服务（`GO_ENV=test go run .`，端�
 - `api/router/**` 的 `Register` 必须由 hz 从 IDL 生成，禁止手写；生成后的 `middleware.go` 允许补权限挂载。
 - 顺序永远是：**先 IDL 后生成，先表后 gen，先 Repository 后 Service 后 Handler。**
 
-## 迁移（script/migrations/）
+## v0.1.0 数据库基线
 
-- 目前 **21 个文件**（`0002_system_rbac.sql` ~ `0022_system_tool.sql`），按文件名顺序执行。
-- 全部幂等：`BEGIN` 包裹 + `CREATE TABLE IF NOT EXISTS` / `WHERE NOT EXISTS` / `DELETE…WHERE id IN`，重复执行不产生重复行（各文件头注释均声明）。
-- 内容三类：DDL 建表、种子数据（菜单/按钮权限码/角色绑定，如 `0015` 的 4701、`0022` 的 49/4901）、存量清理（`0019` 删除 agent 遗留）。
-- 本地执行方式：`docker compose exec` 进 PostgreSQL 用 `psql` 按序运行；执行口径与常见问题见[常见问题](/docs/faq/)。
-- 基线全量结构在 `script/postgres.sql`（`system_user`/`system_role`/`system_menu` 等由它创建，迁移在此之上增量演进）。
+- 最终基线是 `script/schema/v0.1.0.sql`，包含当前全部 DDL、索引、约束及必要系统种子。
+- 只允许在空 PostgreSQL 16 数据库中运行 `./script/init-schema.sh`；脚本发现核心表即拒绝执行，不会删除或覆盖数据。
+- v0.1.0 删除历史增量迁移链与旧 `postgres.sql`，不支持既有开发库就地升级。旧库需先备份，再创建空库初始化。
+- 新增模块涉及表结构时，更新当前 schema，在干净库演练后再执行 gorm/codegen。发布与回滚边界见[发布 v0.1.0](/docs/release/)。
 
 命令速查、配置表与权限码模式汇总见[参考](/docs/reference/)；前端对接方式见[前端](/docs/frontend/)。

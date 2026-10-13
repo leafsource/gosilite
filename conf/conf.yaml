@@ -10,13 +10,13 @@ server:
   enable_gzip: true
   enable_access_log: true
   log_level: info
-  log_file_name: "log/skyx-cloud.log"
+  log_file_name: "log/gosilite.log"
   log_max_size: 10
   log_max_age: 3
   log_max_backups: 50
 
 jwt:
-  issuer: "skyx-cloud"
+  issuer: "gosilite"
   secret: "f7e5abdb96d994e4533bb5febd2ffc155b30ab6c48c3e0a0c558fc9df9a13a82" # 本地开发默认值；生产必须用 GOSILITE_JWT_SECRET 覆盖
 
 database:

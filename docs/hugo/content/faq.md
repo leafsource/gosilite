@@ -41,21 +41,17 @@ weight: 5
 - **原因**：`t-upload` 走**原生 XHR，不经过 axios**，不会自动带 `VITE_API_URL_PREFIX`（`/api`）前缀；Vite 代理只转发带 `/api` 的请求并剥前缀给 :8888。
 - **解法**：原生 XHR 的 URL 必须自带 `/api` 前缀（如 `/api/common/file/upload`）；另注意原生 XHR 绕过 axios 的 401→refresh，上传前先确保 token 新鲜（组件内已做此处理）。
 
-### 7. 迁移脚本怎么执行
+### 7. v0.1.0 的数据库怎么初始化
 
-- **现象**：`script/migrations/` 下的 `00XX_*.sql` 不知道在哪儿跑；本机没有 `psql`。
-- **原因**：迁移不在程序启动时自动执行，需手动灌库；文件头注释写明「幂等：可重复执行」等前提，部分文件用 `BEGIN` 事务、全表 `public.` 限定。
-- **解法**：先看该文件头注释，再执行：
-
-  ```bash
-  docker exec -i gosilite-postgres psql -U gosilite -d gosilite < script/migrations/00XX_描述.sql
-  ```
+- **现象**：新环境没有表，或旧开发库不知道能否直接执行新 schema。
+- **原因**：v0.1.0 已收敛为单一最终 schema，历史增量迁移不再随发布维护；该版本不支持旧库就地升级。
+- **解法**：新库执行 `./script/init-schema.sh`。脚本发现核心表会拒绝执行，避免覆盖已有数据；旧库先备份，再创建空库初始化。详情见[发布 v0.1.0](/docs/release/)。
 
 ### 8. 改了生成物没生效 / 生成物被手改出冲突
 
 - **现象**：改动 `*.gen.go`、`api/model/**` 或 hz 生成的 `Register` 后，重新生成被覆盖，或 review 报「禁手改」。
 - **原因**：这些是 `DO NOT EDIT` 生成物——gorm gen 源是数据库表 + `script/codegen`，hz 源是 `idl/**/*.thrift`。
-- **解法**：改契约的正确顺序——HTTP/DTO **先改 IDL → `hz update -I idl -idl <file> -customize_package idl/package.yaml` → 再改 Handler**；表结构先写迁移 SQL → `go run ./script/codegen`，永远不直接编辑生成物。
+- **解法**：改契约的正确顺序——HTTP/DTO **先改 IDL → `hz update -I idl -idl <file> -customize_package idl/package.yaml` → 再改 Handler**；表结构先更新当前发布 schema，再在空库初始化后执行 `go run ./script/codegen`，永远不直接编辑生成物。
 
 ### 9. check 输出 `build docs SKIP`，是不是失败了
 

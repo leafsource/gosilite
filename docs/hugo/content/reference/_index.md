@@ -3,7 +3,7 @@ title: "参考"
 weight: 6
 ---
 
-本页是全项目速查：命令、配置、响应信封、权限码与菜单 id、Swagger 注解、目录边界。一切数据与仓库逐行核对（`conf/conf.go`、`.env.example`、`script/migrations`、`AGENTS.md`）；集成原理见子页 [Hugo×Hertz](/docs/reference/hugo-hertz/)，流程性内容见[快速开始](/docs/quick-start/)。
+本页是全项目速查：命令、配置、响应信封、权限码与菜单 id、Swagger 注解、目录边界。一切数据与仓库逐行核对（`conf/conf.go`、`.env.example`、`script/schema/v0.1.0.sql`、`AGENTS.md`）；集成原理见子页 [Hugo×Hertz](/docs/reference/hugo-hertz/)，流程性内容见[快速开始](/docs/quick-start/)。
 
 ## 一、命令速查
 
@@ -18,7 +18,7 @@ weight: 6
 | 全量验收 | `WEB=1 ./script/check.sh` | 追加 `cd web && npm run build` |
 | hz 生成 | `hz update -I idl -idl idl/framework/user.thrift -customize_package idl/package.yaml` | 源：`idl/**/*.thrift`；产物 `api/model`、`api/router` 等（勿手改） |
 | 表模型/CRUD 生成 | `go run ./script/codegen` | 源：数据库表；DSN 可用 `GOSILITE_CODEGEN_DSN` 覆盖 |
-| 执行迁移 | `docker exec -i gosilite-postgres psql -U gosilite -d gosilite < script/migrations/00XX_描述.sql` | 先看文件头注释；幂等可重复执行 |
+| 初始化 v0.1.0 schema | `./script/init-schema.sh` | 仅空库；已有核心表时拒绝执行，不做删除或覆盖 |
 | Swagger 再生成 | `swag init -g main.go -o ./docs/swagger --parseDependency --parseInternal` | 改 Swag 注解后执行；UI `GET /swagger/index.html` |
 | 文档站引导 | `script/bootstrap-hugo.sh` | 一次性装 pinned hugo（0.167.0）到 `script/bin/` |
 | 文档站构建 | `script/build-docs.sh` | 产物 `docs/hugo/public`；缺 hugo 打印 SKIP 且 exit 0 |
@@ -31,7 +31,7 @@ weight: 6
 |--------------|------------|--------------------|
 | `server.node` | `1` | — |
 | `server.address` | `:8888` | `GOSILITE_SERVER_ADDRESS` |
-| `server.enable_pprof` | `true` | — |
+| `server.enable_pprof` | `true`（仅非 prod 生效） | — |
 | `server.enable_gzip` | `true` | — |
 | `server.enable_access_log` | `true` | `GOSILITE_SERVER_ACCESS_LOG`（`true`/`false`） |
 | `server.log_level` | `info` | — |
@@ -62,10 +62,11 @@ weight: 6
 | `monitor.firewall_enable` | `true` | — |
 | `monitor.gorm_postgres_metrics` | `false` | — |
 | `docs.dir` | `docs/hugo/public` | `GOSILITE_DOCS_DIR` |
+| `scheduler.log_retention_days` | `30` | `GOSILITE_SCHEDULER_LOG_RETENTION_DAYS` |
 
 要点：
 
-- `GO_ENV=prod` 启动时强制要求环境注入 `GOSILITE_JWT_SECRET` / `GOSILITE_DATABASE_DSN` / `GOSILITE_STORAGE_ACCESS_KEY` / `GOSILITE_STORAGE_SECRET_KEY`，缺任一个直接 panic（`conf/conf.go`）。
+- `GO_ENV=prod` 启动时强制要求环境注入 `GOSILITE_JWT_SECRET` / `GOSILITE_DATABASE_DSN` / `GOSILITE_STORAGE_ACCESS_KEY` / `GOSILITE_STORAGE_SECRET_KEY`，缺任一个直接 panic（`conf/conf.go`）；pprof 在 prod 不注册。
 - 另有与 yaml 无关的变量：`GOSILITE_CODEGEN_DSN`（仅 `script/codegen` 用）；前端 `web/.env` 的 `VITE_API_URL_PREFIX=/api`、`VITE_BASE_URL=/`。
 
 ## 三、响应信封与会话字段
@@ -109,22 +110,22 @@ weight: 6
 
 绑定关系存 `system_role_menu`；接口校验在 `api/middleware/permission`；超管豁免判定为角色 `system` 或 `admin`（`IsSuperRole`）。
 
-**菜单 id 速查**（均核实自 `script/migrations`，括号为来源文件；仅列**当前存在**的菜单）：
+**菜单 id 速查**（均核实自 `script/schema/v0.1.0.sql`；仅列**当前存在**的菜单）：
 
 | id | 名称 | 父级 |
 |----|------|------|
-| 1 / 2 | 仪表盘（目录）/ 概览 | 0 / 1（基线 `script/postgres.sql`，0002 将父级归 0） |
+| 1 / 2 | 仪表盘（目录）/ 概览 | 0 / 1 |
 | 3 | 系统管理（目录） | 0 |
-| 10 | 菜单管理 | 3（基线 `script/postgres.sql`，0002 补 perms） |
+| 10 | 菜单管理 | 3 |
 | 41 / 42 | 岗位管理 / 角色管理 | 3（0002） |
 | 43 | 参数管理 | 3（0004） |
 | 44 | 组织架构 | 3（0007，吸收原用户/部门管理） |
 | 45 | 通知公告 | 3（0011） |
 | 46 / 4601 / 4602 | 日志管理 / 操作日志 / 登录日志 | 3 / 46 / 46（0013） |
 | 47 / 4701 / 4702 / 4703 | 系统监控 / 在线用户 / 数据监控 / 缓存监控 | 0 / 47 / 47 / 47（0015–0017） |
-| **4704** | 系统接口（Swagger 页） | **49**（0018 建于 47 下，0022 改挂） |
-| **49** | 系统工具（目录） | 0（0022） |
-| **4901** | 开发文档（iframe `/docs/`） | 49（0022） |
+| **4704** | 系统接口（Swagger 页） | **49** |
+| **49** | 系统工具（目录） | 0 |
+| **4901** | 开发文档（iframe `/docs/`） | 49 |
 | 60 | 对象存储（目录） | 3（0021） |
 | 61 / 62 / 63 | OSS 配置 / 文件管理 / OSS 处理规则 | 60（0021） |
 
@@ -168,7 +169,7 @@ func Datasource(ctx context.Context, c *app.RequestContext) { ... }
 | `conf/` | `conf.yaml` 单一配置；密钥走 `.env.<GO_ENV>` 与环境变量 | 手写 |
 | `idl/` | Thrift 契约源（hz 的输入） | 手写 |
 | `pkg/`、`types/` | errorx、response、errno | 手写 |
-| `script/migrations/` | 幂等迁移 SQL（0002 起） | 手写 |
+| `script/schema/v0.1.0.sql` | v0.1.0 最终 DDL、索引与系统种子 | 手写；仅空库初始化；后续版本策略单独决定 |
 | `script/codegen/` | gorm/service/repository 脚手架模板与生成器 | 手写模板 |
 | `web/src/` | Vue3 前端（api / components / pages / store / router / utils） | 手写 |
 | `docs/compose/spec/` | feature spec（Compose Next） | 手写 |

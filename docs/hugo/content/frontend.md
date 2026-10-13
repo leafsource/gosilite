@@ -84,7 +84,7 @@ keep-alive 机制：`layouts/components/Content.vue` 的 `<keep-alive :include="
 ### 2.3 新页面三步
 
 1. 建 `web/src/pages/<域>/<页>/index.vue`，写 `defineOptions({ name: genRouteName(fullPath) })`。
-2. `system_menu` 迁移脚本里写 `component`（相对 `pages/`、无 `.vue`）+ 权限码 + 角色绑定，见 `script/migrations/`。
+2. 在 `script/schema/v0.1.0.sql` 的 `system_menu` 与角色关联种子中写 `component`（相对 `pages/`、无 `.vue`）和权限码。
 3. 不改 `router/modules/`；侧栏、面包屑、权限随 `/menu/routes` 自动生效。菜单配置入口即「系统管理 → 菜单管理」（`pages/system/menu`，`component` 输入框提示与上述规则一致）。
 
 ## 三、登录与 API 层

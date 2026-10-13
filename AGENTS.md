@@ -124,7 +124,7 @@ web → Hertz API
 | `application/**/dal/model/*.gen.go` | 表模型，`DO NOT EDIT` |
 | `application/**/dal/query/*.gen.go` | 链式查询 API，`DO NOT EDIT` |
 
-- 新表：先加 SQL（`script/migrations/`）或改库 → 再跑 gen/`script/codegen`。
+- 新表：先更新 `script/schema/v0.1.0.sql`，在空库初始化验证后再跑 gen/`script/codegen`。
 - 手写模型可放在同包非 `.gen.go` 文件（如 `system_rbac.go`），与 gen 共存。
 
 ### 3. script/codegen 模板 —— 源：`script/codegen/templates/*.tmpl`
@@ -141,15 +141,15 @@ web → Hertz API
 
 - `main.go`、`application/module.go`、`application/application.go`、各域 `module.go`
 - Handler 业务逻辑、Service、Repository 方法体、权限中间件、`types/errno`、`conf`、`web`、`pkg`
-- 迁移 SQL、README/AGENTS/skill
+- 最终 schema SQL、README/AGENTS/skill
 
 ### 边界速查
 
 ```text
-要改什么          → 动哪里              → 怎么再生
-HTTP 契约/路由    idl/*.thrift         hz update
-表结构            migrations SQL       gorm gen / codegen
-CRUD 样板         templates/*.tmpl     script/codegen（仅新文件）
+要改什么          → 动哪里                         → 怎么再生
+HTTP 契约/路由    idl/*.thrift                    → hz update
+表结构            script/schema/v0.1.0.sql       → 空库初始化后 gorm gen / codegen
+CRUD 样板         templates/*.tmpl                → script/codegen（仅新文件）
 业务规则          service/*.go         不生成，直接改
 装配/插件         application/*.go     不生成
 前端              web/src              不生成
@@ -235,7 +235,7 @@ func Datasource(ctx context.Context, c *app.RequestContext) { ... }
 1. 澄清     **强制门禁**：输出理解/假设/关键问(≤3)并获用户确认后才进第 2 步；能推断的不问，但假设必须列出（gosilite-dev/references/requirements.md §1.0）
 2. 定契约   DTO 字段、路由、错误码、表、权限码（system:*:xxx）
 3. （可选） docs/compose/spec/<feature>.md
-4. 迁移     script/migrations/NNNN_*.sql 幂等 DDL + 种子
+4. Schema   更新 script/schema/v0.1.0.sql，在空 PostgreSQL 库执行 ./script/init-schema.sh 验证
 5. 生成     表模型 → gorm gen；HTTP → 改 idl 后 hz update（路由必须 hz 生成，禁止手写 Register）
 6. 仓储     dal/repository（手写或 codegen 初稿）
 7. 服务     service/**（具体类型 + NewService）

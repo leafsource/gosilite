@@ -1,10 +1,10 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "SkyX Cloud Platform API Documentation",
-        "title": "SkyX Cloud API",
+        "description": "Gosilite Platform API Documentation",
+        "title": "Gosilite API",
         "contact": {},
-        "version": "1.0.0"
+        "version": "0.1.0"
     },
     "basePath": "/",
     "paths": {
@@ -4916,6 +4916,9 @@
                 },
                 "jobName": {
                     "type": "string"
+                },
+                "maxInstances": {
+                    "type": "integer"
                 },
                 "paramsJson": {
                     "type": "string"

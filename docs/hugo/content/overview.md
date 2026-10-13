@@ -47,7 +47,7 @@ web (Vite) ── HTTP ──→ Hertz API (:8888)
 | `conf/` | 单一配置 `conf/conf.yaml`；密钥与环境差异走 `.env.<GO_ENV>` / 环境变量（模板 `.env.example`） |
 | `idl/` | Thrift IDL，HTTP 契约源（改路由/DTO 先改这里） |
 | `pkg/`、`types/` | 通用工具（response、logger、bcrypt 等）与集中错误码 `errno` |
-| `script/` | `check.sh` 验收、`migrations/` 幂等迁移 SQL（0002–0022 共 21 个）、`codegen/` 脚手架模板、Hugo 脚本 |
+| `script/` | `schema/v0.1.0.sql` 最终数据库基线、`init-schema.sh` 空库初始化、`check.sh` 验收、`codegen/` 脚手架模板、Hugo 脚本 |
 | `web/` | TDesign Vue3 前端（`src/{api,components,pages,store,router,utils}`） |
 | `docs/hugo/` | Hugo 文档站源码与产物 `public/` |
 | `docs/compose/spec/` | feature spec（需求 / 设计 / 任务） |
@@ -69,6 +69,7 @@ web (Vite) ── HTTP ──→ Hertz API (:8888)
 | Swagger 接口文档 | 管理端"系统接口"页内嵌 Swagger UI；`swag init` 从注解生成 `doc.json` |
 | OSS 对象存储 | 存储配置 / 文件 / 规则三个服务（ossconfig、ossfile、ossrule，对应 `system_oss_config` / `system_oss` / `system_oss_rule`），对接 RustFS 等 S3 兼容存储 |
 | 统一文件 | 上传下载收口到 `/common/file/*`，台账由 ossfile 自动记录，业务只存 `fileId` |
+| 定时调度 | 管理已注册 Job 的 cron、运行快照、全局并发上限、协作式停止、重试和 SSE 实时日志 |
 | 开发文档站 | 即本站：Hugo 生成静态文件，Hertz 托管在 `/docs/`，管理端"开发文档"页以 iframe 内嵌 |
 
 ## 下一步

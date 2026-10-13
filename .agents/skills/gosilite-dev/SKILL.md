@@ -56,8 +56,8 @@ description: Use when developing, reviewing, or delivering web API features with
 1. **澄清需求（强制门禁）**：按 `references/requirements.md` §1.6 输出理解/假设/关键提问（≤3）并**等待用户确认**，确认后才进第 2 步；能推断的不问，但假设必须列出。
 2. **定契约**：路由、DTO 字段（camelCase）、错误码、表、权限码（`system:*:xxx`）。
 3. **写 spec**（功能值得成文时）：`docs/compose/spec/<feature>.md`（Problem / Design / Out of Scope / Tasks）。
-4. **迁移** `script/migrations/NNNN_*.sql`（幂等 DDL + 种子）。
-5. **生成**：先改 IDL → `hz update -I idl -idl <file> -customize_package idl/package.yaml`；表模型 `go run ./script/codegen`。
+4. **Schema**：更新 `script/schema/v0.1.0.sql`（最终 DDL + 必要种子），在空 PostgreSQL 库运行 `./script/init-schema.sh` 验证；v0.1.0 不维护历史增量 migrations。
+5. **生成**：先改 IDL → `hz update -I idl -idl <file> -customize_package idl/package.yaml`；表模型在空库初始化后执行 `go run ./script/codegen`。
 6. **Repo → Service → Handler → Router**，每层可测；model↔DTO/VO 进 `convert.go`。**路由必须 IDL → hz 生成，禁止手写 `Register`**；免登录等特殊分组用独立 IDL 文件生成独立 `Register`/`middleware.go`，生成后仅允许在 `middleware.go` 挂权限。
 7. **前端接入**：`web/src/api/*.ts`、store/页面；`t-*` 先 TDesign MCP `get-component-docs`。
 8. **测试 + `./script/check.sh`**（前端 `WEB=1`），修到全绿。
@@ -122,7 +122,7 @@ web/src/api/<feature>.ts
 
 - 五域：部门树 / 岗位 / 用户 / 菜单 / 角色（data_scope + role_menu）。
 - IDL：`idl/framework/system.thrift` → hz；Handler `api/handler/framework/system`。
-- 迁移：`script/migrations/0002_system_rbac.sql`；路由 framework Module `RegisterRoutes`；`_systemMw` 挂 `permission.Default()`。
+- 数据基线：`script/schema/v0.1.0.sql`；路由 framework Module `RegisterRoutes`；`_systemMw` 挂 `permission.Default()`。
 - 前端：`web/src/pages/system/*` + `web/src/api/system/*` + `router/modules/system.ts`。
 - 字典分组（`0008_dict_group.sql`）：`system_dict_group` + `group_id`（0=未分组）；分组 CRUD `/system/dict/group/*`，复用 `system:dict:*`；字典页左分组 + 右类型表。
 

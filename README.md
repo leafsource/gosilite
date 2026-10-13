@@ -26,6 +26,7 @@ conf/                  # 环境配置
 idl/                   # Thrift IDL（API 契约源）
 pkg/                   # errorx、response、logger 等
 types/                 # errno、consts
+script/schema/         # v0.1.0 最终数据库基线
 script/codegen/        # 生成模板
 web/                   # TDesign Vue3 前端
 docs/compose/spec/     # feature spec（Compose Next）
@@ -46,15 +47,22 @@ docker compose up -d
 | Redis | 6379 | 会话 refresh / denylist |
 | RustFS | 19000 (API), 19001 (UI) | S3 兼容；host 9000 被占用故映射 19000 |
 
-## 启动
+## 初始化与启动
+
+v0.1.0 使用单一最终 schema 初始化**空** PostgreSQL 数据库；脚本发现已有核心表时会拒绝执行，绝不会删除或覆盖数据。
 
 ```bash
+docker compose up -d
+./script/init-schema.sh
+
 export PATH="$HOME/.local/go/bin:$PATH"
 GO_ENV=test go run .          # Hertz :8888
 curl -s http://127.0.0.1:8888/ping
 
-cd web && npm install && npm run dev   # Vite :5173
+cd web && npm ci && npm run dev   # Vite :3002
 ```
+
+已有开发库不支持就地升级：先备份，再创建空库并执行 `./script/init-schema.sh`。生产配置、访问边界及 `develop → main` 发布步骤见 `docs/hugo/content/release.md`。
 
 登录 API（经 Vite 代理 `/user/*` → `:8888`）：
 
@@ -84,10 +92,7 @@ hz update -I idl -idl idl/framework/user.thrift -customize_package idl/package.y
 
 ```bash
 export PATH="$HOME/.local/go/bin:$PATH"
-go test ./...
-go vet ./...
-go build ./...
-cd web && npm run build
+WEB=1 ./script/check.sh
 ```
 
 ## Agent 工作规范

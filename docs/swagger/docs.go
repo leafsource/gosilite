@@ -4924,6 +4924,9 @@ const docTemplate = `{
                 "jobName": {
                     "type": "string"
                 },
+                "maxInstances": {
+                    "type": "integer"
+                },
                 "paramsJson": {
                     "type": "string"
                 },
@@ -5333,12 +5336,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0.0",
+	Version:          "0.1.0",
 	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "SkyX Cloud API",
-	Description:      "SkyX Cloud Platform API Documentation",
+	Title:            "Gosilite API",
+	Description:      "Gosilite Platform API Documentation",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
