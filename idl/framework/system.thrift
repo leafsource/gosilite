@@ -82,6 +82,8 @@ struct AdminUserDTO {
     9: list<string> roleIds
     10: list<string> postIds
     11: string avatarUrl
+    12: i32 loginFailureCount
+    13: bool loginPermanentlyLocked
 }
 
 struct AdminUserListRequest {

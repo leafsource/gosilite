@@ -2576,17 +2576,19 @@ func (p *PostSaveRequest) String() string {
 
 // ========== 用户管理 ==========
 type AdminUserDTO struct {
-	ID          int64    `thrift:"id,1" json:"id,string" form:"id" query:"id"`
-	Account     string   `thrift:"account,2" form:"account" json:"account" query:"account"`
-	Username    string   `thrift:"username,3" form:"username" json:"username" query:"username"`
-	MobilePhone string   `thrift:"mobilePhone,4" form:"mobilePhone" json:"mobilePhone" query:"mobilePhone"`
-	Email       string   `thrift:"email,5" form:"email" json:"email" query:"email"`
-	State       string   `thrift:"state,6" form:"state" json:"state" query:"state"`
-	DeptId      int64    `thrift:"deptId,7" json:"deptId,string" form:"deptId" query:"deptId"`
-	DeptName    string   `thrift:"deptName,8" form:"deptName" json:"deptName" query:"deptName"`
-	RoleIds     []string `thrift:"roleIds,9,default,list<string>" form:"roleIds" json:"roleIds" query:"roleIds"`
-	PostIds     []string `thrift:"postIds,10,default,list<string>" form:"postIds" json:"postIds" query:"postIds"`
-	AvatarUrl   string   `thrift:"avatarUrl,11" form:"avatarUrl" json:"avatarUrl" query:"avatarUrl"`
+	ID                     int64    `thrift:"id,1" json:"id,string" form:"id" query:"id"`
+	Account                string   `thrift:"account,2" form:"account" json:"account" query:"account"`
+	Username               string   `thrift:"username,3" form:"username" json:"username" query:"username"`
+	MobilePhone            string   `thrift:"mobilePhone,4" form:"mobilePhone" json:"mobilePhone" query:"mobilePhone"`
+	Email                  string   `thrift:"email,5" form:"email" json:"email" query:"email"`
+	State                  string   `thrift:"state,6" form:"state" json:"state" query:"state"`
+	DeptId                 int64    `thrift:"deptId,7" json:"deptId,string" form:"deptId" query:"deptId"`
+	DeptName               string   `thrift:"deptName,8" form:"deptName" json:"deptName" query:"deptName"`
+	RoleIds                []string `thrift:"roleIds,9,default,list<string>" form:"roleIds" json:"roleIds" query:"roleIds"`
+	PostIds                []string `thrift:"postIds,10,default,list<string>" form:"postIds" json:"postIds" query:"postIds"`
+	AvatarUrl              string   `thrift:"avatarUrl,11" form:"avatarUrl" json:"avatarUrl" query:"avatarUrl"`
+	LoginFailureCount      int32    `thrift:"loginFailureCount,12" form:"loginFailureCount" json:"loginFailureCount" query:"loginFailureCount"`
+	LoginPermanentlyLocked bool     `thrift:"loginPermanentlyLocked,13" form:"loginPermanentlyLocked" json:"loginPermanentlyLocked" query:"loginPermanentlyLocked"`
 }
 
 func NewAdminUserDTO() *AdminUserDTO {
@@ -2640,6 +2642,14 @@ func (p *AdminUserDTO) GetAvatarUrl() (v string) {
 	return p.AvatarUrl
 }
 
+func (p *AdminUserDTO) GetLoginFailureCount() (v int32) {
+	return p.LoginFailureCount
+}
+
+func (p *AdminUserDTO) GetLoginPermanentlyLocked() (v bool) {
+	return p.LoginPermanentlyLocked
+}
+
 var fieldIDToName_AdminUserDTO = map[int16]string{
 	1:  "id",
 	2:  "account",
@@ -2652,6 +2662,8 @@ var fieldIDToName_AdminUserDTO = map[int16]string{
 	9:  "roleIds",
 	10: "postIds",
 	11: "avatarUrl",
+	12: "loginFailureCount",
+	13: "loginPermanentlyLocked",
 }
 
 func (p *AdminUserDTO) Read(iprot thrift.TProtocol) (err error) {
@@ -2756,6 +2768,22 @@ func (p *AdminUserDTO) Read(iprot thrift.TProtocol) (err error) {
 		case 11:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField11(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 12:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField12(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 13:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField13(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -2935,6 +2963,28 @@ func (p *AdminUserDTO) ReadField11(iprot thrift.TProtocol) error {
 	p.AvatarUrl = _field
 	return nil
 }
+func (p *AdminUserDTO) ReadField12(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.LoginFailureCount = _field
+	return nil
+}
+func (p *AdminUserDTO) ReadField13(iprot thrift.TProtocol) error {
+
+	var _field bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.LoginPermanentlyLocked = _field
+	return nil
+}
 
 func (p *AdminUserDTO) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -2984,6 +3034,14 @@ func (p *AdminUserDTO) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField11(oprot); err != nil {
 			fieldId = 11
+			goto WriteFieldError
+		}
+		if err = p.writeField12(oprot); err != nil {
+			fieldId = 12
+			goto WriteFieldError
+		}
+		if err = p.writeField13(oprot); err != nil {
+			fieldId = 13
 			goto WriteFieldError
 		}
 	}
@@ -3205,6 +3263,40 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 11 end error: ", p), err)
+}
+
+func (p *AdminUserDTO) writeField12(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("loginFailureCount", thrift.I32, 12); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.LoginFailureCount); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 12 end error: ", p), err)
+}
+
+func (p *AdminUserDTO) writeField13(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("loginPermanentlyLocked", thrift.BOOL, 13); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteBool(p.LoginPermanentlyLocked); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
 }
 
 func (p *AdminUserDTO) String() string {

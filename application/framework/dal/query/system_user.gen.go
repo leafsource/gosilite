@@ -42,6 +42,8 @@ func newSystemUser(db *gorm.DB, opts ...gen.DOOption) systemUser {
 	_systemUser.CreateBy = field.NewString(tableName, "create_by")
 	_systemUser.UpdateBy = field.NewString(tableName, "update_by")
 	_systemUser.DeptID = field.NewInt64(tableName, "dept_id")
+	_systemUser.LoginFailureCount = field.NewInt32(tableName, "login_failure_count")
+	_systemUser.LoginPermanentlyLocked = field.NewBool(tableName, "login_permanently_locked")
 
 	_systemUser.fillFieldMap()
 
@@ -51,21 +53,23 @@ func newSystemUser(db *gorm.DB, opts ...gen.DOOption) systemUser {
 type systemUser struct {
 	systemUserDo
 
-	ALL         field.Asterisk
-	ID          field.Int64  // 用户唯一编码
-	Account     field.String // 账号
-	MobilePhone field.String // 电话号码
-	Email       field.String // 邮箱地址
-	Username    field.String // 用户名称
-	AvatarURL   field.String // 用户头像
-	State       field.String // 用户状态
-	Password    field.String // 用户密码
-	IsRemove    field.Int16  // 是否删除：0-未删除，1-已删除
-	UpdateTime  field.Time   // 修改时间
-	CreateTime  field.Time   // 创建时间
-	CreateBy    field.String // 创建人ID
-	UpdateBy    field.String // 修改人ID
-	DeptID      field.Int64  // 所属部门
+	ALL                    field.Asterisk
+	ID                     field.Int64  // 用户唯一编码
+	Account                field.String // 账号
+	MobilePhone            field.String // 电话号码
+	Email                  field.String // 邮箱地址
+	Username               field.String // 用户名称
+	AvatarURL              field.String // 用户头像
+	State                  field.String // 用户状态
+	Password               field.String // 用户密码
+	IsRemove               field.Int16  // 是否删除：0-未删除，1-已删除
+	UpdateTime             field.Time   // 修改时间
+	CreateTime             field.Time   // 创建时间
+	CreateBy               field.String // 创建人ID
+	UpdateBy               field.String // 修改人ID
+	DeptID                 field.Int64  // 所属部门
+	LoginFailureCount      field.Int32
+	LoginPermanentlyLocked field.Bool
 
 	fieldMap map[string]field.Expr
 }
@@ -96,6 +100,8 @@ func (s *systemUser) updateTableName(table string) *systemUser {
 	s.CreateBy = field.NewString(table, "create_by")
 	s.UpdateBy = field.NewString(table, "update_by")
 	s.DeptID = field.NewInt64(table, "dept_id")
+	s.LoginFailureCount = field.NewInt32(table, "login_failure_count")
+	s.LoginPermanentlyLocked = field.NewBool(table, "login_permanently_locked")
 
 	s.fillFieldMap()
 
@@ -112,7 +118,7 @@ func (s *systemUser) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (s *systemUser) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 14)
+	s.fieldMap = make(map[string]field.Expr, 16)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["account"] = s.Account
 	s.fieldMap["mobile_phone"] = s.MobilePhone
@@ -127,6 +133,8 @@ func (s *systemUser) fillFieldMap() {
 	s.fieldMap["create_by"] = s.CreateBy
 	s.fieldMap["update_by"] = s.UpdateBy
 	s.fieldMap["dept_id"] = s.DeptID
+	s.fieldMap["login_failure_count"] = s.LoginFailureCount
+	s.fieldMap["login_permanently_locked"] = s.LoginPermanentlyLocked
 }
 
 func (s systemUser) clone(db *gorm.DB) systemUser {

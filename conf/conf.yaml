@@ -52,3 +52,8 @@ docs:
 
 scheduler:
   log_retention_days: 30     # GOSILITE_SCHEDULER_LOG_RETENTION_DAYS 可覆盖
+
+login_security:
+  max_failures: 5
+  failure_window_minutes: 15
+  lock_minutes: 30

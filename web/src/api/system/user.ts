@@ -13,6 +13,8 @@ export type AdminUserDTO = {
   roleIds: string[];
   postIds: string[];
   avatarUrl: string;
+  loginFailureCount: number;
+  loginPermanentlyLocked: boolean;
 };
 
 export type AdminUserListParams = {
