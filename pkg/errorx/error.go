@@ -1,6 +1,7 @@
 package errorx
 
 import (
+	"errors"
 	"fmt"
 	"gosilite/pkg/errorx/internal"
 	"strings"
@@ -16,6 +17,22 @@ type StatusError interface {
 	Msg() string
 	IsAffectStability() bool
 	Extra() map[string]string
+}
+
+const RequestStackKey = "errorx_request_stack"
+
+type stackTracer interface {
+	StackTrace() string
+}
+
+func StackTrace(err error) string {
+	for err != nil {
+		if tracer, ok := err.(stackTracer); ok && tracer.StackTrace() != "" {
+			return tracer.StackTrace()
+		}
+		err = errors.Unwrap(err)
+	}
+	return ""
 }
 
 // Option is used to configure an StatusError.

@@ -15,6 +15,7 @@ import (
 	"gosilite/application/base/ctxutil"
 	"gosilite/application/base/logq"
 	"gosilite/application/base/useragent"
+	"gosilite/pkg/errorx"
 	"gosilite/types/consts"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -122,6 +123,10 @@ func MW() app.HandlerFunc {
 		if v, ok := c.Get(PanicKey); ok {
 			panicInfo, _ = v.(*PanicInfo)
 		}
+		businessStack := ""
+		if v, ok := c.Get(errorx.RequestStackKey); ok {
+			businessStack, _ = v.(string)
+		}
 
 		headers := dumpHeaders(c)
 		operStatus, toErrorLog := classify(httpStatus, code, hasEnvelope, panicInfo != nil)
@@ -164,6 +169,8 @@ func MW() app.HandlerFunc {
 				if e.ErrCode == 0 {
 					e.ErrCode = 500
 				}
+			} else if businessStack != "" {
+				e.Stack = clipStack([]byte(businessStack))
 			} else if e.ErrMsg == "" {
 				e.ErrMsg = "http status " + itoa(httpStatus)
 			}
@@ -472,7 +479,6 @@ func moduleOf(path string) string {
 	}
 	return p
 }
-
 
 func clipStack(stack []byte) string {
 	const maxStack = 8 << 10

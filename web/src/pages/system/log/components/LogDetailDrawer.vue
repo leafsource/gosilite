@@ -102,7 +102,7 @@
       <h4 class="log-detail__section">堆栈信息（Stack Trace）</h4>
       <pre v-if="err.stack" class="log-detail__pre log-detail__pre--stack">{{ err.stack }}</pre>
       <div v-else class="log-detail__empty log-detail__empty--hint">
-        业务异常不产生运行时堆栈。请结合错误码、异常信息与下方请求参数定位；也可用 TraceId
+        未采集到堆栈信息。请结合错误码、异常信息与下方请求参数定位；也可用 TraceId
         在操作日志中检索同一次请求的记录。
       </div>
 

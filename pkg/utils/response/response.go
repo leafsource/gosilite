@@ -36,6 +36,9 @@ func Error(ctx context.Context, c *app.RequestContext, err error) {
 	var customErr errorx.StatusError
 
 	if errors.As(err, &customErr) && customErr.Code() != 0 {
+		if stack := errorx.StackTrace(err); stack != "" {
+			c.Set(errorx.RequestStackKey, stack)
+		}
 		hlog.CtxWarnf(ctx, "[ErrorX] error:  %v %v \n", customErr.Code(), err)
 		c.Abort()
 		writeJSON(c, http.StatusOK, Result{Code: customErr.Code(), Msg: customErr.Msg()})

@@ -6,6 +6,9 @@ import (
 	"testing"
 
 	"gosilite/application/base/logq"
+	"gosilite/pkg/errorx"
+	R "gosilite/pkg/utils/response"
+	"gosilite/types/errno"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/middlewares/server/recovery"
@@ -75,14 +78,41 @@ func TestPanicCapturedIntoErrorLog(t *testing.T) {
 	}
 }
 
-// TestBusinessErrorEntryNotPanic 业务失败走 errType=1 且不带 panic 堆栈。
-func TestBusinessErrorEntryNotPanic(t *testing.T) {
-	_, toErr := classify(200, 701000028, true, false)
-	if !toErr {
-		t.Fatal("business failure must go to error log")
+func TestBusinessErrorCapturedIntoErrorLog(t *testing.T) {
+	prev := logq.Current()
+	sink := &memSink{}
+	logq.Set(sink)
+	if prev != nil {
+		t.Cleanup(func() { logq.Set(prev) })
 	}
-	st, toErr := classify(200, 200, true, false)
-	if st != 0 || toErr {
-		t.Fatalf("success classify: st=%d toErr=%v", st, toErr)
+
+	h := server.New()
+	h.Use(MW())
+	h.GET("/business-error", func(ctx context.Context, c *app.RequestContext) {
+		R.Error(ctx, c, errorx.New(errno.ErrSystemNoticeNotFound, errorx.KV("id", "42")))
+	})
+
+	w := ut.PerformRequest(h.Engine, "GET", "/business-error", nil)
+	if w.Code != 200 {
+		t.Fatalf("http status want 200, got %d", w.Code)
+	}
+	if len(sink.errs) != 1 {
+		t.Fatalf("error entries want 1, got %d", len(sink.errs))
+	}
+	e := sink.errs[0]
+	if e.ErrType != 1 || e.ErrLevel != 1 {
+		t.Fatalf("want business type/level 1, got type=%d level=%d", e.ErrType, e.ErrLevel)
+	}
+	if e.ErrCode != errno.ErrSystemNoticeNotFound {
+		t.Fatalf("error code want %d, got %d", errno.ErrSystemNoticeNotFound, e.ErrCode)
+	}
+	if !strings.Contains(e.ErrMsg, "42") {
+		t.Fatalf("error message should carry parameters, got %q", e.ErrMsg)
+	}
+	if len(e.Stack) == 0 || !strings.Contains(e.Stack, "TestBusinessErrorCapturedIntoErrorLog") {
+		t.Fatalf("business stack must contain error creation frame, got %q", e.Stack)
+	}
+	if len(sink.oper) != 1 || sink.oper[0].OperStatus != 1 {
+		t.Fatalf("oper entries: %+v", sink.oper)
 	}
 }
