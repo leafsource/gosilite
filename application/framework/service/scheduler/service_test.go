@@ -155,8 +155,10 @@ func TestRetryStoppedRunUsesImmutableSnapshot(t *testing.T) {
 	}}
 	registry := core.NewRegistry()
 	var receivedParams string
+	executed := make(chan struct{})
 	if err := registry.Register(retryJob{key: TestJobKey, run: func(_ context.Context, params string) (string, error) {
 		receivedParams = params
+		close(executed)
 		return "ok", nil
 	}}); err != nil {
 		t.Fatal(err)
@@ -174,6 +176,11 @@ func TestRetryStoppedRunUsesImmutableSnapshot(t *testing.T) {
 	case <-repo.createdCh:
 	case <-time.After(time.Second):
 		t.Fatal("retry did not schedule execution")
+	}
+	select {
+	case <-executed:
+	case <-time.After(time.Second):
+		t.Fatal("retry did not invoke job")
 	}
 	if receivedParams != repo.run.ParamsJSON {
 		t.Fatalf("job params = %q, want snapshot %q", receivedParams, repo.run.ParamsJSON)

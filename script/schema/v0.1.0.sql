@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict Ip6PUDzUbdyauV1RVljNIKHux6Q3mtNoxBVbMN6ySGfv50cBSFaYvKUMUESf2m0
+\restrict h6vzkawMdZNbL8gFGgtHHg4bP3CY5jLXjjlkYCRaTr65qQ4RDij4rlMQ1k5jo0J
 
 -- Dumped from database version 16.15
 -- Dumped by pg_dump version 16.15
@@ -476,9 +476,9 @@ CREATE TABLE public.system_menu (
     create_time timestamp(6) without time zone,
     create_by character varying(36),
     update_by character varying(36),
-    redirect character varying(512) DEFAULT ''::character varying,
-    expanded boolean DEFAULT false,
-    hidden_breadcrumb boolean DEFAULT false,
+    redirect character varying(512) DEFAULT ''::character varying NOT NULL,
+    expanded boolean DEFAULT false NOT NULL,
+    hidden_breadcrumb boolean DEFAULT false NOT NULL,
     perms character varying(255) DEFAULT ''::character varying NOT NULL,
     status smallint DEFAULT 0 NOT NULL,
     action_type character varying(32) DEFAULT ''::character varying NOT NULL
@@ -608,7 +608,7 @@ COMMENT ON COLUMN public.system_menu.component IS '组件地址';
 -- Name: COLUMN system_menu.visible; Type: COMMENT; Schema: public; Owner: -
 --
 
-COMMENT ON COLUMN public.system_menu.visible IS '是否可见：show-显示, hide-隐藏';
+COMMENT ON COLUMN public.system_menu.visible IS '是否可见：0-隐藏, 1-显示';
 
 
 --
@@ -1469,7 +1469,9 @@ CREATE TABLE public."system_user" (
     create_time timestamp(6) without time zone,
     create_by character varying(36),
     update_by character varying(36),
-    dept_id bigint DEFAULT 0 NOT NULL
+    dept_id bigint DEFAULT 0 NOT NULL,
+    login_failure_count integer DEFAULT 0 NOT NULL,
+    login_permanently_locked boolean DEFAULT false NOT NULL
 );
 
 
@@ -2509,13 +2511,13 @@ CREATE INDEX username ON public."system_user" USING btree (username);
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Ip6PUDzUbdyauV1RVljNIKHux6Q3mtNoxBVbMN6ySGfv50cBSFaYvKUMUESf2m0
+\unrestrict h6vzkawMdZNbL8gFGgtHHg4bP3CY5jLXjjlkYCRaTr65qQ4RDij4rlMQ1k5jo0J
 
 --
 -- PostgreSQL database dump
 --
 
-\restrict Ekke8HUsbkLwpuRbBo2XBOPDYjADflxPBrelhMzpcBv1ddIYUNcKLLxhRylerlv
+\restrict hdgvfFMARchv8wieNJac8Q3D1Q681py9PO6OnS2br8yZRh8E7JTbxBrfw9oqazy
 
 -- Dumped from database version 16.15
 -- Dumped by pg_dump version 16.15
@@ -2535,157 +2537,173 @@ SET row_security = off;
 -- Data for Name: system_config; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_config VALUES (2, '分页默认大小', 'sys.page.size', '10', 'system', '列表默认 pageSize', 0, 0, '2026-10-13 02:42:18.751517', '2026-10-13 02:42:18.751517');
-INSERT INTO public.system_config VALUES (1, '系统名称', 'sys.app.name', 'gosilite', 'global', '站点名称', 0, 0, '2026-10-13 02:42:18.751517', '2026-10-13 02:42:18.751517');
+INSERT INTO public.system_config VALUES (2, '分页默认大小', 'sys.page.size', '10', 'system', '列表默认 pageSize', 0, 0, '0001-01-01 00:00:00', '2026-10-08 09:53:07.929981');
+INSERT INTO public.system_config VALUES (1, '系统名称', 'sys.app.name', 'Gosilite', 'global', '站点名称', 0, 0, '0001-01-01 00:00:00', '2026-10-09 17:13:58.191495');
+INSERT INTO public.system_config VALUES (3, '登录最大失败次数', 'sys.login.max_failures', '5', 'system', '15分钟内达到该次数后临时锁定', 0, 0, '2026-10-13 07:36:28.34156', '2026-10-13 07:36:28.34156');
+INSERT INTO public.system_config VALUES (4, '登录失败统计分钟', 'sys.login.failure_window_minutes', '15', 'system', '登录失败次数的统计窗口', 0, 0, '2026-10-13 07:36:28.34156', '2026-10-13 07:36:28.34156');
+INSERT INTO public.system_config VALUES (5, '登录临时锁定分钟', 'sys.login.lock_minutes', '30', 'system', '达到失败阈值后的临时锁定时长', 0, 0, '2026-10-13 07:36:28.34156', '2026-10-13 07:36:28.34156');
 
 
 --
 -- Data for Name: system_dept; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_dept VALUES (100, 0, '0', '总公司', 1, 0, 0, '2026-10-13 02:42:18.667709', '2026-10-13 02:42:18.667709', 0);
-INSERT INTO public.system_dept VALUES (101, 100, '0,100', '研发部门', 2, 0, 0, '2026-10-13 02:42:18.667709', '2026-10-13 02:42:18.667709', 0);
-INSERT INTO public.system_dept VALUES (102, 100, '0,100', '市场部门', 3, 0, 0, '2026-10-13 02:42:18.667709', '2026-10-13 02:42:18.667709', 0);
+INSERT INTO public.system_dept VALUES (100, 0, '0', '总公司', 1, 0, 0, '2026-10-05 07:18:38.333474', '2026-10-06 16:41:57.538725', 0);
+INSERT INTO public.system_dept VALUES (102, 100, '0,100', '市场部门', 2, 0, 0, '2026-10-05 07:18:38.333474', '2026-10-06 17:23:41.156535', 0);
+INSERT INTO public.system_dept VALUES (2107458799911571456, 0, '0', '测试，测试', 2, 0, 2, '2026-10-06 21:11:47.398355', '2026-10-06 21:11:57.186485', 0);
+INSERT INTO public.system_dept VALUES (2107458891318038528, 0, '0', '测试，测试', 2, 0, 2, '2026-10-06 21:12:09.191288', '2026-10-06 21:12:16.961019', 0);
+INSERT INTO public.system_dept VALUES (101, 100, '0,100', '研发部门', 2, 0, 0, '2026-10-05 07:18:38.333474', '2026-10-08 13:47:08.525868', 51);
 
 
 --
 -- Data for Name: system_dict_data; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_dict_data VALUES (3, 'sys_user_sex', '男', '0', '', 1, 0, 1, 0, '2026-10-13 02:42:18.751517', '2026-10-13 02:42:18.751517', '', '');
-INSERT INTO public.system_dict_data VALUES (4, 'sys_user_sex', '女', '1', '', 2, 0, 0, 0, '2026-10-13 02:42:18.751517', '2026-10-13 02:42:18.751517', '', '');
-INSERT INTO public.system_dict_data VALUES (6, 'sys_state', '停用', 'disabled', '', 2, 0, 0, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', '', '');
-INSERT INTO public.system_dict_data VALUES (13, 'sys_menu_type', '菜单', 'C', '', 2, 0, 0, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', '', '');
-INSERT INTO public.system_dict_data VALUES (15, 'sys_config_type', '系统', 'system', '', 1, 0, 1, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', '', '');
-INSERT INTO public.system_dict_data VALUES (16, 'sys_config_type', '业务', 'business', '', 2, 0, 0, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', '', '');
-INSERT INTO public.system_dict_data VALUES (17, 'sys_config_type', '全局', 'global', '', 3, 0, 0, 0, '2026-10-13 02:42:18.96498', '2026-10-13 02:42:18.96498', '', '');
-INSERT INTO public.system_dict_data VALUES (1, 'sys_status', '启用', '0', '', 1, 0, 1, 0, '2026-10-13 02:42:18.751517', '2026-10-13 02:42:18.751517', 'success', '');
-INSERT INTO public.system_dict_data VALUES (2, 'sys_status', '停用', '1', '', 2, 0, 0, 0, '2026-10-13 02:42:18.751517', '2026-10-13 02:42:18.751517', 'danger', '');
-INSERT INTO public.system_dict_data VALUES (5, 'sys_state', '启用', 'enabled', '', 1, 0, 1, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 'success', '');
-INSERT INTO public.system_dict_data VALUES (12, 'sys_menu_type', '目录', 'M', '', 1, 0, 1, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 'primary', '');
-INSERT INTO public.system_dict_data VALUES (14, 'sys_menu_type', '按钮', 'F', '', 3, 0, 0, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 'warning', '');
-INSERT INTO public.system_dict_data VALUES (7, 'sys_data_scope', '全部数据', '1', '', 1, 0, 1, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 'primary', '');
-INSERT INTO public.system_dict_data VALUES (8, 'sys_data_scope', '本部门', '2', '', 2, 0, 0, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 'primary', '');
-INSERT INTO public.system_dict_data VALUES (9, 'sys_data_scope', '本部门及以下', '3', '', 3, 0, 0, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 'primary', '');
-INSERT INTO public.system_dict_data VALUES (10, 'sys_data_scope', '仅本人', '4', '', 4, 0, 0, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 'primary', '');
-INSERT INTO public.system_dict_data VALUES (11, 'sys_data_scope', '自定义部门', '5', '', 5, 0, 0, 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 'primary', '');
-INSERT INTO public.system_dict_data VALUES (18, 'sys_action_type', '添加', 'add', '', 1, 0, 1, 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', '', '');
-INSERT INTO public.system_dict_data VALUES (19, 'sys_action_type', '修改', 'edit', '', 2, 0, 0, 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', '', '');
-INSERT INTO public.system_dict_data VALUES (20, 'sys_action_type', '删除', 'delete', '', 3, 0, 0, 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', '', '');
-INSERT INTO public.system_dict_data VALUES (21, 'sys_action_type', '下载', 'download', '', 4, 0, 0, 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', '', '');
-INSERT INTO public.system_dict_data VALUES (22, 'sys_action_type', '上传', 'upload', '', 5, 0, 0, 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', '', '');
-INSERT INTO public.system_dict_data VALUES (23, 'sys_action_type', '查询', 'query', '', 6, 0, 0, 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', '', '');
-INSERT INTO public.system_dict_data VALUES (24, 'sys_action_type', '导入', 'import', '', 7, 0, 0, 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', '', '');
-INSERT INTO public.system_dict_data VALUES (25, 'sys_action_type', '导出', 'export', '', 8, 0, 0, 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', '', '');
-INSERT INTO public.system_dict_data VALUES (26, 'sys_action_type', '审批', 'approve', '', 9, 0, 0, 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', '', '');
-INSERT INTO public.system_dict_data VALUES (27, 'sys_action_type', '分配', 'assign', '', 10, 0, 0, 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', '', '');
-INSERT INTO public.system_dict_data VALUES (28, 'sys_action_type', '其他', 'other', '', 99, 0, 0, 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', '', '');
-INSERT INTO public.system_dict_data VALUES (29, 'sys_notice_type', '通知', '1', '', 1, 0, 1, 0, '2026-10-13 02:42:19.331703', '2026-10-13 02:42:19.331703', '', '');
-INSERT INTO public.system_dict_data VALUES (30, 'sys_notice_type', '公告', '2', '', 2, 0, 0, 0, '2026-10-13 02:42:19.331703', '2026-10-13 02:42:19.331703', '', '');
-INSERT INTO public.system_dict_data VALUES (31, 'sys_notice_status', '已发布', '0', '', 1, 0, 1, 0, '2026-10-13 02:42:19.331703', '2026-10-13 02:42:19.331703', '', '');
-INSERT INTO public.system_dict_data VALUES (32, 'sys_notice_status', '已撤回', '1', '', 2, 0, 0, 0, '2026-10-13 02:42:19.331703', '2026-10-13 02:42:19.331703', '', '');
-INSERT INTO public.system_dict_data VALUES (33, 'sys_oper_type', '其他', '0', '', 1, 0, 1, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (34, 'sys_oper_type', '新增', '1', '', 2, 0, 0, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (35, 'sys_oper_type', '修改', '2', '', 3, 0, 0, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (36, 'sys_oper_type', '删除', '3', '', 4, 0, 0, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (37, 'sys_oper_type', '查询', '4', '', 5, 0, 0, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (38, 'sys_oper_type', '导入', '5', '', 6, 0, 0, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (39, 'sys_oper_type', '导出', '6', '', 7, 0, 0, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (40, 'sys_oper_type', '上传', '7', '', 8, 0, 0, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (41, 'sys_oper_status', '成功', '0', '', 1, 0, 1, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (42, 'sys_oper_status', '失败', '1', '', 2, 0, 0, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (43, 'sys_error_level', '普通', '1', '', 1, 0, 1, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (44, 'sys_error_level', '严重', '2', '', 2, 0, 0, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (45, 'sys_handle_status', '待处理', '0', '', 1, 0, 1, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (46, 'sys_handle_status', '已处理', '1', '', 2, 0, 0, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (47, 'sys_login_status', '成功', '0', '', 1, 0, 1, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (48, 'sys_login_status', '失败', '1', '', 2, 0, 0, 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', '', '');
-INSERT INTO public.system_dict_data VALUES (49, 'sys_login_status', '登出', '2', '', 3, 0, 0, 0, '2026-10-13 02:42:19.546058', '2026-10-13 02:42:19.546058', '', '');
-INSERT INTO public.system_dict_data VALUES (50, 'sys_message_type', '邮件', 'MAIL', '', 1, 0, 1, 0, '2026-10-13 02:42:20.094353', '2026-10-13 02:42:20.094353', '', '');
-INSERT INTO public.system_dict_data VALUES (51, 'sys_message_type', '短信', 'SMS', '', 2, 0, 0, 0, '2026-10-13 02:42:20.094353', '2026-10-13 02:42:20.094353', '', '');
-INSERT INTO public.system_dict_data VALUES (52, 'sys_message_template_mode', '模板ID', 'TEMPLATE_ID', '', 1, 0, 0, 0, '2026-10-13 02:42:20.094353', '2026-10-13 02:42:20.094353', '', '');
-INSERT INTO public.system_dict_data VALUES (53, 'sys_message_template_mode', '模板内容', 'TEMPLATE_CONTENT', '', 2, 0, 1, 0, '2026-10-13 02:42:20.094353', '2026-10-13 02:42:20.094353', '', '');
+INSERT INTO public.system_dict_data VALUES (4, 'sys_user_sex', '女', '1', '', 2, 0, 0, 0, '2026-10-05 08:46:55.544538', '2026-10-05 08:46:55.544538', 'default', '');
+INSERT INTO public.system_dict_data VALUES (6, 'sys_state', '停用', 'disabled', '', 2, 0, 0, 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 'default', '');
+INSERT INTO public.system_dict_data VALUES (13, 'sys_menu_type', '菜单', 'C', '', 2, 0, 0, 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 'default', '');
+INSERT INTO public.system_dict_data VALUES (15, 'sys_config_type', '系统', 'system', '', 1, 0, 1, 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 'default', '');
+INSERT INTO public.system_dict_data VALUES (41, 'sys_oper_status', '成功', '0', '', 1, 0, 1, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (17, 'sys_config_type', '全局', 'global', '', 3, 0, 0, 0, '2026-10-06 05:37:39.04561', '2026-10-06 05:37:39.04561', 'default', '');
+INSERT INTO public.system_dict_data VALUES (43, 'sys_error_level', '普通', '1', '', 1, 0, 1, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (2, 'sys_status', '停用', '1', '', 2, 0, 0, 0, '2026-10-05 08:46:55.544538', '2026-10-05 08:46:55.544538', 'danger', '');
+INSERT INTO public.system_dict_data VALUES (5, 'sys_state', '启用', 'enabled', '', 1, 0, 1, 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 'success', '');
+INSERT INTO public.system_dict_data VALUES (12, 'sys_menu_type', '目录', 'M', '', 1, 0, 1, 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 'primary', '');
+INSERT INTO public.system_dict_data VALUES (14, 'sys_menu_type', '按钮', 'F', '', 3, 0, 0, 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 'warning', '');
+INSERT INTO public.system_dict_data VALUES (7, 'sys_data_scope', '全部数据', '1', '', 1, 0, 1, 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 'primary', '');
+INSERT INTO public.system_dict_data VALUES (8, 'sys_data_scope', '本部门', '2', '', 2, 0, 0, 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 'primary', '');
+INSERT INTO public.system_dict_data VALUES (9, 'sys_data_scope', '本部门及以下', '3', '', 3, 0, 0, 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 'primary', '');
+INSERT INTO public.system_dict_data VALUES (10, 'sys_data_scope', '仅本人', '4', '', 4, 0, 0, 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 'primary', '');
+INSERT INTO public.system_dict_data VALUES (11, 'sys_data_scope', '自定义部门', '5', '', 5, 0, 0, 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 'primary', '');
+INSERT INTO public.system_dict_data VALUES (2107771497933180928, 'sys_status', '验收项', 'verify_9', '', 99, 0, 0, 2, '2026-10-07 17:54:20.265538', '2026-10-07 17:54:20.302503', 'warning', '#FF6A00');
+INSERT INTO public.system_dict_data VALUES (44, 'sys_error_level', '严重', '2', '', 2, 0, 0, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (45, 'sys_handle_status', '待处理', '0', '', 1, 0, 1, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (46, 'sys_handle_status', '已处理', '1', '', 2, 0, 0, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (47, 'sys_login_status', '成功', '0', '', 1, 0, 1, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (48, 'sys_login_status', '失败', '1', '', 2, 0, 0, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (49, 'sys_login_status', '登出', '2', '', 3, 0, 0, 0, '2026-10-08 08:30:12.886662', '2026-10-08 08:30:12.886662', '', '');
+INSERT INTO public.system_dict_data VALUES (42, 'sys_oper_status', '失败', '1', '', 2, 0, 0, 0, '0001-01-01 00:00:00', '2026-10-09 12:41:04.539629', 'danger', '');
+INSERT INTO public.system_dict_data VALUES (50, 'sys_message_type', '邮件', 'MAIL', '', 1, 0, 1, 0, '2026-10-11 13:52:29.198316', '2026-10-11 13:52:29.198316', '', '');
+INSERT INTO public.system_dict_data VALUES (51, 'sys_message_type', '短信', 'SMS', '', 2, 0, 0, 0, '2026-10-11 13:52:29.198316', '2026-10-11 13:52:29.198316', '', '');
+INSERT INTO public.system_dict_data VALUES (52, 'sys_message_template_mode', '模板ID', 'TEMPLATE_ID', '', 1, 0, 0, 0, '2026-10-11 13:52:29.198316', '2026-10-11 13:52:29.198316', '', '');
+INSERT INTO public.system_dict_data VALUES (16, 'sys_config_type', '业务', 'business', '', 2, 0, 0, 0, '0001-01-01 00:00:00', '2026-10-07 18:06:09.347546', 'default', '');
+INSERT INTO public.system_dict_data VALUES (3, 'sys_user_sex', '男', '0', '', 1, 0, 1, 0, '0001-01-01 00:00:00', '2026-10-07 18:15:15.591734', '', '#3861ff');
+INSERT INTO public.system_dict_data VALUES (2107777048217915392, 'sys_status', 't', 't_color', '', 99, 0, 0, 2, '2026-10-07 18:16:23.556903', '2026-10-07 18:16:23.592248', 'default', '#00FF88');
+INSERT INTO public.system_dict_data VALUES (2107777048092086272, 'sys_status', 't', 't_info', '', 99, 0, 0, 2, '2026-10-07 18:16:23.526475', '2026-10-07 18:16:23.625724', 'info', '');
+INSERT INTO public.system_dict_data VALUES (53, 'sys_message_template_mode', '模板内容', 'TEMPLATE_CONTENT', '', 2, 0, 1, 0, '2026-10-11 13:52:29.198316', '2026-10-11 13:52:29.198316', '', '');
+INSERT INTO public.system_dict_data VALUES (2107777400317153280, 'sys_status', 't', 't_color2', '', 99, 0, 0, 2, '0001-01-01 00:00:00', '2026-10-07 18:17:47.557672', '', '#00FF88');
+INSERT INTO public.system_dict_data VALUES (2107777400602365952, 'sys_status', 't', 't_info2', '', 99, 0, 0, 2, '2026-10-07 18:17:47.571496', '2026-10-07 18:17:47.61702', 'info', '');
+INSERT INTO public.system_dict_data VALUES (1, 'sys_status', '启用', '0', '', 1, 0, 1, 0, '0001-01-01 00:00:00', '2026-10-08 08:29:43.255845', 'primary', '');
+INSERT INTO public.system_dict_data VALUES (18, 'sys_action_type', '添加', 'add', '', 1, 0, 1, 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', '', '');
+INSERT INTO public.system_dict_data VALUES (19, 'sys_action_type', '修改', 'edit', '', 2, 0, 0, 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', '', '');
+INSERT INTO public.system_dict_data VALUES (20, 'sys_action_type', '删除', 'delete', '', 3, 0, 0, 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', '', '');
+INSERT INTO public.system_dict_data VALUES (21, 'sys_action_type', '下载', 'download', '', 4, 0, 0, 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', '', '');
+INSERT INTO public.system_dict_data VALUES (22, 'sys_action_type', '上传', 'upload', '', 5, 0, 0, 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', '', '');
+INSERT INTO public.system_dict_data VALUES (23, 'sys_action_type', '查询', 'query', '', 6, 0, 0, 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', '', '');
+INSERT INTO public.system_dict_data VALUES (24, 'sys_action_type', '导入', 'import', '', 7, 0, 0, 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', '', '');
+INSERT INTO public.system_dict_data VALUES (25, 'sys_action_type', '导出', 'export', '', 8, 0, 0, 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', '', '');
+INSERT INTO public.system_dict_data VALUES (26, 'sys_action_type', '审批', 'approve', '', 9, 0, 0, 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', '', '');
+INSERT INTO public.system_dict_data VALUES (27, 'sys_action_type', '分配', 'assign', '', 10, 0, 0, 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', '', '');
+INSERT INTO public.system_dict_data VALUES (28, 'sys_action_type', '其他', 'other', '', 99, 0, 0, 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', '', '');
+INSERT INTO public.system_dict_data VALUES (29, 'sys_notice_type', '通知', '1', '', 1, 0, 1, 0, '2026-10-08 03:39:40.328222', '2026-10-08 03:39:40.328222', '', '');
+INSERT INTO public.system_dict_data VALUES (30, 'sys_notice_type', '公告', '2', '', 2, 0, 0, 0, '2026-10-08 03:39:40.328222', '2026-10-08 03:39:40.328222', '', '');
+INSERT INTO public.system_dict_data VALUES (31, 'sys_notice_status', '已发布', '0', '', 1, 0, 1, 0, '2026-10-08 03:39:40.328222', '2026-10-08 03:39:40.328222', '', '');
+INSERT INTO public.system_dict_data VALUES (32, 'sys_notice_status', '已撤回', '1', '', 2, 0, 0, 0, '2026-10-08 03:39:40.328222', '2026-10-08 03:39:40.328222', '', '');
+INSERT INTO public.system_dict_data VALUES (33, 'sys_oper_type', '其他', '0', '', 1, 0, 1, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (34, 'sys_oper_type', '新增', '1', '', 2, 0, 0, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (35, 'sys_oper_type', '修改', '2', '', 3, 0, 0, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (36, 'sys_oper_type', '删除', '3', '', 4, 0, 0, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (37, 'sys_oper_type', '查询', '4', '', 5, 0, 0, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (38, 'sys_oper_type', '导入', '5', '', 6, 0, 0, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (39, 'sys_oper_type', '导出', '6', '', 7, 0, 0, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
+INSERT INTO public.system_dict_data VALUES (40, 'sys_oper_type', '上传', '7', '', 8, 0, 0, 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', '', '');
 
 
 --
 -- Data for Name: system_dict_group; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_dict_group VALUES (1, '系统', 1, '系统内置字典', 0, '2026-10-13 02:42:19.113136', '2026-10-13 02:42:19.113136');
+INSERT INTO public.system_dict_group VALUES (2107655757913657344, '测试分组', 9, 'smoke', 2, '2026-10-07 10:14:25.695523', '2026-10-07 10:15:09.225689');
+INSERT INTO public.system_dict_group VALUES (2107659177609400320, '前端验收组', 2, '', 2, '2026-10-07 10:28:01.018934', '2026-10-07 10:28:25.531904');
+INSERT INTO public.system_dict_group VALUES (1, '系统', 1, '系统内置字典', 0, '0001-01-01 00:00:00', '2026-10-09 17:50:29.685191');
+INSERT INTO public.system_dict_group VALUES (2107685992222691328, '业务测试', 2, '测试业务备注', 0, '0001-01-01 00:00:00', '2026-10-09 17:50:29.70431');
 
 
 --
 -- Data for Name: system_dict_type; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_dict_type VALUES (1, '状态', 'sys_status', 0, 1, '通用状态', 0, '2026-10-13 02:42:18.751517', '2026-10-13 02:42:18.751517', 1);
-INSERT INTO public.system_dict_type VALUES (2, '性别', 'sys_user_sex', 0, 2, '用户性别', 0, '2026-10-13 02:42:18.751517', '2026-10-13 02:42:18.751517', 1);
-INSERT INTO public.system_dict_type VALUES (3, '账号状态', 'sys_state', 0, 3, '启用/停用（值域 enabled/disabled）', 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 1);
-INSERT INTO public.system_dict_type VALUES (4, '数据范围', 'sys_data_scope', 0, 4, '角色数据权限范围', 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 1);
-INSERT INTO public.system_dict_type VALUES (5, '菜单类型', 'sys_menu_type', 0, 5, '目录/菜单/按钮', 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 1);
-INSERT INTO public.system_dict_type VALUES (6, '参数类型', 'sys_config_type', 0, 6, '系统/业务参数', 0, '2026-10-13 02:42:18.893463', '2026-10-13 02:42:18.893463', 1);
-INSERT INTO public.system_dict_type VALUES (7, '按钮操作类型', 'sys_action_type', 0, 7, '按钮动作分类（操作审计用），F 菜单必选', 0, '2026-10-13 02:42:19.243142', '2026-10-13 02:42:19.243142', 1);
-INSERT INTO public.system_dict_type VALUES (8, '通知公告类型', 'sys_notice_type', 0, 8, '通知公告分类（1 通知 2 公告）', 0, '2026-10-13 02:42:19.331703', '2026-10-13 02:42:19.331703', 1);
-INSERT INTO public.system_dict_type VALUES (9, '通知公告状态', 'sys_notice_status', 0, 9, '发布状态（0 已发布 1 已撤回）', 0, '2026-10-13 02:42:19.331703', '2026-10-13 02:42:19.331703', 1);
-INSERT INTO public.system_dict_type VALUES (10, '操作日志类型', 'sys_oper_type', 0, 10, '操作分类（0其他 1新增 2修改 3删除 4查询 5导入 6导出 7上传）', 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', 1);
-INSERT INTO public.system_dict_type VALUES (11, '操作执行状态', 'sys_oper_status', 0, 11, '执行状态（0 成功 1 失败）', 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', 1);
-INSERT INTO public.system_dict_type VALUES (12, '异常级别', 'sys_error_level', 0, 12, '异常严重级别（1 普通 2 严重）', 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', 1);
-INSERT INTO public.system_dict_type VALUES (13, '异常处理状态', 'sys_handle_status', 0, 13, '异常处理状态（0 待处理 1 已处理）', 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', 1);
-INSERT INTO public.system_dict_type VALUES (14, '登录状态', 'sys_login_status', 0, 14, '登录结果（0 成功 1 失败）', 0, '2026-10-13 02:42:19.452134', '2026-10-13 02:42:19.452134', 1);
-INSERT INTO public.system_dict_type VALUES (15, '消息类型', 'sys_message_type', 0, 20, '消息通道类型（MAIL 邮件 SMS 短信）', 0, '2026-10-13 02:42:20.094353', '2026-10-13 02:42:20.094353', 1);
-INSERT INTO public.system_dict_type VALUES (16, '消息模板模式', 'sys_message_template_mode', 0, 21, '模板ID模式 / 模板内容模式', 0, '2026-10-13 02:42:20.094353', '2026-10-13 02:42:20.094353', 1);
+INSERT INTO public.system_dict_type VALUES (1, '状态', 'sys_status', 0, 1, '通用状态', 0, '2026-10-05 08:46:55.544538', '2026-10-05 08:46:55.544538', 1);
+INSERT INTO public.system_dict_type VALUES (2, '性别', 'sys_user_sex', 0, 2, '用户性别', 0, '2026-10-05 08:46:55.544538', '2026-10-05 08:46:55.544538', 1);
+INSERT INTO public.system_dict_type VALUES (3, '账号状态', 'sys_state', 0, 3, '启用/停用（值域 enabled/disabled）', 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 1);
+INSERT INTO public.system_dict_type VALUES (4, '数据范围', 'sys_data_scope', 0, 4, '角色数据权限范围', 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 1);
+INSERT INTO public.system_dict_type VALUES (5, '菜单类型', 'sys_menu_type', 0, 5, '目录/菜单/按钮', 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 1);
+INSERT INTO public.system_dict_type VALUES (6, '参数类型', 'sys_config_type', 0, 6, '系统/业务参数', 0, '2026-10-06 03:34:43.621338', '2026-10-06 03:34:43.621338', 1);
+INSERT INTO public.system_dict_type VALUES (2107655940181331968, '冒烟字典', 'smoke_status', 0, 1, '', 2, '2026-10-07 10:15:09.151252', '2026-10-07 10:15:09.211447', 2107655757913657344);
+INSERT INTO public.system_dict_type VALUES (7, '按钮操作类型', 'sys_action_type', 0, 7, '按钮动作分类（操作审计用），F 菜单必选', 0, '2026-10-08 02:35:26.728581', '2026-10-08 02:35:26.728581', 1);
+INSERT INTO public.system_dict_type VALUES (8, '通知公告类型', 'sys_notice_type', 0, 8, '通知公告分类（1 通知 2 公告）', 0, '2026-10-08 03:39:40.328222', '2026-10-08 03:39:40.328222', 1);
+INSERT INTO public.system_dict_type VALUES (9, '通知公告状态', 'sys_notice_status', 0, 9, '发布状态（0 已发布 1 已撤回）', 0, '2026-10-08 03:39:40.328222', '2026-10-08 03:39:40.328222', 1);
+INSERT INTO public.system_dict_type VALUES (10, '操作日志类型', 'sys_oper_type', 0, 10, '操作分类（0其他 1新增 2修改 3删除 4查询 5导入 6导出 7上传）', 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', 1);
+INSERT INTO public.system_dict_type VALUES (11, '操作执行状态', 'sys_oper_status', 0, 11, '执行状态（0 成功 1 失败）', 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', 1);
+INSERT INTO public.system_dict_type VALUES (12, '异常级别', 'sys_error_level', 0, 12, '异常严重级别（1 普通 2 严重）', 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', 1);
+INSERT INTO public.system_dict_type VALUES (13, '异常处理状态', 'sys_handle_status', 0, 13, '异常处理状态（0 待处理 1 已处理）', 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', 1);
+INSERT INTO public.system_dict_type VALUES (14, '登录状态', 'sys_login_status', 0, 14, '登录结果（0 成功 1 失败）', 0, '2026-10-08 07:06:16.504311', '2026-10-08 07:06:16.504311', 1);
+INSERT INTO public.system_dict_type VALUES (2107030977934004224, '测试', 'sys_demo', 0, 9, 't', 2, '2026-10-05 16:51:46.539872', '2026-10-09 17:50:39.550939', 1);
+INSERT INTO public.system_dict_type VALUES (15, '消息类型', 'sys_message_type', 0, 20, '消息通道类型（MAIL 邮件 SMS 短信）', 0, '2026-10-11 13:52:29.198316', '2026-10-11 13:52:29.198316', 1);
+INSERT INTO public.system_dict_type VALUES (16, '消息模板模式', 'sys_message_template_mode', 0, 21, '模板ID模式 / 模板内容模式', 0, '2026-10-11 13:52:29.198316', '2026-10-11 13:52:29.198316', 1);
 
 
 --
 -- Data for Name: system_menu; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+INSERT INTO public.system_menu VALUES (42, 3, 'system:role:list', '', 'C', '', '', '角色管理', 'role', '', 7, 'user-safety', '', '', '', 'system/role/index', 'show', '', 0, '0001-01-01 00:00:00', '0001-01-01 00:00:00', '', '', '', false, false, 'system:role:list', 0, '');
+INSERT INTO public.system_menu VALUES (44, 3, 'system:user:list', '', 'C', '', '', '组织架构', 'contacts', '', 5, 'view-organization', '', '', '', 'system/organization/index', 'show', '', 0, '0001-01-01 00:00:00', '0001-01-01 00:00:00', '', '', '', false, false, 'system:user:list', 0, '');
+INSERT INTO public.system_menu VALUES (43, 3, 'system:config:list', NULL, 'C', NULL, NULL, '参数管理', 'config', NULL, 8, 'setting', 'enabled', NULL, NULL, 'system/config/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:config:list', 0, '');
 INSERT INTO public.system_menu VALUES (41, 3, 'system:post:list', NULL, 'C', NULL, NULL, '岗位管理', 'post', NULL, 6, 'work', 'enabled', NULL, NULL, 'system/post/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:post:list', 0, '');
-INSERT INTO public.system_menu VALUES (42, 3, 'system:role:list', NULL, 'C', NULL, NULL, '角色管理', 'role', NULL, 7, 'user-queue', 'enabled', NULL, NULL, 'system/role/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:role:list', 0, '');
-INSERT INTO public.system_menu VALUES (9, 3, 'page:root:dict', NULL, 'C', NULL, 'layout', '字典管理', 'dict', NULL, 3, 'book', 'enabled', NULL, NULL, 'system/dict/index', 'show', 'enabled', 0, '2025-03-31 16:38:38', '2025-03-31 16:38:38', 'tokgos', 'tokgos', '', false, false, 'system:dict:list', 0, '');
+INSERT INTO public.system_menu VALUES (4101, 41, 'system:post:add', NULL, 'F', NULL, NULL, '岗位新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:post:add', 0, 'add');
 INSERT INTO public.system_menu VALUES (10, 3, 'page:root:page', NULL, 'C', NULL, 'layout', '菜单管理', 'menu', NULL, 4, 'menu', 'enabled', NULL, NULL, 'system/menu/index', 'show', 'enabled', 0, '2025-04-06 10:31:40', '2025-04-06 10:31:40', 'tokgos', 'tokgos', '', false, false, 'system:menu:list', 0, '');
 INSERT INTO public.system_menu VALUES (2, 1, 'page:dashboard:index', NULL, 'C', NULL, 'layout', '概览仪表盘', 'base', NULL, 1, 'dashboard', 'enabled', NULL, NULL, 'dashboard/base/index', 'show', 'enabled', 0, '2025-03-31 16:38:37', '2025-03-31 16:38:37', 'tokgos', 'tokgos', '', false, false, '', 0, '');
 INSERT INTO public.system_menu VALUES (1, 0, 'page:root:dashboard', NULL, 'M', 'Worksapce', 'layout', '仪表盘', '/dashboard', NULL, 2, 'home', 'enabled', NULL, NULL, 'layout', 'show', 'enabled', 0, '2025-03-31 16:38:38', '2025-03-31 16:38:38', 'tokgos', 'tokgos', '', false, false, '', 0, '');
 INSERT INTO public.system_menu VALUES (3, 0, 'page:root:system', '1', 'M', '系统维护管理', 'layout', '系统管理', '/system', NULL, 2, 'setting', 'enabled', NULL, NULL, 'layout', 'show', 'enabled', 0, '2025-04-06 10:31:40', '2025-04-06 10:31:40', 'tokgos', 'tokgos', '', false, false, '', 0, '');
-INSERT INTO public.system_menu VALUES (43, 3, 'system:config:list', NULL, 'C', NULL, NULL, '参数管理', 'config', NULL, 8, 'setting', 'enabled', NULL, NULL, 'system/config/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:config:list', 0, '');
-INSERT INTO public.system_menu VALUES (44, 3, 'system:org:list', NULL, 'C', NULL, NULL, '组织架构', 'contacts', NULL, 5, 'organization', 'enabled', NULL, NULL, 'system/organization/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:user:list', 0, '');
-INSERT INTO public.system_menu VALUES (1001, 10, 'system:menu:add', NULL, 'F', NULL, NULL, '菜单新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:menu:add', 0, 'add');
-INSERT INTO public.system_menu VALUES (1002, 10, 'system:menu:edit', NULL, 'F', NULL, NULL, '菜单修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:menu:edit', 0, 'edit');
-INSERT INTO public.system_menu VALUES (1003, 10, 'system:menu:remove', NULL, 'F', NULL, NULL, '菜单删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:menu:remove', 0, 'delete');
-INSERT INTO public.system_menu VALUES (9001, 9, 'system:dict:add', NULL, 'F', NULL, NULL, '字典新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:dict:add', 0, 'add');
-INSERT INTO public.system_menu VALUES (9002, 9, 'system:dict:edit', NULL, 'F', NULL, NULL, '字典修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:dict:edit', 0, 'edit');
-INSERT INTO public.system_menu VALUES (4101, 41, 'system:post:add', NULL, 'F', NULL, NULL, '岗位新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:post:add', 0, 'add');
+INSERT INTO public.system_menu VALUES (9, 3, 'system:dict:list', '', 'C', '', '', '字典管理', 'dict', '', 7, 'book', '', '', '', 'system/dict/index', 'show', '', 0, '0001-01-01 00:00:00', '0001-01-01 00:00:00', '', '', '', false, false, 'system:dict:list', 0, '');
 INSERT INTO public.system_menu VALUES (4102, 41, 'system:post:edit', NULL, 'F', NULL, NULL, '岗位修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:post:edit', 0, 'edit');
 INSERT INTO public.system_menu VALUES (4103, 41, 'system:post:remove', NULL, 'F', NULL, NULL, '岗位删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:post:remove', 0, 'delete');
 INSERT INTO public.system_menu VALUES (4201, 42, 'system:role:add', NULL, 'F', NULL, NULL, '角色新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:role:add', 0, 'add');
 INSERT INTO public.system_menu VALUES (4202, 42, 'system:role:edit', NULL, 'F', NULL, NULL, '角色修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:role:edit', 0, 'edit');
 INSERT INTO public.system_menu VALUES (4203, 42, 'system:role:remove', NULL, 'F', NULL, NULL, '角色删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:role:remove', 0, 'delete');
 INSERT INTO public.system_menu VALUES (4204, 42, 'system:role:assign', NULL, 'F', NULL, NULL, '分配菜单', '', NULL, 4, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:role:assign', 0, 'assign');
-INSERT INTO public.system_menu VALUES (9003, 9, 'system:dict:remove', NULL, 'F', NULL, NULL, '字典删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:dict:remove', 0, 'delete');
 INSERT INTO public.system_menu VALUES (4301, 43, 'system:config:add', NULL, 'F', NULL, NULL, '参数新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:config:add', 0, 'add');
 INSERT INTO public.system_menu VALUES (4302, 43, 'system:config:edit', NULL, 'F', NULL, NULL, '参数修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:config:edit', 0, 'edit');
+INSERT INTO public.system_menu VALUES (1001, 10, 'system:menu:add', NULL, 'F', NULL, NULL, '菜单新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:menu:add', 0, 'add');
+INSERT INTO public.system_menu VALUES (1002, 10, 'system:menu:edit', NULL, 'F', NULL, NULL, '菜单修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:menu:edit', 0, 'edit');
+INSERT INTO public.system_menu VALUES (1003, 10, 'system:menu:remove', NULL, 'F', NULL, NULL, '菜单删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:menu:remove', 0, 'delete');
+INSERT INTO public.system_menu VALUES (9001, 9, 'system:dict:add', NULL, 'F', NULL, NULL, '字典新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:dict:add', 0, 'add');
+INSERT INTO public.system_menu VALUES (9002, 9, 'system:dict:edit', NULL, 'F', NULL, NULL, '字典修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:dict:edit', 0, 'edit');
+INSERT INTO public.system_menu VALUES (9003, 9, 'system:dict:remove', NULL, 'F', NULL, NULL, '字典删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:dict:remove', 0, 'delete');
 INSERT INTO public.system_menu VALUES (4303, 43, 'system:config:remove', NULL, 'F', NULL, NULL, '参数删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:config:remove', 0, 'delete');
 INSERT INTO public.system_menu VALUES (1201, 44, 'system:user:add', NULL, 'F', NULL, NULL, '用户新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:user:add', 0, 'add');
 INSERT INTO public.system_menu VALUES (1202, 44, 'system:user:edit', NULL, 'F', NULL, NULL, '用户修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:user:edit', 0, 'edit');
-INSERT INTO public.system_menu VALUES (1203, 44, 'system:user:remove', NULL, 'F', NULL, NULL, '用户删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:user:remove', 0, 'delete');
 INSERT INTO public.system_menu VALUES (4001, 44, 'system:dept:add', NULL, 'F', NULL, NULL, '部门新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:dept:add', 0, 'add');
 INSERT INTO public.system_menu VALUES (4002, 44, 'system:dept:edit', NULL, 'F', NULL, NULL, '部门修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:dept:edit', 0, 'edit');
 INSERT INTO public.system_menu VALUES (4003, 44, 'system:dept:remove', NULL, 'F', NULL, NULL, '部门删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:dept:remove', 0, 'delete');
+INSERT INTO public.system_menu VALUES (1203, 44, 'system:user:remove', NULL, 'F', NULL, NULL, '用户删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:user:remove', 0, 'delete');
 INSERT INTO public.system_menu VALUES (45, 3, 'system:notice:list', NULL, 'C', NULL, NULL, '通知公告', 'notice', NULL, 9, 'notification', 'enabled', NULL, NULL, 'system/notice/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:notice:list', 0, '');
 INSERT INTO public.system_menu VALUES (4501, 45, 'system:notice:add', NULL, 'F', NULL, NULL, '通知新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:notice:add', 0, '');
 INSERT INTO public.system_menu VALUES (4502, 45, 'system:notice:edit', NULL, 'F', NULL, NULL, '通知修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:notice:edit', 0, '');
 INSERT INTO public.system_menu VALUES (4503, 45, 'system:notice:remove', NULL, 'F', NULL, NULL, '通知删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:notice:remove', 0, '');
-INSERT INTO public.system_menu VALUES (46, 3, 'page:root:log', NULL, 'M', NULL, NULL, '日志管理', 'log', NULL, 10, 'log', 'enabled', NULL, NULL, 'layout', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, '', 0, '');
-INSERT INTO public.system_menu VALUES (4601, 46, 'system:operlog:list', NULL, 'C', NULL, NULL, '操作日志', 'operlog', NULL, 1, 'log', 'enabled', NULL, NULL, 'system/log/operlog/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:operlog:list', 0, '');
 INSERT INTO public.system_menu VALUES (4602, 46, 'system:loginlog:list', NULL, 'C', NULL, NULL, '登录日志', 'loginlog', NULL, 2, 'login', 'enabled', NULL, NULL, 'system/log/loginlog/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:loginlog:list', 0, '');
 INSERT INTO public.system_menu VALUES (460101, 4601, 'system:operlog:clean', NULL, 'F', NULL, NULL, '清空日志', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:operlog:clean', 0, '');
 INSERT INTO public.system_menu VALUES (460102, 4601, 'system:operlog:handle', NULL, 'F', NULL, NULL, '异常处理', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:operlog:handle', 0, '');
+INSERT INTO public.system_menu VALUES (4901, 49, 'page:root:tool:docs', NULL, 'C', NULL, NULL, '开发文档', 'docs', NULL, 2, 'book-open', 'enabled', NULL, NULL, 'tool/docs/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, '', 0, '');
+INSERT INTO public.system_menu VALUES (4601, 46, 'system:operlog:list', '', 'C', '', '', '操作日志', 'operlog', '', 1, 'catalog-1', '', '', '', 'system/log/operlog/index', 'show', '', 0, '0001-01-01 00:00:00', '0001-01-01 00:00:00', '', '', '', false, false, 'system:operlog:list', 0, '');
 INSERT INTO public.system_menu VALUES (47, 0, 'page:root:monitor', NULL, 'M', NULL, NULL, '系统监控', '/monitor', NULL, 3, 'precise-monitor', 'enabled', NULL, NULL, 'layout', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, '', 0, '');
 INSERT INTO public.system_menu VALUES (4701, 47, 'system:online:list', NULL, 'C', NULL, NULL, '在线用户', 'online', NULL, 1, 'user-safety', 'enabled', NULL, NULL, 'monitor/online/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:online:list', 0, '');
 INSERT INTO public.system_menu VALUES (470101, 4701, 'system:online:force', NULL, 'F', NULL, NULL, '强退', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:online:force', 0, '');
 INSERT INTO public.system_menu VALUES (4702, 47, 'system:monitor:list', NULL, 'C', NULL, NULL, '数据监控', 'data', NULL, 2, 'chart-line', 'enabled', NULL, NULL, 'monitor/data/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:monitor:list', 0, '');
-INSERT INTO public.system_menu VALUES (4703, 47, 'system:cachemonitor:list', NULL, 'C', NULL, NULL, '缓存监控', 'cache', NULL, 3, 'database', 'enabled', NULL, NULL, 'monitor/cache/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:cachemonitor:list', 0, '');
 INSERT INTO public.system_menu VALUES (470301, 4703, 'system:cachemonitor:delete', NULL, 'F', NULL, NULL, '删除', '', NULL, 1, 'delete', 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:cachemonitor:delete', 0, '');
+INSERT INTO public.system_menu VALUES (4703, 47, 'system:cachemonitor:list', NULL, 'C', NULL, NULL, '缓存监控', 'cache', NULL, 3, 'layers', 'enabled', NULL, NULL, 'monitor/cache/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:cachemonitor:list', 0, '');
+INSERT INTO public.system_menu VALUES (46, 3, '', '', 'M', '', '', '日志管理', '/log', '', 10, 'catalog', '', '', '', 'layout', 'show', '', 0, '0001-01-01 00:00:00', '0001-01-01 00:00:00', '', '', '', false, false, '', 0, '');
 INSERT INTO public.system_menu VALUES (60, 3, 'page:root:storage', NULL, 'M', NULL, NULL, '对象存储', 'storage', NULL, 11, 'layers', 'enabled', NULL, NULL, 'layout', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, '', 0, '');
 INSERT INTO public.system_menu VALUES (61, 60, 'system:ossConfig:list', NULL, 'C', NULL, NULL, 'OSS配置', 'ossConfig', NULL, 1, 'file-code', 'enabled', NULL, NULL, 'system/ossConfig/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:ossConfig:list', 0, '');
 INSERT INTO public.system_menu VALUES (62, 60, 'system:oss:list', NULL, 'C', NULL, NULL, '文件管理', 'oss', NULL, 2, 'folder', 'enabled', NULL, NULL, 'system/oss/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:oss:list', 0, '');
@@ -2694,21 +2712,19 @@ INSERT INTO public.system_menu VALUES (6104, 61, 'system:ossConfig:test', NULL, 
 INSERT INTO public.system_menu VALUES (6102, 61, 'system:ossConfig:edit', NULL, 'F', NULL, NULL, '配置修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:ossConfig:edit', 0, '');
 INSERT INTO public.system_menu VALUES (6103, 61, 'system:ossConfig:remove', NULL, 'F', NULL, NULL, '配置删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:ossConfig:remove', 0, '');
 INSERT INTO public.system_menu VALUES (6101, 61, 'system:ossConfig:add', NULL, 'F', NULL, NULL, '配置新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:ossConfig:add', 0, '');
-INSERT INTO public.system_menu VALUES (6205, 62, 'system:oss:lock', NULL, 'F', NULL, NULL, '文件加锁解锁', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:oss:lock', 0, '');
-INSERT INTO public.system_menu VALUES (6203, 62, 'system:oss:edit', NULL, 'F', NULL, NULL, '文件修改', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:oss:edit', 0, '');
-INSERT INTO public.system_menu VALUES (6204, 62, 'system:oss:remove', NULL, 'F', NULL, NULL, '文件删除', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:oss:remove', 0, '');
+INSERT INTO public.system_menu VALUES (6205, 62, 'system:oss:lock', NULL, 'F', NULL, NULL, '文件加锁解锁', '', NULL, 5, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:oss:lock', 0, '');
+INSERT INTO public.system_menu VALUES (6203, 62, 'system:oss:edit', NULL, 'F', NULL, NULL, '文件修改', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:oss:edit', 0, '');
+INSERT INTO public.system_menu VALUES (6204, 62, 'system:oss:remove', NULL, 'F', NULL, NULL, '文件删除', '', NULL, 4, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:oss:remove', 0, '');
 INSERT INTO public.system_menu VALUES (6302, 63, 'system:ossRule:edit', NULL, 'F', NULL, NULL, '规则修改', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:ossRule:edit', 0, '');
 INSERT INTO public.system_menu VALUES (6303, 63, 'system:ossRule:remove', NULL, 'F', NULL, NULL, '规则删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:ossRule:remove', 0, '');
 INSERT INTO public.system_menu VALUES (6304, 63, 'system:ossRule:refresh', NULL, 'F', NULL, NULL, '刷新缓存', '', NULL, 4, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:ossRule:refresh', 0, '');
 INSERT INTO public.system_menu VALUES (6301, 63, 'system:ossRule:add', NULL, 'F', NULL, NULL, '规则新增', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:ossRule:add', 0, '');
 INSERT INTO public.system_menu VALUES (49, 0, 'page:root:tool', NULL, 'M', NULL, NULL, '系统工具', '/tool', NULL, 4, 'tools', 'enabled', NULL, NULL, 'layout', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, '', 0, '');
 INSERT INTO public.system_menu VALUES (4704, 49, 'system:apimonitor:list', NULL, 'C', NULL, NULL, '系统接口', 'api', NULL, 1, 'file-code', 'enabled', NULL, NULL, 'tool/api/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:apimonitor:list', 0, '');
-INSERT INTO public.system_menu VALUES (4901, 49, 'page:root:tool:docs', NULL, 'C', NULL, NULL, '开发文档', 'docs', NULL, 2, 'book-open', 'enabled', NULL, NULL, 'tool/docs/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, '', 0, '');
 INSERT INTO public.system_menu VALUES (50, 3, 'page:root:message', NULL, 'M', NULL, NULL, '消息管理', 'message', NULL, 12, 'chat', 'enabled', NULL, NULL, 'layout', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, '', 0, '');
 INSERT INTO public.system_menu VALUES (5001, 50, 'system:messageConfig:list', NULL, 'C', NULL, NULL, '消息配置', 'config', NULL, 1, 'tools', 'enabled', NULL, NULL, 'system/message/config/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageConfig:list', 0, '');
 INSERT INTO public.system_menu VALUES (5002, 50, 'system:messageKey:list', NULL, 'C', NULL, NULL, '消息常量', 'key', NULL, 2, 'root-list', 'enabled', NULL, NULL, 'system/message/key/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageKey:list', 0, '');
 INSERT INTO public.system_menu VALUES (5003, 50, 'system:messageTemplate:list', NULL, 'C', NULL, NULL, '消息模板', 'template', NULL, 3, 'file', 'enabled', NULL, NULL, 'system/message/template/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageTemplate:list', 0, '');
-INSERT INTO public.system_menu VALUES (5004, 50, 'system:messageLog:list', NULL, 'C', NULL, NULL, '发送记录', 'log', NULL, 4, 'history', 'enabled', NULL, NULL, 'system/message/log/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageLog:list', 0, '');
 INSERT INTO public.system_menu VALUES (500104, 5001, 'system:messageConfig:remove', NULL, 'F', NULL, NULL, '配置删除', '', NULL, 4, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageConfig:remove', 0, '');
 INSERT INTO public.system_menu VALUES (500103, 5001, 'system:messageConfig:edit', NULL, 'F', NULL, NULL, '配置修改', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageConfig:edit', 0, '');
 INSERT INTO public.system_menu VALUES (500102, 5001, 'system:messageConfig:add', NULL, 'F', NULL, NULL, '配置新增', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageConfig:add', 0, '');
@@ -2718,12 +2734,13 @@ INSERT INTO public.system_menu VALUES (500203, 5002, 'system:messageKey:edit', N
 INSERT INTO public.system_menu VALUES (500202, 5002, 'system:messageKey:add', NULL, 'F', NULL, NULL, '常量新增', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageKey:add', 0, '');
 INSERT INTO public.system_menu VALUES (500201, 5002, 'system:messageKey:query', NULL, 'F', NULL, NULL, '常量查询', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageKey:query', 0, '');
 INSERT INTO public.system_menu VALUES (500304, 5003, 'system:messageTemplate:remove', NULL, 'F', NULL, NULL, '模板删除', '', NULL, 4, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageTemplate:remove', 0, '');
+INSERT INTO public.system_menu VALUES (5004, 50, 'system:messageLog:list', NULL, 'C', NULL, NULL, '发送记录', 'log', NULL, 4, 'history', 'enabled', NULL, NULL, 'system/message/log/index', 'show', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageLog:list', 0, '');
 INSERT INTO public.system_menu VALUES (500303, 5003, 'system:messageTemplate:edit', NULL, 'F', NULL, NULL, '模板修改', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageTemplate:edit', 0, '');
 INSERT INTO public.system_menu VALUES (500302, 5003, 'system:messageTemplate:add', NULL, 'F', NULL, NULL, '模板新增', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageTemplate:add', 0, '');
 INSERT INTO public.system_menu VALUES (500301, 5003, 'system:messageTemplate:query', NULL, 'F', NULL, NULL, '模板查询', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageTemplate:query', 0, '');
-INSERT INTO public.system_menu VALUES (500403, 5004, 'system:messageLog:remove', NULL, 'F', NULL, NULL, '记录删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageLog:remove', 0, '');
 INSERT INTO public.system_menu VALUES (500402, 5004, 'system:messageLog:clear', NULL, 'F', NULL, NULL, '记录清空', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageLog:clear', 0, '');
 INSERT INTO public.system_menu VALUES (500401, 5004, 'system:messageLog:query', NULL, 'F', NULL, NULL, '记录查询', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageLog:query', 0, '');
+INSERT INTO public.system_menu VALUES (500403, 5004, 'system:messageLog:remove', NULL, 'F', NULL, NULL, '记录删除', '', NULL, 3, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:messageLog:remove', 0, '');
 INSERT INTO public.system_menu VALUES (5102, 51, 'system:scheduler:add', NULL, 'F', NULL, NULL, '任务新增', '', NULL, 2, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:scheduler:add', 0, '');
 INSERT INTO public.system_menu VALUES (5104, 51, 'system:scheduler:remove', NULL, 'F', NULL, NULL, '任务删除', '', NULL, 4, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:scheduler:remove', 0, '');
 INSERT INTO public.system_menu VALUES (5101, 51, 'system:scheduler:list', NULL, 'F', NULL, NULL, '任务查询', '', NULL, 1, NULL, 'enabled', NULL, NULL, NULL, 'hide', NULL, NULL, NULL, NULL, NULL, NULL, '', false, false, 'system:scheduler:list', 0, '');
@@ -2736,36 +2753,39 @@ INSERT INTO public.system_menu VALUES (51, 47, 'system:scheduler:list', NULL, 'C
 -- Data for Name: system_oss_config; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_oss_config VALUES (1, 'local', 'gosilite', 'gosilite-secret', 'skyx', '', 'http://127.0.0.1:19000', '127.0.0.1:19000', 'N', '', '0', '0', '', '本地 RustFS 模板：与 conf.yaml dev 默认一致；生产改密钥后在页面「设为默认」生效', 0, '2026-10-13 02:42:19.944045', '2026-10-13 02:42:19.944045');
+INSERT INTO public.system_oss_config VALUES (1, 'local', 'gosilite', 'gosilite-secret', 'skyx', '', 'http://127.0.0.1:19000', '127.0.0.1:19000', 'N', '', '0', '1', '', '本地 RustFS 模板：上线后填写密钥并在页面「设为默认」生效', 0, '2026-10-10 11:59:49.458127', '2026-10-11 08:47:59.997335');
 
 
 --
 -- Data for Name: system_oss_rule; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_oss_rule VALUES (1, '180x180', 'aliyuncs.com', 'image', '#{#url}?x-oss-process=image/auto-orient,1/resize,m_lfit,w_180,h_180/quality,q_90', 'N', 'N', '1', 10, '阿里云 180 缩略（头像/列表小图）', 0, '2026-10-13 02:42:19.944045', '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_oss_rule VALUES (2, '800x800', 'aliyuncs.com', 'image', '#{#url}?x-oss-process=image/auto-orient,1/resize,m_lfit,w_800,h_800/quality,q_90', 'N', 'N', '1', 11, '阿里云 800 展示图', 0, '2026-10-13 02:42:19.944045', '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_oss_rule VALUES (3, '180x180', 'myqcloud.com', 'image', '#{#url}?imageMogr2/thumbnail/180x180/quality/90', 'N', 'N', '1', 20, '腾讯云 COS 180 缩略', 0, '2026-10-13 02:42:19.944045', '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_oss_rule VALUES (4, '800x800', 'myqcloud.com', 'image', '#{#url}?imageMogr2/thumbnail/800x800/quality/90', 'N', 'N', '1', 21, '腾讯云 COS 800 展示图', 0, '2026-10-13 02:42:19.944045', '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_oss_rule VALUES (5, '180x180', 'myhuaweicloud.com', 'image', '#{#url}?x-obs-process=image/resize,m_lfit,w_180,h_180/quality,q_90', 'N', 'N', '1', 30, '华为云 OBS 180 缩略', 0, '2026-10-13 02:42:19.944045', '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_oss_rule VALUES (6, '800x800', 'myhuaweicloud.com', 'image', '#{#url}?x-obs-process=image/resize,m_lfit,w_800,h_800/quality,q_90', 'N', 'N', '1', 31, '华为云 OBS 800 展示图', 0, '2026-10-13 02:42:19.944045', '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_oss_rule VALUES (7, 'local-demo', '127.0.0.1', 'image', '#{#url}?x-oss-process=image/resize,m_lfit,w_800,h_800/quality,q_90', 'N', 'N', '0', 90, '本地示例（默认停用）：原生 S3 不处理图片参数，带 query 会 AccessDenied；对接 CDN/图片网关后启用', 0, '2026-10-13 02:42:19.944045', '2026-10-13 02:42:19.944045');
+INSERT INTO public.system_oss_rule VALUES (2109083399548309504, '80x80', '127.0.0.1:19000', 'image,.png', '#{#url}?x-oss-process=image/resize,w_80', 'N', 'N', '1', 0, '', 2, '2026-10-11 08:47:21.982435', '2026-10-11 09:41:43.991595');
+INSERT INTO public.system_oss_rule VALUES (2109083399820939264, 'default-img', '127.0.0.1:19000', 'image', '#{#url}?v=ow', 'Y', 'Y', '1', 1, '', 2, '2026-10-11 08:47:22.049295', '2026-10-11 09:41:43.991595');
+INSERT INTO public.system_oss_rule VALUES (1, '180x180', 'aliyuncs.com', 'image', '#{#url}?x-oss-process=image/auto-orient,1/resize,m_lfit,w_180,h_180/quality,q_90', 'N', 'N', '1', 10, '阿里云 180 缩略（头像/列表小图）', 0, '2026-10-11 02:22:57.204526', '2026-10-11 02:22:57.204526');
+INSERT INTO public.system_oss_rule VALUES (2, '800x800', 'aliyuncs.com', 'image', '#{#url}?x-oss-process=image/auto-orient,1/resize,m_lfit,w_800,h_800/quality,q_90', 'N', 'N', '1', 11, '阿里云 800 展示图', 0, '2026-10-11 02:22:57.204526', '2026-10-11 02:22:57.204526');
+INSERT INTO public.system_oss_rule VALUES (3, '180x180', 'myqcloud.com', 'image', '#{#url}?imageMogr2/thumbnail/180x180/quality/90', 'N', 'N', '1', 20, '腾讯云 COS 180 缩略', 0, '2026-10-11 02:22:57.204526', '2026-10-11 02:22:57.204526');
+INSERT INTO public.system_oss_rule VALUES (4, '800x800', 'myqcloud.com', 'image', '#{#url}?imageMogr2/thumbnail/800x800/quality/90', 'N', 'N', '1', 21, '腾讯云 COS 800 展示图', 0, '2026-10-11 02:22:57.204526', '2026-10-11 02:22:57.204526');
+INSERT INTO public.system_oss_rule VALUES (5, '180x180', 'myhuaweicloud.com', 'image', '#{#url}?x-obs-process=image/resize,m_lfit,w_180,h_180/quality,q_90', 'N', 'N', '1', 30, '华为云 OBS 180 缩略', 0, '2026-10-11 02:22:57.204526', '2026-10-11 02:22:57.204526');
+INSERT INTO public.system_oss_rule VALUES (6, '800x800', 'myhuaweicloud.com', 'image', '#{#url}?x-obs-process=image/resize,m_lfit,w_800,h_800/quality,q_90', 'N', 'N', '1', 31, '华为云 OBS 800 展示图', 0, '2026-10-11 02:22:57.204526', '2026-10-11 02:22:57.204526');
+INSERT INTO public.system_oss_rule VALUES (7, 'local-demo', '127.0.0.1', 'image', '#{#url}?x-oss-process=image/resize,m_lfit,w_800,h_800/quality,q_90', 'N', 'N', '1', 90, '本地示例（默认停用）：原生 S3 不处理图片参数，带 query 会 AccessDenied；对接 CDN/图片网关后启用', 0, '2026-10-11 02:22:57.204526', '2026-10-11 10:44:25.448239');
 
 
 --
 -- Data for Name: system_post; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_post VALUES (1, 'CEO', '董事长', 1, 0, 0, '2026-10-13 02:42:18.667709', '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_post VALUES (2, 'CTO', '技术负责人', 2, 0, 0, '2026-10-13 02:42:18.667709', '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_post VALUES (3, 'PM', '项目经理', 3, 0, 0, '2026-10-13 02:42:18.667709', '2026-10-13 02:42:18.667709');
+INSERT INTO public.system_post VALUES (1, 'CEO', '董事长', 1, 0, 0, '2026-10-05 07:18:38.333474', '2026-10-05 07:18:38.333474');
+INSERT INTO public.system_post VALUES (2, 'CTO', '技术负责人', 2, 0, 0, '2026-10-05 07:18:38.333474', '2026-10-05 07:18:38.333474');
+INSERT INTO public.system_post VALUES (3, 'PM', '项目经理', 3, 0, 0, '2026-10-05 07:18:38.333474', '2026-10-05 07:18:38.333474');
+INSERT INTO public.system_post VALUES (2107012545083609088, 'DEV', '开发', 9, 0, 0, '2026-10-05 15:38:31.806204', '2026-10-05 15:38:31.806204');
 
 
 --
 -- Data for Name: system_role; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_role VALUES (1, '系统管理员', 'system', '系统管理员', 'enabled', 'built-y', 0, '2025-03-31 16:39:35', '2025-03-31 16:39:35', NULL, NULL, NULL, 1, 0);
+INSERT INTO public.system_role VALUES (1, '系统管理员', 'system', '系统管理员', 'enabled', 'built-y', 0, '2026-10-12 10:39:56.10032', '2025-03-31 16:39:35', 51, 51, NULL, 1, 0);
 
 
 --
@@ -2778,79 +2798,97 @@ INSERT INTO public.system_role VALUES (1, '系统管理员', 'system', '系统�
 -- Data for Name: system_role_menu; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_role_menu VALUES (1, 1, 4204, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (2, 1, 42, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (3, 1, 4001, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (4, 1, 41, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (5, 1, 4101, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (6, 1, 4003, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (7, 1, 4203, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (8, 1, 4103, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (10, 1, 10, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (11, 1, 4102, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (12, 1, 4201, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (13, 1, 4002, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (14, 1, 4202, '2026-10-13 02:42:18.667709');
-INSERT INTO public.system_role_menu VALUES (22, 1, 44, '2026-10-13 02:42:19.039166');
-INSERT INTO public.system_role_menu VALUES (24, 1, 4501, '2026-10-13 02:42:19.331703');
-INSERT INTO public.system_role_menu VALUES (25, 1, 4503, '2026-10-13 02:42:19.331703');
-INSERT INTO public.system_role_menu VALUES (26, 1, 4502, '2026-10-13 02:42:19.331703');
-INSERT INTO public.system_role_menu VALUES (27, 1, 45, '2026-10-13 02:42:19.331703');
-INSERT INTO public.system_role_menu VALUES (28, 1, 4602, '2026-10-13 02:42:19.452134');
-INSERT INTO public.system_role_menu VALUES (29, 1, 4601, '2026-10-13 02:42:19.452134');
-INSERT INTO public.system_role_menu VALUES (30, 1, 460101, '2026-10-13 02:42:19.452134');
-INSERT INTO public.system_role_menu VALUES (31, 1, 460102, '2026-10-13 02:42:19.452134');
-INSERT INTO public.system_role_menu VALUES (32, 1, 46, '2026-10-13 02:42:19.452134');
-INSERT INTO public.system_role_menu VALUES (33, 1, 4701, '2026-10-13 02:42:19.601772');
-INSERT INTO public.system_role_menu VALUES (34, 1, 470101, '2026-10-13 02:42:19.601772');
-INSERT INTO public.system_role_menu VALUES (35, 1, 47, '2026-10-13 02:42:19.601772');
-INSERT INTO public.system_role_menu VALUES (36, 1, 4702, '2026-10-13 02:42:19.662265');
-INSERT INTO public.system_role_menu VALUES (37, 1, 4703, '2026-10-13 02:42:19.722585');
-INSERT INTO public.system_role_menu VALUES (38, 1, 470301, '2026-10-13 02:42:19.722585');
-INSERT INTO public.system_role_menu VALUES (39, 1, 4704, '2026-10-13 02:42:19.778568');
-INSERT INTO public.system_role_menu VALUES (43, 1, 6301, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (44, 1, 62, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (45, 1, 6304, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (46, 1, 6101, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (47, 1, 61, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (48, 1, 63, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (49, 1, 60, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (50, 1, 6204, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (51, 1, 6104, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (52, 1, 6102, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (53, 1, 6302, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (54, 1, 6205, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (55, 1, 6103, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (56, 1, 6203, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (57, 1, 6303, '2026-10-13 02:42:19.944045');
-INSERT INTO public.system_role_menu VALUES (58, 1, 49, '2026-10-13 02:42:20.029773');
-INSERT INTO public.system_role_menu VALUES (59, 1, 4901, '2026-10-13 02:42:20.029773');
-INSERT INTO public.system_role_menu VALUES (60, 1, 500101, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (61, 1, 500304, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (62, 1, 50, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (63, 1, 5002, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (64, 1, 500201, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (65, 1, 500401, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (66, 1, 500302, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (67, 1, 500203, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (68, 1, 500402, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (69, 1, 500102, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (70, 1, 500204, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (71, 1, 5004, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (72, 1, 500103, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (73, 1, 500303, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (74, 1, 500104, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (75, 1, 500202, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (76, 1, 5001, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (77, 1, 500301, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (78, 1, 500403, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (79, 1, 5003, '2026-10-13 02:42:20.094353');
-INSERT INTO public.system_role_menu VALUES (80, 1, 51, '2026-10-13 02:42:20.18771');
-INSERT INTO public.system_role_menu VALUES (81, 1, 5101, '2026-10-13 02:42:20.18771');
-INSERT INTO public.system_role_menu VALUES (82, 1, 5105, '2026-10-13 02:42:20.18771');
-INSERT INTO public.system_role_menu VALUES (83, 1, 5103, '2026-10-13 02:42:20.18771');
-INSERT INTO public.system_role_menu VALUES (84, 1, 5102, '2026-10-13 02:42:20.18771');
-INSERT INTO public.system_role_menu VALUES (85, 1, 5104, '2026-10-13 02:42:20.18771');
+INSERT INTO public.system_role_menu VALUES (83, 1, 51, '2026-10-12 05:06:02.712263');
+INSERT INTO public.system_role_menu VALUES (84, 1, 5102, '2026-10-12 05:06:02.712263');
+INSERT INTO public.system_role_menu VALUES (85, 1, 5104, '2026-10-12 05:06:02.712263');
+INSERT INTO public.system_role_menu VALUES (86, 1, 5101, '2026-10-12 05:06:02.712263');
+INSERT INTO public.system_role_menu VALUES (87, 1, 5105, '2026-10-12 05:06:02.712263');
+INSERT INTO public.system_role_menu VALUES (88, 1, 5103, '2026-10-12 05:06:02.712263');
+INSERT INTO public.system_role_menu VALUES (2109474116129001472, 1, 1, '2026-10-12 10:39:56.076036');
+INSERT INTO public.system_role_menu VALUES (2109474116133195776, 1, 0, '2026-10-12 10:39:56.076871');
+INSERT INTO public.system_role_menu VALUES (2109474116133195777, 1, 2, '2026-10-12 10:39:56.077195');
+INSERT INTO public.system_role_menu VALUES (2109474116133195778, 1, 3, '2026-10-12 10:39:56.077534');
+INSERT INTO public.system_role_menu VALUES (2109474116137390080, 1, 10, '2026-10-12 10:39:56.07783');
+INSERT INTO public.system_role_menu VALUES (2109474116137390081, 1, 44, '2026-10-12 10:39:56.078165');
+INSERT INTO public.system_role_menu VALUES (2109474116137390082, 1, 41, '2026-10-12 10:39:56.078513');
+INSERT INTO public.system_role_menu VALUES (2109474116141584384, 1, 9, '2026-10-12 10:39:56.078806');
+INSERT INTO public.system_role_menu VALUES (2109474116141584385, 1, 42, '2026-10-12 10:39:56.079155');
+INSERT INTO public.system_role_menu VALUES (2109474116141584386, 1, 43, '2026-10-12 10:39:56.079525');
+INSERT INTO public.system_role_menu VALUES (2109474116145778688, 1, 45, '2026-10-12 10:39:56.079846');
+INSERT INTO public.system_role_menu VALUES (2109474116145778689, 1, 46, '2026-10-12 10:39:56.080181');
+INSERT INTO public.system_role_menu VALUES (2109474116145778690, 1, 4601, '2026-10-12 10:39:56.080521');
+INSERT INTO public.system_role_menu VALUES (2109474116149972992, 1, 4602, '2026-10-12 10:39:56.080792');
+INSERT INTO public.system_role_menu VALUES (2109474116149972993, 1, 60, '2026-10-12 10:39:56.081106');
+INSERT INTO public.system_role_menu VALUES (2109474116149972994, 1, 61, '2026-10-12 10:39:56.081369');
+INSERT INTO public.system_role_menu VALUES (2109474116149972995, 1, 62, '2026-10-12 10:39:56.081647');
+INSERT INTO public.system_role_menu VALUES (2109474116154167296, 1, 63, '2026-10-12 10:39:56.081931');
+INSERT INTO public.system_role_menu VALUES (2109474116154167297, 1, 50, '2026-10-12 10:39:56.082226');
+INSERT INTO public.system_role_menu VALUES (2109474116154167298, 1, 5001, '2026-10-12 10:39:56.082527');
+INSERT INTO public.system_role_menu VALUES (2109474116158361600, 1, 5002, '2026-10-12 10:39:56.082858');
+INSERT INTO public.system_role_menu VALUES (2109474116158361601, 1, 5003, '2026-10-12 10:39:56.083209');
+INSERT INTO public.system_role_menu VALUES (2109474116158361602, 1, 5004, '2026-10-12 10:39:56.083508');
+INSERT INTO public.system_role_menu VALUES (2109474116162555904, 1, 47, '2026-10-12 10:39:56.083753');
+INSERT INTO public.system_role_menu VALUES (2109474116162555905, 1, 4701, '2026-10-12 10:39:56.08399');
+INSERT INTO public.system_role_menu VALUES (2109474116162555906, 1, 4702, '2026-10-12 10:39:56.084307');
+INSERT INTO public.system_role_menu VALUES (2109474116162555907, 1, 4703, '2026-10-12 10:39:56.084612');
+INSERT INTO public.system_role_menu VALUES (2109474116166750208, 1, 49, '2026-10-12 10:39:56.084883');
+INSERT INTO public.system_role_menu VALUES (2109474116166750209, 1, 4704, '2026-10-12 10:39:56.085119');
+INSERT INTO public.system_role_menu VALUES (2109474116166750210, 1, 4901, '2026-10-12 10:39:56.085362');
+INSERT INTO public.system_role_menu VALUES (2109474116166750211, 1, 1001, '2026-10-12 10:39:56.085577');
+INSERT INTO public.system_role_menu VALUES (2109474116170944512, 1, 1002, '2026-10-12 10:39:56.085808');
+INSERT INTO public.system_role_menu VALUES (2109474116170944513, 1, 1003, '2026-10-12 10:39:56.086024');
+INSERT INTO public.system_role_menu VALUES (2109474116170944514, 1, 1201, '2026-10-12 10:39:56.086267');
+INSERT INTO public.system_role_menu VALUES (2109474116170944515, 1, 4001, '2026-10-12 10:39:56.086498');
+INSERT INTO public.system_role_menu VALUES (2109474116175138816, 1, 1202, '2026-10-12 10:39:56.086892');
+INSERT INTO public.system_role_menu VALUES (2109474116175138817, 1, 4002, '2026-10-12 10:39:56.087151');
+INSERT INTO public.system_role_menu VALUES (2109474116175138818, 1, 1203, '2026-10-12 10:39:56.087437');
+INSERT INTO public.system_role_menu VALUES (2109474116179333120, 1, 4003, '2026-10-12 10:39:56.087713');
+INSERT INTO public.system_role_menu VALUES (2109474116179333121, 1, 4101, '2026-10-12 10:39:56.087995');
+INSERT INTO public.system_role_menu VALUES (2109474116179333122, 1, 4102, '2026-10-12 10:39:56.088271');
+INSERT INTO public.system_role_menu VALUES (2109474116179333123, 1, 4103, '2026-10-12 10:39:56.088563');
+INSERT INTO public.system_role_menu VALUES (2109474116183527424, 1, 9001, '2026-10-12 10:39:56.088829');
+INSERT INTO public.system_role_menu VALUES (2109474116183527425, 1, 9002, '2026-10-12 10:39:56.089092');
+INSERT INTO public.system_role_menu VALUES (2109474116183527426, 1, 9003, '2026-10-12 10:39:56.089458');
+INSERT INTO public.system_role_menu VALUES (2109474116187721728, 1, 4201, '2026-10-12 10:39:56.089797');
+INSERT INTO public.system_role_menu VALUES (2109474116187721729, 1, 4202, '2026-10-12 10:39:56.09009');
+INSERT INTO public.system_role_menu VALUES (2109474116187721730, 1, 4203, '2026-10-12 10:39:56.090358');
+INSERT INTO public.system_role_menu VALUES (2109474116191916032, 1, 4204, '2026-10-12 10:39:56.090692');
+INSERT INTO public.system_role_menu VALUES (2109474116191916033, 1, 4301, '2026-10-12 10:39:56.090897');
+INSERT INTO public.system_role_menu VALUES (2109474116191916034, 1, 4302, '2026-10-12 10:39:56.091084');
+INSERT INTO public.system_role_menu VALUES (2109474116191916035, 1, 4303, '2026-10-12 10:39:56.091256');
+INSERT INTO public.system_role_menu VALUES (2109474116191916036, 1, 4501, '2026-10-12 10:39:56.091438');
+INSERT INTO public.system_role_menu VALUES (2109474116191916037, 1, 4502, '2026-10-12 10:39:56.09161');
+INSERT INTO public.system_role_menu VALUES (2109474116196110336, 1, 4503, '2026-10-12 10:39:56.092129');
+INSERT INTO public.system_role_menu VALUES (2109474116196110337, 1, 460101, '2026-10-12 10:39:56.09238');
+INSERT INTO public.system_role_menu VALUES (2109474116196110338, 1, 460102, '2026-10-12 10:39:56.09261');
+INSERT INTO public.system_role_menu VALUES (2109474116200304640, 1, 6101, '2026-10-12 10:39:56.092848');
+INSERT INTO public.system_role_menu VALUES (2109474116200304641, 1, 6102, '2026-10-12 10:39:56.093075');
+INSERT INTO public.system_role_menu VALUES (2109474116200304642, 1, 6103, '2026-10-12 10:39:56.093245');
+INSERT INTO public.system_role_menu VALUES (2109474116200304643, 1, 6104, '2026-10-12 10:39:56.093408');
+INSERT INTO public.system_role_menu VALUES (2109474116200304644, 1, 6203, '2026-10-12 10:39:56.093573');
+INSERT INTO public.system_role_menu VALUES (2109474116204498944, 1, 6204, '2026-10-12 10:39:56.09375');
+INSERT INTO public.system_role_menu VALUES (2109474116204498945, 1, 6205, '2026-10-12 10:39:56.093931');
+INSERT INTO public.system_role_menu VALUES (2109474116204498946, 1, 6301, '2026-10-12 10:39:56.094108');
+INSERT INTO public.system_role_menu VALUES (2109474116204498947, 1, 6302, '2026-10-12 10:39:56.094283');
+INSERT INTO public.system_role_menu VALUES (2109474116204498948, 1, 6303, '2026-10-12 10:39:56.094465');
+INSERT INTO public.system_role_menu VALUES (2109474116204498949, 1, 6304, '2026-10-12 10:39:56.094623');
+INSERT INTO public.system_role_menu VALUES (2109474116208693248, 1, 500101, '2026-10-12 10:39:56.094805');
+INSERT INTO public.system_role_menu VALUES (2109474116208693249, 1, 500102, '2026-10-12 10:39:56.094981');
+INSERT INTO public.system_role_menu VALUES (2109474116208693250, 1, 500103, '2026-10-12 10:39:56.095158');
+INSERT INTO public.system_role_menu VALUES (2109474116208693251, 1, 500104, '2026-10-12 10:39:56.095333');
+INSERT INTO public.system_role_menu VALUES (2109474116208693252, 1, 500201, '2026-10-12 10:39:56.095529');
+INSERT INTO public.system_role_menu VALUES (2109474116212887552, 1, 500202, '2026-10-12 10:39:56.095688');
+INSERT INTO public.system_role_menu VALUES (2109474116212887553, 1, 500203, '2026-10-12 10:39:56.095848');
+INSERT INTO public.system_role_menu VALUES (2109474116212887554, 1, 500204, '2026-10-12 10:39:56.096015');
+INSERT INTO public.system_role_menu VALUES (2109474116212887555, 1, 500301, '2026-10-12 10:39:56.096168');
+INSERT INTO public.system_role_menu VALUES (2109474116212887556, 1, 500302, '2026-10-12 10:39:56.096351');
+INSERT INTO public.system_role_menu VALUES (2109474116212887557, 1, 500303, '2026-10-12 10:39:56.096503');
+INSERT INTO public.system_role_menu VALUES (2109474116217081856, 1, 500304, '2026-10-12 10:39:56.096711');
+INSERT INTO public.system_role_menu VALUES (2109474116217081857, 1, 500401, '2026-10-12 10:39:56.096881');
+INSERT INTO public.system_role_menu VALUES (2109474116217081858, 1, 500402, '2026-10-12 10:39:56.097031');
+INSERT INTO public.system_role_menu VALUES (2109474116217081859, 1, 500403, '2026-10-12 10:39:56.097214');
+INSERT INTO public.system_role_menu VALUES (2109474116217081860, 1, 470101, '2026-10-12 10:39:56.097366');
+INSERT INTO public.system_role_menu VALUES (2109474116217081861, 1, 470301, '2026-10-12 10:39:56.097492');
 
 
 --
@@ -2967,7 +3005,7 @@ INSERT INTO public.system_role_permission VALUES (1967880589822599168, 1, 196788
 -- Data for Name: system_user; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public."system_user" VALUES (51, 'skyx', '17637474818', 'tokgos@outlook.com', 'Super Admin', '/user_avatar/51.png', 'enabled', '$2a$10$WFyk1Cq6ov7s0b2bAFDo9.BQPxe3vLqqmu85FVWPvTbXXsi0GryCK', 0, '2025-04-09 10:25:10', '2025-04-09 10:25:10', 'tokgos', 'tokgos', 101);
+INSERT INTO public."system_user" VALUES (51, 'skyx', '17637474818', 'tokgos@outlook.com', 'Super Admin', 'uploads/20261011/bf05a839-6160-49ba-a873-3f4cf4d1a494.png', 'enabled', '$2a$10$WFyk1Cq6ov7s0b2bAFDo9.BQPxe3vLqqmu85FVWPvTbXXsi0GryCK', 0, '2025-04-09 10:25:10', '2025-04-09 10:25:10', 'tokgos', 'tokgos', 101, 0, false);
 
 
 --
@@ -2986,14 +3024,14 @@ INSERT INTO public."system_user" VALUES (51, 'skyx', '17637474818', 'tokgos@outl
 -- Data for Name: system_user_role; Type: TABLE DATA; Schema: public; Owner: -
 --
 
-INSERT INTO public.system_user_role VALUES (1883056259986735104, 51, 1, 'built-n', 0, '2025-02-10 23:21:46', '2025-02-10 23:21:46', 'tokgos', 'tokgos');
+INSERT INTO public.system_user_role VALUES (2107644802639073280, 51, 1, '', 0, '0001-01-01 00:00:00', '0001-01-01 00:00:00', '', '');
 
 
 --
 -- Name: system_config_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.system_config_id_seq', 2, true);
+SELECT pg_catalog.setval('public.system_config_id_seq', 5, true);
 
 
 --
@@ -3056,7 +3094,7 @@ SELECT pg_catalog.setval('public.system_role_dept_id_seq', 1, false);
 -- Name: system_role_menu_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.system_role_menu_id_seq', 85, true);
+SELECT pg_catalog.setval('public.system_role_menu_id_seq', 88, true);
 
 
 --
@@ -3070,5 +3108,5 @@ SELECT pg_catalog.setval('public.system_user_post_id_seq', 1, false);
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Ekke8HUsbkLwpuRbBo2XBOPDYjADflxPBrelhMzpcBv1ddIYUNcKLLxhRylerlv
+\unrestrict hdgvfFMARchv8wieNJac8Q3D1Q681py9PO6OnS2br8yZRh8E7JTbxBrfw9oqazy
 
